@@ -1,0 +1,8 @@
+{
+  "task_id": "r-chat-streamed-usage",
+  "origin_commit": "ec585b68b9f5fcb7d5f11d4da26a3c89a8cd6267",
+  "base_commit": "ec585b68~1",
+  "evaluator_test_path": "source/providers/openai-chat-completions-model.evaluator.test.ts",
+  "typecheck": true,
+  "strip_files": []
+}

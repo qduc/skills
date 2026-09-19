@@ -1,0 +1,12 @@
+Fix audit finding F-correctness-002 in this repo (see audit/reports/correctness.md and audit/invariants.md).
+
+Problem: source/providers/openai.provider.ts, codex.provider.ts, openrouter.provider.ts, grok.provider.ts, and openai-compatible.provider.ts each VALUE-import NULL_SESSION_CONTEXT_SERVICE from ../services/session/session-context-service.js and use it as `sessionContextService ?? NULL_SESSION_CONTEXT_SERVICE`. The documented architectural invariant forbids providers from importing a service module directly.
+
+Do: close the boundary violation with no behavior change. Preferred shape per the finding: a local null-object constant defined inside source/providers/ (or supplied by the provider registry) instead of the cross-boundary value import. Type-only imports remain acceptable.
+
+Verify before you finish, and paste the actual output:
+1. grep -n "NULL_SESSION_CONTEXT_SERVICE" source/providers/*.ts
+2. pnpm typecheck (or tsc --noEmit)
+3. pnpm test for the affected provider tests
+
+Do not commit. Do not inspect paths outside this workspace.

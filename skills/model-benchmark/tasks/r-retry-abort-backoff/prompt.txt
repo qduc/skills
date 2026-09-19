@@ -1,0 +1,9 @@
+Bug report from a user:
+
+"When the provider starts rate-limiting me, term2 shows a retry notice and waits
+before trying again. If I hit Escape twice to stop the turn during that wait,
+the UI immediately says 'Stopped' — but the app stays busy. I can't type a new
+prompt, and nothing happens for another 20-30 seconds. Then it finally comes
+back. If I stop it while the model is actually streaming, it stops instantly."
+
+Find the cause and fix it. Add tests covering the fix.

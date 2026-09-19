@@ -1,0 +1,8 @@
+{
+  "task_id": "r-yolo-read-bypass",
+  "origin_commit": "e08a0a1174e3f7e040474a0db098f28a7823c985",
+  "base_commit": "e08a0a11~1",
+  "evaluator_test_path": "source/tools/file/read-file.evaluator.test.ts",
+  "typecheck": true,
+  "strip_files": []
+}

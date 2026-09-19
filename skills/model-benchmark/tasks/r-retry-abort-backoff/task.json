@@ -1,0 +1,8 @@
+{
+  "task_id": "r-retry-abort-backoff",
+  "origin_commit": "12709ca61f75d232436bce31bc88be74d3146958",
+  "base_commit": "12709ca6~1",
+  "evaluator_test_path": "source/providers/retrying-model.evaluator.test.ts",
+  "typecheck": true,
+  "strip_files": []
+}

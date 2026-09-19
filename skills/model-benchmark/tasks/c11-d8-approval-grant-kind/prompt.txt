@@ -1,0 +1,3 @@
+Fix the durable approval-event defect where approval resolution loses which kind of grant authorized the continuation.
+
+Add a backward-compatible grant-kind field to the durable event for an ordinary interactive approval, preserve compatibility with older logs that lack the field, add appropriate regression coverage at the public conversation/logging boundary, and run the relevant focused tests. Report the cause, changed files, and verification results. Do not commit. Do not inspect paths outside this workspace.

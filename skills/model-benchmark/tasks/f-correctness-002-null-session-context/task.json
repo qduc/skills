@@ -1,0 +1,6 @@
+{
+  "task_id": "f-correctness-002-null-session-context",
+  "evaluator_test_path": null,
+  "typecheck": false,
+  "strip_files": []
+}

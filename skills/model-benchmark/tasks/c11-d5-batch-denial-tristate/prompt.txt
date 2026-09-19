@@ -1,0 +1,3 @@
+Fix the approval-batch coordinator tri-state defect where isToolApproved returning false is incorrectly recorded as approved.
+
+Ensure that when isToolApproved({ toolName, callId }) returns false, the decision in decisionsByCallId is set to 'rejected' rather than 'approved'. Preserve the tri-state semantics (true -> 'approved', false -> 'rejected', undefined -> fall through to normal approval pipeline). Add regression test coverage and verify all approval tests pass. Do not commit. Do not inspect paths outside this workspace.

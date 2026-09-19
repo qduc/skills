@@ -1,0 +1,8 @@
+{
+  "task_id": "r-settings-secret-display",
+  "origin_commit": "a2a418839bfb6e5265f8d800d868fe12c5f0cc32",
+  "base_commit": "a2a41883~1",
+  "evaluator_test_path": "source/components/menu/SettingsSelectionMenu.evaluator.test.tsx",
+  "typecheck": true,
+  "strip_files": []
+}

@@ -1,0 +1,9 @@
+Bug report from a user:
+
+"In yolo mode — auto-approve everything — shell commands run without asking,
+but reading a file outside the workspace still prompts for permission every
+time. YOLO mode is supposed to mean no prompts for read-only operations, even
+outside the workspace. Writing outside the workspace must still require
+approval; only reads should skip the prompt."
+
+Find the cause and fix it. Add tests covering the fix.

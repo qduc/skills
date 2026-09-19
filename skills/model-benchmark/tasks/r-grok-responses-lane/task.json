@@ -1,0 +1,8 @@
+{
+  "task_id": "r-grok-responses-lane",
+  "origin_commit": "67d25a6d78072d13885368defad926e10f0fb2ad",
+  "base_commit": "67d25a6d~1",
+  "evaluator_test_path": "source/providers/grok-responses-lane.evaluator.test.ts",
+  "typecheck": true,
+  "strip_files": []
+}

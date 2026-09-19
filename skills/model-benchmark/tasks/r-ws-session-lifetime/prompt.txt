@@ -1,0 +1,14 @@
+Two production reports against the Codex WebSocket transport, which keeps a
+socket open per agent across that agent's turns:
+
+1. A user left term2 idle for a while with a Codex session open, came back, and
+   the process had died. The terminal showed an unhandled promise rejection
+   originating from the WebSocket layer. It reproduces only when the socket is
+   idle between turns — never while a turn is streaming.
+
+2. In long sessions, a turn occasionally dies mid-stream with a connection
+   error, and the next turn then works fine. Operationally we know the provider
+   force-closes these WebSocket connections at roughly the 60-minute mark; the
+   failures cluster in sessions that have been open about that long.
+
+Diagnose both and fix them. Add tests covering the fixes.

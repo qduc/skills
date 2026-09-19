@@ -1,0 +1,8 @@
+{
+  "task_id": "r-ws-session-lifetime",
+  "origin_commit": "dbb0c47f42cf58f31d8ce1e58712c6a29dccb721",
+  "base_commit": "dbb0c47f~1",
+  "evaluator_test_path": "source/providers/responses-websocket-sessions.evaluator.test.ts",
+  "typecheck": true,
+  "strip_files": []
+}

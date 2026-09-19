@@ -1,0 +1,16 @@
+Feature request:
+
+In concise display mode each tool call is already shortened to a single line,
+but every call still renders as its own separate message. A turn that reads six
+files and runs three commands produces nine lines of chrome around one answer.
+
+Collapse a consecutive run of tool calls into one summary line instead, e.g.
+"Searched for 1 pattern, read 3 files, ran 2 shell commands". This should apply
+only in concise mode; standard mode keeps rendering as it does today.
+
+Note that the message list commits finished output to Ink's <Static> region,
+which writes each item exactly once and cannot rewrite it afterwards. Make sure
+your approach does not produce flicker or duplicated lines as more tool calls
+arrive during a live turn.
+
+Add tests covering the behaviour.
