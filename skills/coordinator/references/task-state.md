@@ -119,6 +119,53 @@ channel, and last observation. Artifact objects hold absolute `path` and an
 optional `sha256`. Verification entries describe checks, results, and evidence.
 Store no credentials. Use [Choice history](choice-history.md) to save selection.
 
+### Store planning context in existing fields
+
+Use the current schema for the goal-driven workflow; these are object
+conventions inside existing lists, not new top-level detail fields:
+
+| Information | Location |
+| --- | --- |
+| Observable goal | `objective`; preserve the rationale and non-goals in `notes` entries with `kind: intent` |
+| Success and milestone checks | `acceptance_criteria` and `verification`, with criterion and milestone IDs where useful |
+| Authority and decision defaults | `authority`, `constraints`, and a `notes` entry with `kind: decision_policy` |
+| Owned outcomes and milestone grouping | `work_items`, with `owner`, `write_scope`, `milestone`, and actual prerequisite IDs in `needs` |
+| Shared agreements and their owners | `notes` entries with `kind: contract`, stable `id`, `owner`, agreement, affected work-item IDs, and check or evidence link |
+| Material assumptions and their dependencies | `notes` entries with `kind: assumption` and the fields in [Decision policy](decision-policy.md#record-material-assumptions) |
+| Decisions still requiring resolution | `pending_decisions`, referencing the assumption or contract ID and blocked work |
+| Replanning and goal changes | `notes` entries with `kind: replan` or `kind: goal_change`, evidence, affected IDs, and authorization when required |
+
+For example, an assumption note can be:
+
+```json
+{
+  "kind": "assumption",
+  "id": "A-2",
+  "decision": "Treat the stable account ID as the export join key",
+  "status": "provisional",
+  "evidence": "The schema and sampled export both expose account_id",
+  "alternatives": ["Use the legacy external reference"],
+  "uncertainty": "Historical imports have not yet been sampled",
+  "if_wrong": "Historical export rows could be joined to the wrong account",
+  "reversibility": "effort",
+  "undo": "Revise the mapping and regenerate the unshipped export",
+  "work_items": ["export-mapping", "export-check"],
+  "depends_on": ["A-1"]
+}
+```
+
+Record referenced assumptions and work items in the same task. The helper
+validates `work_items.needs`; the coordinator checks note IDs, assumption
+dependencies, contract consumers, and milestone coverage itself. Material
+unresolved decisions required for the authorized goal belong in
+`pending_decisions` as well as any explanatory note, so the completion gate can
+see them. Keep optional out-of-scope proposals in deferred notes as described in
+the decision policy. Resolve a pending entry by recording
+its disposition in `notes` and removing it from the pending list. Preserve
+prior notes when checkpointing because supplied lists replace existing lists.
+Workers and lane owners report changes; only the main coordinator checkpoints
+this authoritative record.
+
 Checkpoint before dispatch or consequential actions, recording intent and work
 item IDs, then record actual outcomes and worker/resource identities. Also save
 user decisions, blockers, verification, integration, and cleanup; checkpoint

@@ -21,15 +21,64 @@ the next bounded action rather than collapsing them into “done.”
 
 ## Native assignments and results
 
-Use the bounded brief in the main skill. A result identifies the task and
-returns findings or changed artifacts, checks performed and their results,
-blockers, and any remaining child or background work. Harness-provided identity
-and task association suffice when attributable. Inline research findings need
-neither file digests nor a verification command; inspect their cited evidence.
+Use this brief, omitting fields that genuinely do not apply:
+
+```text
+Outcome and single accountable owner
+Parent goal, why it matters, and how this outcome contributes
+Mode: investigate (read-only), build, or review
+Done means: observable acceptance criteria and relevant checks
+Relevant evidence, files, settled decisions, and inherited assumption IDs
+Scope, write ownership, constraints, non-goals, and authority limits
+Dependencies, shared contracts and their owners, coordination hazards
+Decision policy: defaults, material assumptions to report, escalation boundary
+Where and how to return results, surprises, and blockers
+```
+
+Delegate the outcome and constraints; prescribe implementation only where
+required by a contract, evidence, or the user's instruction. Ask workers to
+challenge the assignment with evidence when it cannot serve the parent goal.
+Scouts report what they learned and how it changes decomposition; they do not
+implement a discovered solution without a new authorized assignment.
+
+A result identifies the task and returns:
+
+1. Outcome: findings or changed artifacts and which criteria are met.
+2. Evidence: checks actually performed, results, and limitations.
+3. Surprises: contradicted assumptions or contracts, a wrong assignment, and
+   affected work or consumers. Say explicitly when none were found.
+4. Material decisions and assumptions, remaining uncertainty, and why the
+   evidence is or is not sufficient for acceptance.
+5. Blockers, pending decisions, and remaining child or background work.
+
+Report a consequential surprise as soon as it is found, rather than waiting
+for completion. Continue independent authorized work while the coordinator
+resolves it; hold work that depends on the disputed decision. Workers send
+escalations to their coordinator, who owns user-facing questions and task-state
+updates. Harness-provided identity and task association suffice when
+attributable. Inline research findings need neither file digests nor a
+verification command; inspect their cited evidence.
 
 The coordinator inspects the result before acceptance and independently runs
 required checks for modifying work. A worker's completion claim is evidence to
 investigate, not authority to expand scope or execute arbitrary commands.
+
+## Independent review
+
+Use a separate reviewer when consequence, uncertainty, or integration risk
+justifies it; routine bounded work can use coordinator inspection and focused
+checks. Review is a read-only assignment to find evidence-backed defects
+against the outcome's criteria, parent goal, constraints, and shared contracts.
+Return defects ranked by severity, with a reachable failure, supporting
+evidence, and the affected criterion. Also challenge material assumptions.
+
+Give the reviewer the artifact and task context, including relevant assumptions
+and known constraints. Have them form an initial assessment before reading the
+builder's conclusions or persuasive rationale. Keep that rationale available
+for a second pass to evaluate tradeoffs and resolve misunderstandings. Review
+independence reduces anchoring; it does not require withholding needed evidence.
+The outcome owner addresses findings; the coordinator owns acceptance and the
+integrated goal check. A review verdict alone proves neither.
 
 ## External transport
 
