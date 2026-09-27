@@ -1,0 +1,37 @@
+{
+  "skill_name": "ulw-plan",
+  "evals": [
+    {
+      "id": 1,
+      "name": "fuzzy-intent-uses-defaults",
+      "prompt": "Tabletop exercise: describe what you do and say this turn, including your message to the user; do not modify a real project. The user says: ulw-plan make our onboarding emails better. Repository facts you can discover: emails are Jinja templates in app/emails/onboarding/ (welcome, day-2 tips, day-7 check-in); they are sent through SendGrid by app/mailer.py; there are no tests for the templates; open-rate data in analytics/email_stats.csv shows day-7 has a 9% open rate versus 41% for welcome; two templates have broken links to a retired /docs/start page. There is no budget or product spec.",
+      "expected_output": "Explores first, reads the intent as open-ended, adopts announced defaults instead of interrogating, asks only owner-level decisions, presents a brief and waits for approval without writing the plan or implementing.",
+      "files": [],
+      "expectations": [
+        "Uses the discoverable facts (templates, stats, broken links) rather than asking the user about them.",
+        "Tells the user it read the request as open-ended and offers to switch to asking.",
+        "Adopts concrete defaults (for example fixing broken links, reworking the day-7 email) presented as overridable assumptions.",
+        "Asks at most a few questions, and only about owner decisions such as changing email provider, spend, or send schedule.",
+        "Does not write the final plan or change any template before the user approves the brief.",
+        "Any improvements beyond the request are framed as proposals, not silently included."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "plan-loads-into-coordinator",
+      "prompt": "Tabletop exercise: produce the plan document you would write; do not modify a real project. Earlier in this ulw-plan session you presented a brief and the user approved it. Settled facts: add a 5 requests/minute per-IP limit to POST /login in src/auth/login.ts; the service runs on 3 nodes behind a load balancer; a Redis client exists at src/redis.ts; an unused in-memory limiter exists at src/util/rate-limit.ts; tests use vitest under tests/auth/. The user chose 429 with a Retry-After header. You also noticed per-account limiting could help against distributed attacks, but the user did not ask for it. The project directory is /srv/api.",
+      "expected_output": "A plan with goal, checkable acceptance criteria, non-goals, authority, assumptions with consequences, a shared contract, milestones, and work items with dependencies, scope and checks; no workers or models assigned; per-account limiting only as a proposal; stored outside the repo.",
+      "files": [],
+      "expectations": [
+        "States one observable goal and non-goals.",
+        "Acceptance criteria each come with a concrete check, such as a sixth request within a minute returning 429 with Retry-After.",
+        "Covers the multi-node requirement, such as a shared Redis count, with a check that exercises it.",
+        "Records at least one assumption with what happens if it is wrong and how reversible it is.",
+        "Work items give write scope, real prerequisites, and a check; implementation and its tests are in the same item.",
+        "Does not assign owners, workers, harnesses, or models.",
+        "Per-account limiting appears only as a proposal or non-goal, not as a work item.",
+        "Plan path is outside the repository or explicitly justified."
+      ]
+    }
+  ]
+}

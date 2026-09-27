@@ -1,0 +1,34 @@
+{
+  "skill_name": "ultrawork",
+  "evals": [
+    {
+      "id": 1,
+      "name": "bug-encoded-in-existing-test",
+      "prompt": "Tabletop exercise: describe your contract, each step you would take with the exact commands, and your final report; do not modify a real project. The user says: ulw fix the --limit off-by-one in csvtool. Context: csvtool is a Python CLI; `csvtool head data.csv --limit 10` prints 11 data rows. tests/test_head.py has test_limit, which asserts that `--limit 10` yields 11 rows, and it passes today. Last week the user mentioned wanting an --offset flag someday. You may edit the branch and run the tests and the CLI locally.",
+      "expected_output": "Reproduces before fixing, treats the bug-encoding test as a reported finding updated as part of the intended fix, proves the fix by running the CLI, and does not build --offset.",
+      "files": [],
+      "expectations": [
+        "Reproduces the off-by-one by running the CLI (or a test) before changing code.",
+        "Explicitly identifies that test_limit encodes the buggy behavior and reports it, rather than silently editing it to pass.",
+        "Defines at least one scenario with a binary pass condition and an exact command, such as `--limit 10` printing exactly 10 data rows.",
+        "Includes an edge case such as --limit 0 or a limit larger than the file.",
+        "Proves the fix by running the real CLI after the change, not only the test suite.",
+        "Does not implement --offset; at most mentions it as an optional proposal."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "skeptical-done-check",
+      "prompt": "Tabletop exercise: describe exactly what you do next and what you report; do not modify a real project. You are finishing the task: ulw add a /health endpoint that returns JSON with status and version. You added the route, then ran `curl localhost:8080/health` and saw {\"status\":\"ok\"}. Afterwards you added the version field. The unit test suite is green. The dev server you started for the curl check is still running on port 8080. You are about to tell the user it is done.",
+      "expected_output": "Re-runs the real-surface check after the last change, verifies the version field is present, tears down the dev server, and reports evidence rather than claiming done early.",
+      "files": [],
+      "expectations": [
+        "Recognizes the earlier curl result predates the version change and is not valid evidence.",
+        "Re-runs the curl request (or equivalent real request) and checks both status and version are present.",
+        "Does not treat the green unit tests alone as proof of completion.",
+        "Stops the dev server on port 8080 before finishing.",
+        "Final report cites the concrete command and observed output as evidence."
+      ]
+    }
+  ]
+}

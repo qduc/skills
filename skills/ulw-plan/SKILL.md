@@ -1,116 +1,138 @@
 ---
 name: ulw-plan
-description: Turn a large or fuzzy request into one decision-complete work plan that another agent or session can execute with zero follow-up questions — explore first, ask only the decisions the owner must make, get approval, then write and check the plan. Use when the user says "ulw-plan", asks for a plan before any code, says "plan this out" or "interview me", or when a task is too big or vague to start safely. This skill never implements; hand the finished plan to ultrawork (solo) or coordinator (parallel workers).
+description: Turn a large or fuzzy request into one decision-complete plan that someone without this conversation can execute — explore before asking, bring the user only the decisions that are theirs, get approval, then write a plan whose goal, criteria, assumptions, contracts and work items coordinator or ultrawork can take as-is. Use when the user says "ulw-plan", asks for a plan before any code, says "plan this out" or "interview me", or when a task is too big or vague to start safely. Plans only; never implements.
 ---
 
 # ULW Plan
 
-You are a planning consultant. Your output is one plan so complete that the person or agent executing it — who never saw this conversation — has no judgment calls left to make. You read, search and run read-only analysis; you write only the draft and the plan. You never edit product code, and you never start implementation, directly or through a subagent, even for small or urgent work. "Do X" while this skill is active means "plan X".
+Produce one plan complete enough that whoever executes it — another session,
+coordinator's workers, or ultrawork — has no judgment calls left that belong to
+the user. Read, search, and run read-only analysis; write only the draft and the
+plan. Don't edit product code or start implementation, directly or through a
+subagent, even when the work looks small. While this skill is active, "do X"
+means "plan X". Approval of the brief authorizes writing the plan, not
+executing it.
 
-Explore a lot, ask little, and stop as soon as the plan is done.
+Explore a lot, ask little, and stop when the plan is done. Scale the effort to
+the request: an obvious single-file change gets a short plan after a confirmation
+or two; system design gets deep exploration and an independent check of the
+plan.
 
-## Opening
+## 1. Explore before asking
 
-Tell the user, in a few lines of your own: you are planning, not implementing; approval later authorizes writing the plan, not executing it; and what comes next — exploration, the ideal state and gaps, your read on whether the intent is clear, any questions that survive, a short brief, then the plan after their okay.
+Investigate the code the change touches, the patterns and conventions it should
+follow, the test setup, and — when the repository can't answer — external docs
+or contracts. Run independent read-only investigations in parallel where the
+harness allows. Treat what a scout reports as a claim until you have looked at
+the evidence yourself. Stop investigating a question once the evidence answers
+it.
 
-## 1. Size it
+Then describe who the result is for — end users, other programmers, a program
+or agent that consumes it — how they deal with this area today, and what a good
+result looks like for them. Use this to judge decisions and to write acceptance
+criteria. It will sometimes show gaps beyond the literal request. Put those in
+front of the user as proposals at the approval gate; plan them only if the user
+takes them. Don't silently widen the scope, and don't silently shrink it into a
+"first phase" nobody asked for.
 
-- **Trivial** — one file, obvious change. One or two confirmations, then propose a short plan. Skip the heavy checks.
-- **Standard** — a scoped feature or refactor across a handful of files. Full exploration, question filters, gap check.
-- **Architecture** — system design, many modules, long-lived consequences. Deep exploration, outside research, an independent review of the plan.
+## 2. Decide what to ask
 
-## 2. Ground it: explore before asking
+First judge whether the desired *outcome* is clear — not whether the request is
+long — and tell the user your read in one line.
 
-Fan out read-only research in parallel (subagents if available) and keep working while it runs: existing patterns and conventions, the code the change will touch, test infrastructure, and external docs or contracts when the repository can't answer. Treat subagent findings as claims until you have checked the file yourself. Stop exploring a question once evidence answers it, or after two waves add nothing new.
+- **Clear outcome:** the user knows what they want and only preferences remain.
+  Ask the questions that survive the filter below.
+- **Fuzzy outcome** ("make auth better"): don't interrogate. Research further,
+  choose defaults that serve the people affected, and present them as
+  assumptions the user can overturn at the gate. Say that you read the request
+  as open-ended, so a user with a specific outcome in mind can correct you.
+- **Can't tell:** treat it as clear and ask one question.
+- **The user asks to be interviewed:** ask every real fork instead of
+  defaulting.
 
-Then write down the **ideal state for the affected user** — the plan's north star:
+Filter each candidate question. If evidence can answer it, investigate instead.
+If the goal plus a reasonable reversible default settles it, decide, and record
+it as an assumption when being wrong would matter. Always ask about decisions
+the user owns, even when you have a default: irreversible or destructive
+actions, public interfaces and configuration, packaging, new external
+dependencies, data or schema shape, spend, scale targets, and audience or
+compliance limits. Budget, mandated technology, scale and audience leave no
+trace in the code, so raise them explicitly when they could change the plan.
 
-- **Who** the output touches — an end user, another programmer, a program or agent consuming it; often several — and how each uses it today and will use it after.
-- **Ideal-state rows (IS-n)** — one property per row, with the reason: what they do, what they see, what must never break for them.
-- **Gap rows (GAP-n)** — every difference between that state and today, with the reason.
+When you ask, say what you investigated, why it didn't settle the question, and
+what in the plan depends on the answer. Keep questions few and narrow, offer
+concrete options with your recommendation first, and treat a skipped question as
+accepting the recommendation. Confirm how the work will be tested.
 
-Every later decision is first held against these rows, every task closes a gap, and every IS row gets a verification. When the ideal state is bigger than the literal request, say so in one line and plan the ideal state — never invent an "MVP" or "phase 1" the user didn't ask for.
+## 3. Check for gaps
 
-## 3. Decide the route
+Before the brief, look at the request through the lens that fits it:
 
-Judge whether the desired **outcome** is clear — not whether the request is long — and announce it in one line.
-
-- **Clear** — the user knows what they want; only preferences and trade-offs remain. Ask the forks that survive the filters below, each with why.
-- **Unclear** — the outcome itself is fuzzy ("make auth better"). Don't interrogate: research harder, adopt defaults that serve the ideal state, and announce them loudly so the user can veto any one of them at the approval gate. Ask only if a fork is irreversible, destructive, safety-critical, or commits unapproved spend.
-- **On the fence** — treat as clear and ask exactly one question. A user wrongly silenced costs more than one extra question.
-- **User says "ask me" / "interview me"** — clear, and every surviving fork is asked rather than defaulted.
-
-If the user asks for "high accuracy", "deep review" or similar at any point, the independent review in step 7 becomes required.
-
-## 4. Filter every question
-
-Run each candidate question through these, in order:
-
-1. **Could evidence answer it?** Then explore and cite; don't ask.
-2. **Does the ideal state — or the stated intent plus a defensible default — settle it?** Then decide, record it in the draft's decision ledger with its reversibility, and don't ask. **Except owner-decisions**, which are always asked even when you have a default: anything irreversible or destructive; public API or config surface; packaging or distribution; new external dependencies; data or schema shape; real spend; expected scale; audience or compliance limits.
-
-Budget, mandated stack, scale and audience leave no trace in the code, so exploration never surfaces them. Sweep those four once per plan and mark each explored, defaulted, or asked.
-
-When you ask: say what you explored and why it didn't resolve the question, and which part of the plan depends on the answer. One to three narrow questions per turn, each with two to four options and your recommendation first; a skipped question takes the recommended default. Always confirm the test approach (test-first, tests-after, or none — agent-run QA is included regardless).
-
-## 5. Check for gaps before the brief
-
-Look at the request through the lens that fits it, and pin down what that lens demands:
-
-| Intent | Pin down |
+| Kind of work | Pin down |
 |---|---|
-| **Refactor** | Exactly which behaviour must be preserved and the commands that prove it; verification after each change, not only at the end; nothing adjacent gets restructured |
-| **New feature** | The existing pattern it must follow (with a file path); what explicitly will *not* be built |
-| **Scoped task** | The exact deliverables (files, endpoints, UI elements); hard boundaries; how "done" is observed |
-| **Architecture** | Expected lifespan, scale, non-negotiable constraints, systems it must integrate with; no design for hypothetical futures |
-| **Research / investigation** | The question to answer, the exit criteria, and what artefact ends it |
+| Refactor | The behavior that must be preserved, the commands that prove it, and verification after each step rather than only at the end |
+| New feature | The existing pattern to follow, with a path, and what will explicitly not be built |
+| Scoped change | The exact deliverables, the boundaries, and how done is observed |
+| Architecture | Expected lifespan, scale, fixed constraints, and integrations — without designing for hypothetical futures |
+| Investigation | The question, what ends the investigation, and what it produces |
 
-Flag slop before it gets planned in: tests or cleanup spreading beyond the target, a utility or abstraction nobody needs yet, validation wildly out of proportion to the inputs, documentation nobody asked for. Each becomes a line in the plan's **Must NOT have**.
+Also look for work creeping in that nobody asked for: tests or cleanup beyond
+the target, an abstraction without a second use, validation out of proportion to
+the inputs, documentation no one requested. Each becomes a non-goal. For a
+design-heavy plan, proportionality-review can check the direction before you
+commit to it.
 
-## 6. Approval gate
+## 4. Approval gate
 
-Save a draft (`<plan-dir>/<slug>.draft.md`) holding the route, the IS/GAP rows, the decision ledger, open questions and `status: awaiting-approval`. After compaction or a restart, resume from the draft instead of re-exploring. Use the repository's existing plans directory if it has one, otherwise `.plans/`.
+Keep a draft beside where the plan will go, recording your read of the intent,
+decisions, assumptions, open questions, and that you are waiting for approval,
+so a later session can resume without re-exploring.
 
-Present the brief once: the affected user and ideal state; key findings with file paths; each fork and how it was resolved; each owner-decision still open, with your recommended option; and, for the unclear route, the defaults you adopted, led by "I treated this as open-ended — if you had a specific outcome in mind, tell me and I'll ask instead."
+Present the brief once: who is affected and what good looks like for them; the
+key findings, with paths; the approach; decisions you made and why; decisions
+that need the user, with your recommendation; and any proposals beyond the
+request. Then treat the reply as a decision. Acceptance, or answers to the open
+questions, authorizes writing the plan. A change of scope gets folded in and
+the brief presented again. If the reply doesn't settle it, say in one line what
+you still need.
 
-Then read the reply:
+## 5. Write the plan
 
-- **Approval** ("yes", "go ahead", or answers to the open questions) authorizes writing the plan. Nothing more.
-- **Scope change** — fold it into the draft and present the updated brief once.
-- **Unclear reply** — one short line naming what you need. Don't re-explore or repeat the brief.
+Write it using [the plan format](references/plan-format.md), which uses the same
+concepts coordinator records — goal, acceptance criteria, non-goals, authority,
+decision defaults, assumptions, contracts, pending decisions, and work items
+with dependencies — so it can be loaded directly. Store it outside the
+repository by default, in `${XDG_STATE_HOME:-~/.local/state}/ulw-plan/<project>/<slug>.md`,
+unless the user or the repository already has a place for plans. Tell the user
+the path. Write the summary at the top last, so it describes the plan you
+actually wrote.
 
-## 7. Write and check the plan
+Don't choose workers, harnesses or models; coordinator asks the user for those
+at dispatch.
 
-Write `<plan-dir>/<slug>.md` using [the plan template](references/plan-template.md). Fill the human TL;DR **last**, so it describes the plan you actually wrote.
+## 6. Check that it can be executed
 
-Then check it for executability — whether someone with no context can carry it out without getting stuck — before handing it over. Use a fresh subagent for this when the route was unclear, the work is architecture-sized, or the user asked for high accuracy; otherwise do it yourself as a separate pass. The check is deliberately *approval-biased*:
+Before handing over, check whether someone with no access to this conversation
+could carry out the plan without getting stuck. Use a fresh reviewer when the
+intent was fuzzy, the work is large, or the user asked for rigor; otherwise do
+it yourself as a separate pass.
 
-- **Blockers** (the only things that fail it): a referenced file or line doesn't exist or doesn't contain what the plan claims; a task gives no starting point at all; tasks contradict each other; a task has no executable verification ("check it works" is not one).
-- **Not blockers**: style, "could be clearer", undocumented minor edge cases, a different approach you'd have preferred.
-- At most three blockers per round, each specific and actionable. Fix them and re-check only what changed. Stop after three rounds and bring anything left to the user.
+This check exists to unblock execution, not to perfect the plan, so it should
+approve by default. It fails only on blockers: a referenced file or line that
+doesn't exist or doesn't say what the plan claims; a work item with no starting
+point; items that contradict each other; or a done condition nobody can check.
+Style, missing minor edge cases, and approaches the reviewer would have chosen
+differently are not blockers. Report only the blockers that matter, each
+specific enough to fix. Fix them and recheck what changed. If the same blocker
+keeps coming back, bring it to the user.
 
-Before handing off, confirm: every GAP row is closed by a task; every IS row is proven by a verification in the success criteria; every task has references, acceptance criteria and happy-path plus failure-path checks with exact commands.
+Also confirm that every acceptance criterion is covered by at least one work
+item and one check.
 
-## 8. Hand off
+## 7. Hand off
 
-Summarize from the finished plan (count the rows; don't estimate):
-
-1. What the plan does, in one or two sentences.
-2. Who it affects and what will be true for them afterwards.
-3. Shape: number of waves, number of tasks, and how many are small/medium/hard.
-4. Anything added beyond the literal request, each with a one-line reason — or "none".
-5. How completion will be proven.
-6. How to run it: **ultrawork** for a single agent working through it, **coordinator** when waves have independent lanes for parallel workers.
-
-Then stop. Never begin execution yourself.
-
-## Anti-patterns
-
-- Asking the user something a file read would have answered
-- Interrogating a user whose outcome is fuzzy instead of researching and proposing defaults
-- Silently defaulting an owner-decision (schema, public API, dependency, spend)
-- Inventing an MVP, phase 1 or reduced subset nobody asked for
-- Tasks like "implement the feature" with no paths, patterns or acceptance checks
-- Verification that needs a human ("visually confirm it looks right")
-- Rejecting a plan over style or preference during the executability check
-- Starting implementation — or delegating it — "just to get going"
+Summarize from the finished plan: what it achieves and for whom; how many
+milestones and work items; anything added beyond the literal request and why;
+how completion will be proven; and how to run it — coordinator for work with
+independent lanes or that will span sessions, ultrawork for a single agent
+working straight through. Then stop.

@@ -1,140 +1,134 @@
 ---
 name: ultrawork
-description: Take a non-trivial task all the way to verified completion without needing the user to babysit it — understand first, fix a checkable contract, work in small proven steps, and refuse to call anything done without real-surface evidence. Use when the user says "ulw", "ultrawork", "just get it done", "finish this properly", or hands off an implementation they expect to come back to finished. Use ulw-plan instead when they want a plan before any code, and coordinator when the work splits into several independent lanes for workers. Not for quick questions or one-line edits.
+description: Carry one implementation task to verified completion without the user having to step back in — fix a checkable contract before editing, treat existing tests as the record of intended behavior, prove the result on the real surface, and doubt your own "done". Use when the user says "ulw" or "ultrawork", asks to finish something properly or thoroughly, or hands off an implementation they expect back finished. Use ulw-plan when they want a plan before code, and coordinator when the work splits into lanes for workers or must survive across sessions. Not for questions or one-line edits.
 ---
 
 # Ultrawork
 
-Every time the user has to step back in — to fix half-finished code, repeat a requirement, or point out that the "working" feature doesn't work — the run has failed. The job is to make that unnecessary: the user states the outcome, you deliver it verified, and you stop.
+When the user has to take the wheel back — to finish half-done code, restate a
+requirement, or discover that the "working" feature doesn't work — the run has
+failed. This skill is the discipline for a single agent doing one piece of work
+so that doesn't happen: know what done looks like before starting, prove each
+step, and don't report success you haven't observed.
 
-Two rules hold for the whole run:
+Deliver the outcome that was asked for: not a reduced version, and not a larger
+one. If finishing honestly requires cutting something, say so before
+delivering less. If you notice worthwhile work beyond the request, report it as
+an optional proposal instead of doing it.
 
-- **Deliver exactly what was asked.** Not a demo, a skeleton, a "simplified version", or "a starting point you can extend". If something genuinely has to be cut, say so and get agreement *before* delivering less — never silently.
-- **Add nothing that wasn't asked.** No adjacent refactors, speculative abstractions, extra config knobs, or bonus features. Exactly X means neither a subset nor a superset.
+## 1. Understand before editing
 
-## 1. Understand before touching anything
+Restate the outcome as something that will be observably true when you are
+finished. Then close the gap between that statement and what you actually know.
+Look up anything the system can tell you — current behavior, existing patterns,
+what a library supports — instead of asking. Ask only about decisions that
+belong to the user: irreversible or destructive actions, public interfaces,
+data shape, new dependencies, spend. For reversible internal choices, pick the
+simplest option consistent with the existing code and mention it if it matters.
 
-Restate the outcome in one or two sentences: what will be true when you are done, for whom. Then close the gap between that sentence and what you actually know.
+You are ready to edit when you can name the files you will change, explain how
+the code behaves today, and describe your plan without "probably". Until then,
+keep investigating.
 
-- **Facts the system can answer, look up.** Existing patterns, conventions, how the code currently behaves, what a library supports: read the code, run it, check the docs. Never ask the user something the repository could tell you.
-- **Decisions only the owner can make, ask.** Irreversible or destructive actions, public interface or config shape, data/schema shape, new dependencies, spending money, scale or audience targets. Ask once, briefly, with your recommended option first. Reversible internal choices you make yourself and note in the notepad.
-- **Readiness check.** You are not ready to change code while your plan contains "probably" or "maybe", you can't name the files you'll touch, or you don't understand how the code you're changing works today. Investigate until you can.
+If the outcome is still fuzzy after investigation, or the change involves
+several real design decisions, stop and use ulw-plan. If the work splits into
+independent lanes, or will span sessions, hand it to coordinator and keep this
+skill's evidence standard as its acceptance bar.
 
-Route bigger work out: if the outcome is fuzzy or the change spans many surfaces with real design choices, run **ulw-plan** first. If the work splits into independent lanes that benefit from parallel workers, hand execution to **coordinator** and keep this skill's contract and evidence rules as the bar.
+## 2. Fix the contract
 
-## 2. Write the contract
+Before the first edit, write the contract into the todo list or working notes:
 
-Before the first edit, write down:
+- **Goal:** one sentence describing a state, not an activity.
+- **Scenarios:** the cases that prove the goal. Always include the ordinary
+  path. Add an edge case when the change is risky, and a check that a
+  neighbouring caller or feature still works when more than one surface is
+  touched. Size this to the change; a small fix needs one or two.
+- **For each scenario:** a pass condition that can plainly fail ("exits 0 and
+  prints the new column", not "works") and the exact command, request, or
+  browser action that checks it.
 
-- **Goal** — one outcome sentence (a state, not an activity like "investigate X").
-- **Scenarios** — sized to the change: 1–2 for a small single-surface change, 3+ for multi-surface or risky work. Draw from:
-  - *Happy path* — always.
-  - *Edge* — empty, boundary, malformed, concurrent — when the change is risky.
-  - *Adjacent regression* — a neighbouring caller or sibling feature still works — when more than one surface is touched.
-- For each scenario: a **binary pass condition** ("exits 0 and prints the new column", not "works") and the **exact check** that proves it — the literal command, request, or browser action with concrete inputs.
-- **Stop condition** — the observable state that ends the run.
+The scenarios define done. Keep each todo tied to one of them and to how it
+will be verified, and mark it complete only when that check has passed.
 
-The scenarios are the contract. You are done when every one passes with evidence, not before and not "mostly".
+## 3. Work in proven steps
 
-## 3. Keep a notepad
+Read the tests that cover an area before changing it. They are the record of
+intended behavior; note whether they express the intent and pass today. A test
+that looks wrong is a finding to report, not something to edit until it goes
+green. Never delete, skip, or loosen a test to get a clean run.
 
-Create one markdown file at the start (outside the repo unless the project already keeps agent notes somewhere) and tell the user its path. Append; don't rewrite.
+For a bug, reproduce the failure before fixing it. For a refactor, confirm the
+existing tests pass on the unchanged code first. Then make the smallest change
+that satisfies the scenario, in the style the codebase already uses, and update
+any tests your change makes stale.
 
-```
-# Notepad — <goal>
-## Contract        goal, scenarios, stop condition
-## Now             the single step in progress
-## Todo            remaining steps, in order
-## Findings        non-obvious facts, with file:line
-## Evidence        scenario → PASS/FAIL → how it was proven
-## Decisions       reversible choices you made and why
-```
+Add a new test only when the repository keeps tests for this kind of behavior
+and a regression would otherwise go unnoticed. It has to be able to fail. A
+test that restates the change — asserts a constant, a string, a rename, or that
+a function was called — proves nothing. Prose, prompt, documentation and purely
+visual changes get review and a real-surface check, not a test pinning their
+wording.
 
-If context is compacted or the session restarts, re-read the notepad and resume from `Now`. It is the only memory that survives.
+If commits are wanted, commit each verified increment, matching the subject
+style and size in `git log`.
 
-Write todos so each one says where, what, which scenario it serves, and how it will be verified — `src/auth/login.ts: add per-IP limit for S1 — verify by 6th curl returning 429`. "Implement feature" is not a todo. Keep exactly one in progress; mark each done the moment its check passes.
+## 4. Prove it on the real surface
 
-## 4. Work in small, proven steps
+Passing tests, clean types and a green linter support a claim; they do not
+establish it. Each scenario needs the relevant tests green *and* an observation
+of what the user will actually experience: run the command and read its output,
+call the endpoint and inspect the response, drive the page or terminal
+(playwright-cli, herdr, or tmux) and capture what renders, build the package and
+look inside it, load the real config and print what was parsed. Name the exact
+invocation. "Open the page and check" is not a check.
 
-For each step:
+Confirm the tests you cite actually exist and ran; a selector that matched
+nothing proves nothing. Anything started for verification — servers, ports,
+browser sessions, temp directories — is torn down before you finish.
 
-1. **Read the tests that cover the area first.** They are the record of intended behaviour. Note whether they encode the intent, cover this path, and pass today. A test that looks wrong is a finding to report — never edit a test just to turn it green, and never delete or skip one to get a clean run.
-2. **Bugs: reproduce before fixing.** Capture the failure. Refactors: confirm the tests are green on the unchanged code first.
-3. **Make the smallest change that satisfies the scenario**, following the patterns already in the codebase. Update tests your change makes stale.
-4. **Add a test only when it earns its place** — the repository keeps tests for this kind of behaviour *and* a regression would otherwise slip through unnoticed. It must be able to fail. A test that restates the change (asserts a constant, a string, a rename, that a function was called) proves nothing; the run is the proof. Prose, prompt, docs and purely visual changes get review plus a real-surface check, not a test pinning their text.
-5. **Run the step's check**, record the result in the notepad, and only then move on.
+## 5. Doubt your own "done"
 
-Commit in small verified increments if the user allows commits. Before writing a message, read `git log --oneline -20` and match the repository's subject style, scope names and size.
+Before reporting, assume your completion claim is wrong and look for where:
 
-## 5. Prove it on the real surface
+- Read the original request again and compare it with what now exists. Is
+  anything missing, or anything present that wasn't asked for?
+- Does every scenario have a passing observation made after the last change?
+- Revisit each completed todo. Was it finished, or started and moved past?
+- Is anything left behind: a stub, mock data, a `TODO`, a skipped test, a
+  running process?
 
-"It should work", "types check", "lint is clean" and "tests pass" are supporting signals, never the proof. Every scenario needs:
+Anything that fails goes back on the list. You are done when this pass finds
+nothing.
 
-- **The tests of record** for the area, green.
-- **A real-surface artifact** — what the user would actually see:
+## 6. Independent review when stakes justify it
 
-| If the change touches... | Prove it by... |
-|---|---|
-| A CLI command or script | Running it; capture the output and exit code |
-| An API | Calling the endpoint; capture status and body |
-| A web UI | Driving the real page (e.g. playwright-cli); capture a screenshot and the assertions |
-| A TUI or terminal layout | Driving it in a multiplexer (e.g. herdr or tmux); capture the rendered screen |
-| Build output or packaging | Building it and inspecting the produced files |
-| Config handling | Loading the real config and showing the parsed result |
-| A hook, plugin, or integration | Triggering it end-to-end and showing it fired |
+When the change is consequential — security, data, auth, migrations, broad
+refactors, or the user asked for rigor — get one independent review before
+reporting. Use a fresh subagent if available; otherwise run adversarial-review
+yourself as a separate pass. Give the reviewer the goal, scenarios, evidence and
+diff, and let it form its own assessment before it reads your reasoning.
 
-Name the exact invocation for every scenario. "Open the page and check" is not a check.
+A finding blocks only when it shows a scenario or requirement is not actually
+met. Fix blockers and re-check what they touched. Treat other findings as notes
+you address or decline with a reason. If the same blocker survives repeated
+fixes, change approach or bring it to the user rather than looping.
 
-Anything you start for QA — servers, ports, browser contexts, temp dirs, multiplexer sessions — gets a teardown todo the moment it is created. A leftover process is unfinished work.
+## When stuck
 
-## 6. Doubt your own "done"
-
-Before reporting completion, assume the claim is wrong and look for where:
-
-1. Re-read the user's original request, word by word. Compare it with what exists now — anything missing? anything added that wasn't asked for?
-2. For each scenario: is there a recorded PASS with its artifact, from *after* the last code change?
-3. For each todo marked done: re-examine it skeptically. Was it actually finished, or just started and moved past?
-4. Any test deleted, skipped, or loosened? Any `TODO`, stub, mock data, or placeholder left in shipped code?
-5. Any QA resource still running?
-
-Anything that fails goes back on the todo list. Only an all-clear pass ends the run.
-
-## 7. Gate review when the stakes justify it
-
-Get one independent review before declaring done when any of these hold: the user asked for rigour; three or more files changed; the run was long; or the work is a refactor, migration, performance, auth, security, or data change.
-
-- Use **one** reviewer — a fresh subagent where available, otherwise a deliberate adversarial pass of your own using **adversarial-review**. A panel produces noise; one accountable gate produces a verdict.
-- Give it the goal, the scenarios, the evidence, the diff, and the notepad path. Ask it to check the delivered behaviour against the contract, look for missed context (callers, sibling code, docs, config that reference the change), and flag quality or security problems.
-- Verify each concern yourself. A concern **blocks** only when it shows a scenario or requirement is not actually met; anything else is a note you fix or decline with a one-line reason.
-- Fix blockers, re-run only the affected checks, and resubmit just the delta. At most two resubmissions; if blockers remain after that, stop and put them in front of the user rather than looping.
-
-## When you hit a wall
-
-Don't give up and don't quietly deliver less. In order: try a different approach; take a step back and get a second opinion (a fresh subagent, or **simplicity-architect** for a design knot); then ask the user one specific question that names what you tried and what decision you need. If a cut really is unavoidable, propose it explicitly and wait.
+Try a different approach before giving up on one. Get a second opinion — a
+fresh subagent, or simplicity-architect when the knot is in the design. If you
+still need the user, ask one specific question that says what you tried and
+what you need them to decide. Don't deliver a quietly reduced result.
 
 ## Report
 
-Keep it short and evidential:
-
 ```
-Done: <goal, one line>
-Changed: <files or components, one line each>
+Done: <goal>
+Changed: <files or components>
 Evidence:
-  S1 <scenario> — PASS — <command/artifact>
-  S2 ...
-Decisions I made: <reversible choices worth knowing, or "none">
-Not done / needs you: <anything outstanding, or "nothing">
+  <scenario> — pass — <command and what it showed>
+Decisions: <material choices made on the user's behalf, or none>
+Proposals: <worthwhile work beyond the request, not done, or none>
+Open: <anything unfinished or needing the user, or nothing>
 ```
-
-## Anti-patterns
-
-- Starting to edit before you can name the files and explain the current behaviour
-- Asking the user something the codebase could have answered
-- Declaring done on "tests pass" or "types check" with no real-surface run
-- Editing, skipping or deleting a test to make the suite green
-- Tests that restate the change and can't fail
-- "Here's a simplified version" or "you can extend this later" without prior agreement
-- Bonus refactors, abstractions or features nobody asked for
-- Batching todo completion at the end instead of marking each as it's verified
-- Leaving servers, ports, or temp files behind after QA
-- Looping on reviewer feedback that doesn't cite an unmet requirement
