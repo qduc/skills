@@ -91,7 +91,8 @@ so a later session can resume without re-exploring.
 Present the brief once: who is affected and what good looks like for them; the
 key findings, with paths; the approach; decisions you made and why; decisions
 that need the user, with your recommendation; and any proposals beyond the
-request. Then treat the reply as a decision. Acceptance, or answers to the open
+request. Keep it short enough to read in a minute; supporting detail belongs in
+the draft. Then treat the reply as a decision. Acceptance, or answers to the open
 questions, authorizes writing the plan. A change of scope gets folded in and
 the brief presented again. If the reply doesn't settle it, say in one line what
 you still need.
