@@ -1,12 +1,12 @@
 ---
 name: ulw-plan
-description: Turn a large or fuzzy request into one decision-complete plan that someone without this conversation can execute — explore before asking, bring the user only the decisions that are theirs, get approval, then write a plan whose goal, criteria, assumptions, contracts and work items coordinator or ultrawork can take as-is. Use when the user says "ulw-plan", asks for a plan before any code, says "plan this out" or "interview me", or when a task is too big or vague to start safely. Plans only; never implements.
+description: Turn a large or fuzzy request into one decision-complete plan that someone without this conversation can execute — explore before asking, bring the user only the decisions that are theirs, get approval, then write a plan whose goal, criteria, assumptions, contracts and work items coordinator can take as-is. Use when the user says "ulw-plan", asks for a plan before any code, says "plan this out" or "interview me", or when a task is too big or vague to start safely. Plans only; never implements.
 ---
 
 # ULW Plan
 
 Produce one plan complete enough that whoever executes it — another session,
-coordinator's workers, or ultrawork — has no judgment calls left that belong to
+coordinator's workers, or a single agent working through it — has no judgment calls left that belong to
 the user. Read, search, and run read-only analysis; write only the draft and the
 plan. Don't edit product code or start implementation, directly or through a
 subagent, even when the work looks small. While this skill is active, "do X"
@@ -135,5 +135,6 @@ item and one check.
 Summarize from the finished plan: what it achieves and for whom; how many
 milestones and work items; anything added beyond the literal request and why;
 how completion will be proven; and how to run it — coordinator for work with
-independent lanes or that will span sessions, ultrawork for a single agent
-working straight through. Then stop.
+independent lanes or that will span sessions; otherwise a single agent can
+work through it directly, using the acceptance criteria as its definition of
+done. Then stop.
