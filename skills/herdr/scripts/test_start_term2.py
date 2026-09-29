@@ -67,6 +67,12 @@ class LauncherTests(unittest.TestCase):
         command = next(c[4] for c in fake.calls if c[1:3] == ["pane", "run"])
         self.assertEqual(command, "term2 -p codex -m gpt-5.6-luna -r high")
         self.assertFalse(any(c[1:3] == ["pane", "send-keys"] for c in fake.calls))
+        prompt = next(c[4] for c in fake.calls if c[1:3] == ["agent", "prompt"])
+        self.assertNotRegex(prompt.lower(), r"\backnowledge\b")
+        self.assertIn("carry out that assignment to completion", prompt)
+        self.assertIn(str(self.brief), prompt)
+        self.assertIn("Confirm the worker acts on the brief", result["next_action"])
+        self.assertNotIn("acknowledgement", result["next_action"].lower())
 
     def test_unintegrated_idle_fallback(self):
         fake = FakeHerdr("agent_not_ready")
@@ -146,7 +152,8 @@ class FakeSteerHerdr:
     """Models a Term2 TUI: send-text fills the draft, Enter submits it into the transcript."""
 
     def __init__(self, status="working", agent="term2", ack=True, ack_before_echo=False,
-                 land_text=True, empty_prompt=True, transcript=""):
+                 land_text=True, empty_prompt=True, transcript="", paste_placeholder=False,
+                 placeholder_lines=None):
         self.calls = []
         self.status = status
         self.agent = agent
@@ -156,6 +163,8 @@ class FakeSteerHerdr:
         self.empty_prompt = empty_prompt
         self.draft = ""
         self.transcript = transcript
+        self.paste_placeholder = paste_placeholder
+        self.placeholder_lines = placeholder_lines
         self.submitted = ""
 
     def screen(self):
@@ -173,7 +182,11 @@ class FakeSteerHerdr:
             return subprocess.CompletedProcess(argv, 0, self.screen(), "")
         if op == ["pane", "send-text"]:
             if self.land_text:
-                self.draft = argv[4]
+                if self.paste_placeholder:
+                    lines = self.placeholder_lines or str(argv[4]).count("\n") + 1
+                    self.draft = f"[Paste text #7 · {lines} lines]"
+                else:
+                    self.draft = argv[4]
             return subprocess.CompletedProcess(argv, 0, "", "")
         if op == ["pane", "send-keys"]:
             self.submitted, self.draft = self.draft, ""
@@ -192,7 +205,7 @@ class FakeSteerHerdr:
 class SteerTests(unittest.TestCase):
     def setUp(self):
         self.args = argparse.Namespace(pane="w18:pE", message="Use the builtin rollover tool.",
-            message_file=None, ack_marker=None, no_ack=False, ack_timeout_ms=5000,
+            message_file=None, ack_marker="EXPLICIT_ACK", no_ack=False, ack_timeout_ms=5000,
             ack_lines=160, timeout_ms=10000, herdr="herdr")
 
     def test_acknowledged_round_trip(self):
@@ -200,7 +213,7 @@ class SteerTests(unittest.TestCase):
         result = launcher.steer(self.args, run=fake)
         self.assertEqual(result["status"], "acknowledged")
         self.assertEqual(result["acknowledgement"], "verified")
-        self.assertTrue(result["ack_marker"].startswith("STEER_ACK_"))
+        self.assertEqual(result["ack_marker"], "EXPLICIT_ACK")
         self.assertEqual(sum(c[1:3] == ["pane", "send-text"] for c in fake.calls), 1)
         self.assertEqual(sum(c[1:3] == ["pane", "send-keys"] for c in fake.calls), 1)
         self.assertFalse(any(c[1:3] == ["agent", "prompt"] for c in fake.calls))
@@ -258,6 +271,35 @@ class SteerTests(unittest.TestCase):
         self.assertEqual(result["status"], "failed")
         self.assertFalse(any(c[1:3] == ["pane", "send-keys"] for c in fake.calls))
 
+    def test_multiline_paste_placeholder_with_matching_line_count_is_submitted(self):
+        self.args.message = "first line\nsecond line\nthird line"
+        self.args.no_ack = True
+        self.args.ack_marker = None
+        fake = FakeSteerHerdr(paste_placeholder=True)
+        result = launcher.steer(self.args, run=fake)
+        self.assertEqual(result["status"], "delivered")
+        self.assertEqual(sum(c[1:3] == ["pane", "send-keys"] for c in fake.calls), 1)
+
+    def test_multiline_paste_placeholder_with_wrong_line_count_is_not_submitted(self):
+        self.args.message = "first line\nsecond line"
+        self.args.no_ack = True
+        self.args.ack_marker = None
+        self.args.timeout_ms = 1000
+        fake = FakeSteerHerdr(paste_placeholder=True, placeholder_lines=3)
+        result = launcher.steer(self.args, run=fake)
+        self.assertEqual(result["status"], "failed")
+        self.assertFalse(any(c[1:3] == ["pane", "send-keys"] for c in fake.calls))
+
+    def test_preexisting_paste_placeholder_is_not_overwritten_or_submitted(self):
+        self.args.message = "first line\nsecond line"
+        self.args.no_ack = True
+        self.args.ack_marker = None
+        fake = FakeSteerHerdr(empty_prompt=False)
+        fake.draft = "[Paste text #3 · 2 lines]"
+        result = launcher.steer(self.args, run=fake)
+        self.assertEqual(result["status"], "failed")
+        self.assertFalse(any(c[1:3] == ["pane", "send-text"] for c in fake.calls))
+
     def test_working_worker_is_steerable(self):
         # Term2 accepts input while generating; steering must not require an idle worker.
         result = launcher.steer(self.args, run=FakeSteerHerdr(status="working"))
@@ -265,6 +307,14 @@ class SteerTests(unittest.TestCase):
 
     def test_no_ack_mode_reports_delivery_as_unproven(self):
         self.args.no_ack = True
+        self.args.ack_marker = None
+        result = launcher.steer(self.args, run=FakeSteerHerdr(ack=False))
+        self.assertEqual(result["status"], "delivered")
+        self.assertEqual(result["acknowledgement"], "not_requested")
+        self.assertIsNone(result["ack_marker"])
+
+    def test_acknowledgement_is_not_requested_by_default(self):
+        self.args.ack_marker = None
         result = launcher.steer(self.args, run=FakeSteerHerdr(ack=False))
         self.assertEqual(result["status"], "delivered")
         self.assertEqual(result["acknowledgement"], "not_requested")
@@ -351,6 +401,9 @@ class MainDispatchTests(unittest.TestCase):
         args = parser.parse_args(["w18:pE", "--message", "hi", "--ack-timeout-ms", "0"])
         self.assertEqual(args.pane, "w18:pE")
         self.assertFalse(args.no_ack)
+        legacy = parser.parse_args(["w18:pE", "--message", "hi", "--no-ack"])
+        self.assertTrue(legacy.no_ack)
+        self.assertIsNone(legacy.ack_marker)
 
 
 if __name__ == "__main__":

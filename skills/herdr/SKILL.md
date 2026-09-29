@@ -159,10 +159,14 @@ python3 <herdr-skill-dir>/scripts/herdr_worker.py submit <returned-pane-id> \
   --message-file <absolute-brief-or-dispatch-file>
 ```
 
-Global `--timeout-ms` precedes the subcommand. `submit` performs a bounded
-admission wait; `steer` preserves the running context. Term2 steering checks
-acknowledgement after echo; other harnesses return delivery with acknowledgement
-unverified. Inspect output/inbox before retrying an uncertain submission.
+Global `--timeout-ms` precedes the subcommand. `submit` and `steer` take either
+`--message <text>` or `--message-file <path>`; flags must be spelled in full.
+`submit` performs a bounded admission wait; `steer` preserves the running
+context. Term2 steering checks acknowledgement after echo; other harnesses
+return delivery with acknowledgement unverified. agy intermittently discards its
+first input, so for agy `submit` resends once — only when the visible screen
+shows the idle footer without the message echo — and reports `resent: 1`.
+Inspect output/inbox before retrying an uncertain submission.
 `close <pane-id> --owned-tab <recorded-tab-id>` checks settlement and membership
 and refuses tabs containing additional panes. Only supply task-owned resources
 whose cleanup is authorized. Failed starts preserve any returned IDs for recovery.
@@ -201,19 +205,23 @@ command with `--pane <returned-pane-id>` to skip creation and launch. Recovery
 checks the visible route; requested effort/approval flags are not reapplied.
 A pending draft or unknown state requires the manual procedure below instead.
 
-On `status: admitted`, verify worker-authored acknowledgement and attach one
-bounded background `herdr agent wait` with your harness completion monitor.
-The receipt explicitly leaves acknowledgement unverified. Tests:
+On `status: admitted`, confirm receipt from the worker's own activity — it
+reads the brief, calls tools, or writes artifacts — and attach one bounded
+background completion monitor (see Coordination for what to wait on). Do not
+ask the worker to reply with an acknowledgement: some models answer only the
+acknowledgement and end their turn idle (gpt-6-luna, 2026-09-27). <!-- lesson: no-ack-request promoted 2026-09-27 -->
+Tests:
 `python3 -m unittest discover -s <herdr-skill-dir>/scripts -p test_start_term2.py`.
 
 ### Steer a running Term2 worker
 
 `start_term2.py steer` delivers a mid-flight correction to a Term2 worker that is
-already running, and verifies the worker acknowledged it:
+already running. Always pass `--no-ack`, then confirm the worker acts on the
+correction from its subsequent output (tool calls, changed behavior):
 
 ```bash
 python3 <herdr-skill-dir>/scripts/start_term2.py steer <pane-id> \
-  --message "<correction>" --ack-timeout-ms 180000
+  --message-file <correction-file> --no-ack
 ```
 
 Use `--message-file <path>` for anything long. It refuses a non-Term2 pane, a
@@ -222,12 +230,10 @@ Enter until it has seen the text in the draft. It does **not** require an idle
 worker — Term2 accepts input while generating, and Enter steers at the next
 request boundary.
 
-The receipt distinguishes `acknowledged` (marker seen), `delivered`
-(`--no-ack` only), and `failed`; a `timed_out` acknowledgement exits non-zero.
-It appends a random `STEER_ACK_<hex>` marker request and looks for that marker
-only in output **after** the echoed message, because the echo of your own text
-contains the marker and matching it anywhere reports a false success. Do not use
-`pane wait-output` on an ack marker for this reason.
+With `--no-ack` the receipt reports `delivered` or `failed`. Without it, the
+helper appends a `STEER_ACK_<hex>` reply request; do not use that mode, because
+workers have replied with only the marker and gone idle instead of acting on
+the correction.
 
 ## Sending text to a running agent
 
@@ -269,8 +275,8 @@ If admission times out, inspect the visible screen once. If the exact brief is
 still in the idle draft, send Enter once without resending the text, then check
 admission. If it is working, leave it alone; if the shell, a blocked UI, or an
 unknown foreground process is visible, stop input and diagnose that state.
-Require a worker-authored acknowledgement or transcript evidence before treating
-the brief as received. Input echo is not acknowledgement.
+Treat the brief as received once the worker's own output shows it acting on
+the brief (reading it, calling tools). Input echo is not receipt.
 
 This fallback is for verified idle interactive input, not batch processes or
 unverified mid-flight steering. Interactivity preserves the possibility of
@@ -310,7 +316,11 @@ For long-running agent work:
 1. Dispatch one complete prompt.
 2. Confirm admission with one bounded lifecycle check.
 3. Do not poll repeatedly.
-4. Collect the artifact or receipt at a turn boundary.
+4. Collect the artifact or receipt at a turn boundary. Wait on the artifact the
+   brief requires (for example, a background loop until the report file exists),
+   not on lifecycle status. `herdr agent wait --until done` is not a completion
+   signal for agy: herdr reports agy as `done` between tool calls, so the wait
+   returns while the worker is still busy.
 5. Reconcile child work before claiming completion.
 
 When a command fails, consult the installed command help and report the exact

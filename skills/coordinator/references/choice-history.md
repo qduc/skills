@@ -28,6 +28,8 @@ Write a pool JSON file with concrete harness/model identifiers, for example:
 ```
 
 `harness` and `model` are required; `provider`, `effort`, and `role` are optional.
+Record `role` whenever the pool serves a specific role; a pool confirmed for one
+role does not authorize dispatch for another.
 Use the actual selected identifiers, not these example placeholders. Multiple
 routes represent a mixed pool. Record it with:
 

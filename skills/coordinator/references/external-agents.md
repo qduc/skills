@@ -70,6 +70,8 @@ and preserve the lifecycle file alongside task state. `run-task` is a bounded,
 synchronous convenience that cleans up resolved failures and preserves uncertain
 launches/submissions for recovery; it is not
 a multi-day supervisor. Both `start-worker` and `run-task` require `--kind` and `--model`.
+Launch a non-interactive CLI worker with stdin from `/dev/null`.
+<!-- lesson: stdin-devnull promoted 2026-09-26 -->
 Pass the selected `--provider` and `--effort` where applicable. The Herdr helper
 supports explicit launch routes for Term2, Pi, Codex, Claude, and agy; it rejects
 unsupported routes before creating a tab. Term2 and Pi require a provider;
@@ -77,8 +79,8 @@ Claude and agy use their configured provider environments and reject `--provider
 The launch receipt records these settings and opaque pane/tab IDs. A ready
 receipt confirms harness readiness. Route provenance comes from explicit launch
 arguments and the harness's banner/configuration, not the model's self-report.
-Worker-authored acknowledgements establish receipt of the assignment, not model
-identity.
+Worker activity on the brief establishes receipt of the assignment, not model
+identity. Do not request a reply acknowledgement.
 
 The coordinator delegates terminal operations to that helper. Use its `read`
 and `steer --message-file` for supervision, targeting the recorded pane ID.
@@ -86,7 +88,7 @@ Use `observe <pane-id>` at fallback check-ins: it combines lifecycle state with
 current visible output. Its Term2 `approval_suspected` signal recognizes a
 whitespace-normalized approval menu even when lifecycle status says `working`.
 It is a heuristic for inspection, never authorization to send approval keys.
-Old scrollback markers do not establish a current blocker. For other harnesses,
+A scrollback marker older than the dispatch or the latest steer does not establish a current blocker or completion. For other harnesses,
 inspect the returned visible text; no approval detector is claimed.
 Term2 uses verified TUI input; other supported harnesses use agent prompting.
 Delivery, admission, and acknowledgement are separate receipt states.
@@ -152,6 +154,5 @@ printf 'gate_exit=%s\n' "$gate_status"
 Set `gate_log` to a task-owned file first. Capture the status immediately and
 record the actual command, output, and numeric exit status. A blank status or
 empty log is not a passing check. In scripts using `set -e`, place the command
-in an `if` block to capture failure before the shell exits. Use bounded lifecycle
-waits and harness-managed background jobs instead of fixed sleeps between
-worker checks.
+in an `if` block to capture failure before the shell exits. The main skill's
+supervise section owns the wait between worker checks.

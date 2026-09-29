@@ -117,7 +117,10 @@ missing artifacts block preservation. It does not accept the result or remove
 files. Only after successful preservation and independent acceptance may you
 remove the worker workspace. `reconcile --disposition close-owned` also performs
 preservation before closing the pane. External `git worktree remove`/`rm` cannot
-be intercepted by this helper; never run them ahead of preservation.
+be intercepted by this helper; never run them ahead of preservation. Remove the
+worktree only after the worker process has stopped or been verified idle; a
+report file is not that state. To keep the worker, fast-forward main into its
+worktree (`git merge --ff-only`) instead of removing the tree.
 
 An old inbox inside a worktree needs explicit copying and verification outside
 that worktree before cleanup; the helper refuses to certify that layout durable.
@@ -165,6 +168,8 @@ Repeated notifications have the same message IDs until marked read. Check that
 `mark-read` succeeded before re-arming; a prior `receive` is not a read receipt.
 
 If the watcher fails or disappears, recover the reported error and restart it.
+Edit the waiter script only after that process has exited. Anchor pane-scraping
+patterns to error phrasing, not a bare number.
 On every resume, inspect both unread and read-but-unprocessed reports before
 waiting again. Background output availability and automatic agent continuation
 are distinct harness capabilities; durable messages work regardless.

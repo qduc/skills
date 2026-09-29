@@ -33,7 +33,35 @@ Scope, write ownership, constraints, non-goals, and authority limits
 Dependencies, shared contracts and their owners, coordination hazards
 Decision policy: defaults, material assumptions to report, escalation boundary
 Where and how to return results, surprises, and blockers
+Workers never call `ask_user` and never delegate or spawn sub-delegation unless
+the coordinator explicitly authorizes it in the brief. Record reasonable
+assumptions in the report; for a blocker, stop only dependent work and return
+the exact decision needed to the coordinator. The coordinator owns review
+routing.
+For build assignments, state the concrete artifact surface and behavior that
+must change (named files/APIs/tests or an observable public-boundary outcome);
+documentation, plans, or a passing baseline alone do not satisfy delivery.
+Scope the first assignment at an unverified seam to that seam only: the worker
+confirms the seam exists and its shape before anything builds on it. A worker
+that cannot proceed because a required seam is missing stops with a report
+naming the seam, the evidence it is missing, and the smallest next unit; the
+coordinator scopes the follow-up from that report instead of re-dispatching
+the same assignment. <!-- lesson: seam-scoped-first-assignment promoted 2026-09-29 -->
+Write the report file last; its existence and mtime are the completion signal
 ```
+
+For file-transport briefs, put the brief in a file and lint it before dispatch:
+`python3 <skill-dir>/scripts/coord_brief_lint.py lint --brief <path> --kind build`
+rejects a brief that drops a required clause above (done criteria, return
+channel, no-ask_user/no-delegation, or a runnable verification command for build
+work). The lint is required for file-transport briefs and advisory for native
+dispatches returning through the harness. `--allow-ask-user`/`--allow-delegation`
+record explicit authorization; the lint is a clause gate, not a judge of the plan.
+<!-- lesson: brief-lint-before-dispatch promoted 2026-09-29 -->
+
+The report file is the completion signal. The worker writes it last, and a
+marker older than the dispatch or the latest steer does not count.
+<!-- lesson: report-written-last promoted 2026-09-26 -->
 
 Delegate the outcome and constraints; prescribe implementation only where
 required by a contract, evidence, or the user's instruction. Ask workers to
@@ -62,6 +90,10 @@ verification command; inspect their cited evidence.
 The coordinator inspects the result before acceptance and independently runs
 required checks for modifying work. A worker's completion claim is evidence to
 investigate, not authority to expand scope or execute arbitrary commands.
+Before accepting a build report, map every assigned deliverable to changed
+artifacts and post-change evidence. Reject docs-only or plan-only output when
+the assignment requires capability, and revise/reassign within the original
+goal rather than silently weakening acceptance.
 
 ## Independent review
 

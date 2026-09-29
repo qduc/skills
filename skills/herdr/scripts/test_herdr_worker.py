@@ -75,12 +75,84 @@ class WorkerTests(unittest.TestCase):
         self.assertFalse(any(c[1:3] == ['agent', 'prompt'] for c in fake.calls))
         self.assertTrue(any(c[1:3] == ['pane', 'send-keys'] for c in fake.calls))
 
+    def test_submit_accepts_stale_working_status_only_when_screen_is_stably_idle(self):
+        client = worker.Herdr()
+        idle = '  ❯\n Standard\n / commands │ @ paths │ ! shell'
+        reads = []
+        def call(*parts, raw=False):
+            if parts[:2] == ('pane', 'read'):
+                reads.append(1)
+                return idle
+            return {'result': {'type': 'ok'}}
+        with patch.object(client, 'inspect', return_value={'result': {'agent': {
+                'pane_id': 'p', 'agent': 'term2', 'agent_status': 'working'}}}), \
+                patch.object(client, 'call', side_effect=call), \
+                patch.object(worker.start_term2, 'steer', return_value={'status': 'delivered'}), \
+                patch.object(client, 'wait', return_value={}):
+            result = client.submit('p', 'Do this task')
+        self.assertEqual(result['status'], 'admitted')
+        self.assertGreaterEqual(len(reads), 2)
+
+    def test_submit_keeps_working_term2_refusal_when_screen_shows_activity(self):
+        client = worker.Herdr()
+        active = '  ❯ Do this\n ⏎ steer │ Alt+⏎ queue\n Generating...'
+        with patch.object(client, 'inspect', return_value={'result': {'agent': {
+                'pane_id': 'p', 'agent': 'term2', 'agent_status': 'working'}}}), \
+                patch.object(client, 'call', return_value=active):
+            with self.assertRaisesRegex(worker.WorkerError, 'not ready'):
+                client.submit('p', 'Do this task')
+
     def test_failed_admission_is_not_retried(self):
         client = worker.Herdr()
         with patch.object(client, 'inspect', return_value={'result': {'agent': {'agent': 'pi', 'agent_status': 'idle'}}}), patch.object(client, 'call') as call, patch.object(client, 'wait', side_effect=worker.WorkerError('timeout')):
             result = client.submit('p', 'task')
         self.assertEqual(result['status'], 'admission_unknown')
         call.assert_called_once_with('agent', 'prompt', 'p', 'task')
+
+    def agy_submit(self, screen, wait_effects):
+        client = worker.Herdr()
+        def call(*parts, raw=False):
+            return screen if parts[:2] == ('pane', 'read') else {'result': {'type': 'ok'}}
+        with patch.object(client, 'inspect', return_value={'result': {'agent': {'agent': 'agy', 'agent_status': 'idle'}}}), \
+                patch.object(client, 'call', side_effect=call) as mock_call, patch.object(client, 'wait', side_effect=wait_effects):
+            result = client.submit('p', 'Read the brief\nand execute it.')
+        prompts = [c for c in mock_call.call_args_list if c.args[:2] == ('agent', 'prompt')]
+        return result, prompts
+
+    def test_agy_dropped_first_prompt_is_resent_once(self):
+        # agy intermittently discards its first input: the banner stays at an empty prompt.
+        idle_empty = 'Antigravity CLI\n>\n? for shortcuts   accept-edits'
+        result, prompts = self.agy_submit(idle_empty, [worker.WorkerError('timeout'), {}])
+        self.assertEqual(result['status'], 'admitted')
+        self.assertEqual(result['resent'], 1)
+        self.assertEqual(len(prompts), 2)
+
+    def test_agy_is_not_resent_when_the_prompt_arrived(self):
+        received = '> Read the brief and\n  execute it.\n>\n? for shortcuts'
+        result, prompts = self.agy_submit(received, [worker.WorkerError('timeout')])
+        self.assertEqual(result['status'], 'admission_unknown')
+        self.assertEqual(len(prompts), 1)
+
+    def test_agy_is_not_resent_while_busy(self):
+        busy = 'Generating...\n>\nesc to cancel'
+        result, prompts = self.agy_submit(busy, [worker.WorkerError('timeout')])
+        self.assertEqual(result['status'], 'admission_unknown')
+        self.assertEqual(len(prompts), 1)
+
+    def test_agy_resend_is_bounded_to_one(self):
+        idle_empty = '>\n? for shortcuts'
+        result, prompts = self.agy_submit(idle_empty, [worker.WorkerError('timeout'), worker.WorkerError('timeout')])
+        self.assertEqual(result['status'], 'admission_unknown')
+        self.assertEqual(len(prompts), 2)
+
+    def test_message_flag_is_inline_text_not_a_file_prefix(self):
+        args = worker.parser().parse_args(['submit', 'p', '--message', 'Read /tmp/brief.md'])
+        self.assertEqual(args.message, 'Read /tmp/brief.md')
+        self.assertIsNone(args.message_file)
+        with self.assertRaises(SystemExit), patch('sys.stderr'):
+            worker.parser().parse_args(['submit', 'p', '--message-f', 'x'])
+        with self.assertRaises(SystemExit), patch('sys.stderr'):
+            worker.parser().parse_args(['submit', 'p', '--message', 'a', '--message-file', 'b'])
 
     def test_alias_cannot_mutate_caller(self):
         client = worker.Herdr()
@@ -105,6 +177,43 @@ class WorkerTests(unittest.TestCase):
         with patch.object(client, 'inspect', return_value={'result': {'agent': {'pane_id': 'p', 'agent_status': 'done'}}}), patch.object(client, 'call', side_effect=[{'result': {'pane': {'tab_id': 't', 'workspace_id': 'w'}}}, {'result': {'panes': [{'pane_id': 'p', 'tab_id': 't'}]}}, {'result': {}}]) as call:
             worker.execute(args, client)
         self.assertEqual(call.call_args.args, ('tab', 'close', 't'))
+
+    def test_close_accepts_stale_working_status_when_screen_is_stably_idle(self):
+        args = worker.parser().parse_args(['close', 'p', '--owned-tab', 't'])
+        client = worker.Herdr()
+        idle = '  ❯\n Standard\n / commands │ @ paths │ ! shell'
+        def call(*parts, raw=False):
+            if parts[:2] == ('pane', 'read'):
+                return idle
+            if parts[:2] == ('pane', 'get'):
+                return {'result': {'pane': {'tab_id': 't', 'workspace_id': 'w'}}}
+            if parts[:2] == ('pane', 'list'):
+                return {'result': {'panes': [{'pane_id': 'p', 'tab_id': 't'}]}}
+            return {'result': {}}
+        with patch.object(client, 'inspect', return_value={'result': {'agent': {
+                'pane_id': 'p', 'agent': 'term2', 'agent_status': 'working'}}}), \
+                patch.object(client, 'call', side_effect=call) as called:
+            worker.execute(args, client)
+        self.assertEqual(sum(c.args[:2] == ('pane', 'read') for c in called.call_args_list), 2)
+        self.assertEqual(called.call_args.args, ('tab', 'close', 't'))
+
+    def test_close_still_refuses_extra_panes_for_stale_status(self):
+        args = worker.parser().parse_args(['close', 'p', '--owned-tab', 't'])
+        client = worker.Herdr()
+        idle = '  ❯\n Standard\n / commands │ @ paths │ ! shell'
+        def call(*parts, raw=False):
+            if parts[:2] == ('pane', 'read'):
+                return idle
+            if parts[:2] == ('pane', 'get'):
+                return {'result': {'pane': {'tab_id': 't', 'workspace_id': 'w'}}}
+            return {'result': {'panes': [{'pane_id': 'p', 'tab_id': 't'},
+                                         {'pane_id': 'human', 'tab_id': 't'}]}}
+        with patch.object(client, 'inspect', return_value={'result': {'agent': {
+                'pane_id': 'p', 'agent': 'term2', 'agent_status': 'working'}}}), \
+                patch.object(client, 'call', side_effect=call) as called:
+            with self.assertRaisesRegex(worker.WorkerError, 'other panes'):
+                worker.execute(args, client)
+        self.assertFalse(any(c.args[:2] == ('tab', 'close') for c in called.call_args_list))
 
     def test_wait_requires_requested_status(self):
         client = worker.Herdr()

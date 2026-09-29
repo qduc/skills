@@ -1,0 +1,3 @@
+interface:
+  display_name: "Finding Triage"
+  short_description: "Gate review findings by harm and fix cost"

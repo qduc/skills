@@ -2,8 +2,11 @@
 
 For routing work on this machine, read the local inventory at
 `../../../runtime/local-config/host-inventory.md` relative to this file if it
-exists. That private snapshot is excluded from publication. Recheck dated
-observations before relying on them.
+exists. That private file is excluded from publication. It holds the user's
+stated routing preferences, which apply in every harness, and dated host facts. Recheck dated
+observations before relying on them, and keep the file current: correct stale
+entries in place rather than appending a log, and keep it short (its header has
+the rules).
 
 On another installation, discover the host before routing agents:
 

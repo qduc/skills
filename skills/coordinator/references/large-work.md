@@ -16,7 +16,9 @@ Order work by dependencies. Start a wave once the decisions and contracts it
 requires are settled, even if unrelated work from an earlier wave continues.
 Use work-item edges for actual prerequisites; avoid artificial barriers between
 independent lanes. Record milestone membership, owners, and checks in task
-state so another session can resume the plan.
+state so another session can resume the plan. Before a long wave that may cross
+sessions, keep the current milestone, unfinished work, and worker locators in
+[Task state](task-state.md#resume-and-archive).
 
 ## Own contracts at the seams
 

@@ -11,13 +11,12 @@ import json
 import os
 from pathlib import Path
 import re
-import secrets
 import shlex
 import subprocess
 import sys
 import time
 
-PROMPT_LINE = r"(?m)^ *\u276f *$"
+PROMPT_LINE = r"(?m)^[ \t]*❯[ \t]*$"
 
 
 def collapse(text):
@@ -82,7 +81,7 @@ def launch(args, run=subprocess.run):
             raise LaunchError("Brief path must be single-line")
         with brief.open("rb") as source:
             source.read(1)
-        prompt = "Read " + str(brief) + " and execute only that assignment. First acknowledge the task ID and your provider/model route."
+        prompt = "Read " + str(brief) + " and carry out that assignment to completion."
         receipt.update(cwd=str(cwd), brief=str(brief))
         if args.pane:
             pane = args.pane
@@ -132,7 +131,8 @@ def launch(args, run=subprocess.run):
         else:
             raise LaunchError(result.stderr or result.stdout)
         receipt["status"] = "admitted"
-        receipt["next_action"] = "Verify worker acknowledgement; attach a bounded lifecycle wait. Admission is not task completion."
+        receipt["next_action"] = ("Confirm the worker acts on the brief from its subsequent output; "
+                                    "attach a bounded lifecycle wait. Admission is not task completion.")
     except (LaunchError, OSError, KeyError, TypeError, subprocess.TimeoutExpired) as error:
         receipt["error"] = str(error)
         receipt["next_action"] = "Inspect the returned pane before retrying. It is preserved; no cleanup or relaunch was attempted."
@@ -190,8 +190,8 @@ def steer(args, run=subprocess.run):
 
         marker = None
         payload = message
-        if not args.no_ack:
-            marker = args.ack_marker or ("STEER_ACK_" + secrets.token_hex(4).upper())
+        if args.ack_marker is not None:
+            marker = args.ack_marker
             if any(ord(char) < 32 for char in marker) or not marker.strip():
                 raise LaunchError("Ack marker must be an explicit single-line value")
             if collapse(marker) in collapse(message):
@@ -209,7 +209,9 @@ def steer(args, run=subprocess.run):
             raise LaunchError(
                 "Refusing input to a " + str(agent.get("agent_status")) +
                 " Term2; resolve that state before steering")
-        if not re.search(PROMPT_LINE, visible()):
+        before_paste = visible()
+        input_was_empty = bool(re.search(PROMPT_LINE, before_paste))
+        if not input_was_empty:
             raise LaunchError(
                 "No empty Term2 input line; refusing to append to a pending draft "
                 "or to a non-Term2 foreground process")
@@ -220,10 +222,15 @@ def steer(args, run=subprocess.run):
         # deadline passes; Enter is withheld until the draft is confirmed.
         landed = False
         render_deadline = time.monotonic() + args.timeout_ms / 1000
+        expected_lines = payload.count("\n") + 1
+        paste_placeholder = re.compile(r"^\[Paste text #\d+ · (\d+) lines\]$")
         while True:
             screen = visible()
-            draft = screen.rsplit("\u276f", 1)[-1] if "\u276f" in screen else ""
-            landed = collapse(draft).startswith(collapse(payload))
+            draft = screen.rsplit("\u276f", 1)[-1].strip() if "\u276f" in screen else ""
+            placeholder = paste_placeholder.fullmatch(draft.splitlines()[0].strip()) if draft else None
+            landed = collapse(draft).startswith(collapse(payload)) or bool(
+                input_was_empty and "\n" in payload and placeholder
+                and int(placeholder.group(1)) == expected_lines)
             remaining = render_deadline - time.monotonic()
             if landed or remaining <= 0:
                 break
@@ -233,7 +240,7 @@ def steer(args, run=subprocess.run):
         checked("pane", "send-keys", args.pane, "enter")
         receipt["status"] = "delivered"
 
-        if args.no_ack:
+        if marker is None:
             receipt["acknowledgement"] = "not_requested"
             receipt["next_action"] = ("Delivery to the input box was verified and Enter was sent. "
                                       "Terminal echo is not proof the worker ingested it; confirm in its own output.")
@@ -304,9 +311,9 @@ def build_steer_parser():
     parser.add_argument("pane", help="Explicit Term2 pane id; never the visually focused pane")
     parser.add_argument("--message", help="Correction text; mutually exclusive with --message-file")
     parser.add_argument("--message-file", help="Read the correction text from this file")
-    parser.add_argument("--ack-marker", help="Marker the worker must echo back; defaults to a fresh random STEER_ACK_<hex>")
+    parser.add_argument("--ack-marker", help="Explicitly request acknowledgement using this marker")
     parser.add_argument("--no-ack", action="store_true",
-                        help="Do not append an acknowledgement request and do not verify one. Delivery is then unproven.")
+                        help="Compatibility no-op; acknowledgements are not requested unless --ack-marker is given.")
     parser.add_argument("--ack-timeout-ms", type=int, default=180000,
                         help="How long to wait for the worker to write the marker after the echoed message")
     parser.add_argument("--ack-lines", type=int, default=160, help="Lines of agent output to scan for the acknowledgement")

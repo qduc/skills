@@ -33,6 +33,7 @@ Invoke `python3 <skill-dir>/scripts/coord_state.py` with:
   uses a new owner ID; it does not impersonate the previous session.
 - `release --task <id> --owner <owner-id> --revision <observed-revision>`:
   releases ownership at an intentional handoff without stopping workers.
+  Checkpoint the current next action and any changed state before releasing.
 
 Ownership persists across days and does not expire automatically. A filesystem
 lock serializes task writes and bound lifecycle operations; a persistent owner ID and increasing revision
@@ -107,7 +108,7 @@ Preserve prior evidence and completed work when constructing updates. Example:
 }
 ```
 
-String details: `objective`, `authority`, `next_action`.
+String details: `objective`, `authority`, `next_action`, `phase`.
 List details: `constraints`, `deliverables`, `acceptance_criteria`,
 `pending_decisions`, `work_items`, `workers`, `artifacts`, `verification`,
 `blockers`, `background_work`, and `notes`.
@@ -115,7 +116,10 @@ List details: `constraints`, `deliverables`, `acceptance_criteria`,
 Work items need unique `id` and `status`; optional `needs` lists existing IDs
 without cycles. Add ownership and write scope to work-item objects. Worker
 objects can hold harness identity, pane/job IDs, absolute `cwd`/`worktree`, return
-channel, and last observation. Artifact objects hold absolute `path` and an
+channel, and last observation. Optional per-worker timestamps `dispatched_at`,
+`reported_at`, `accepted_at`, and `merged_at`, plus `merge_commit`, record
+latency explicitly; `coord_progress.py` derives dispatch→report and
+report→merge durations from `reported_at`, omitting both when it is absent. Artifact objects hold absolute `path` and an
 optional `sha256`. Verification entries describe checks, results, and evidence.
 Store no credentials. Use [Choice history](choice-history.md) to save selection.
 
@@ -134,6 +138,11 @@ conventions inside existing lists, not new top-level detail fields:
 | Material assumptions and their dependencies | `notes` entries with `kind: assumption` and the fields in [Decision policy](decision-policy.md#record-material-assumptions) |
 | Decisions still requiring resolution | `pending_decisions`, referencing the assumption or contract ID and blocked work |
 | Replanning and goal changes | `notes` entries with `kind: replan` or `kind: goal_change`, evidence, affected IDs, and authorization when required |
+| Coordination lessons | `notes` entries with `kind: incident`, `key`, `what`, `cost`, `rule`, and `scope`, as in [Retro](retro.md) |
+
+When a session is bound, plain decisions and discoveries are captured by the
+memory sidecar and need no hand-written note. The structured note kinds above
+are still written by hand.
 
 For example, an assumption note can be:
 
@@ -165,21 +174,41 @@ its disposition in `notes` and removing it from the pending list. Preserve
 prior notes when checkpointing because supplied lists replace existing lists.
 Workers and lane owners report changes; only the main coordinator checkpoints
 this authoritative record.
+Keep it as a current snapshot. Add a note only when a material decision or
+assumption changes what a later session should do; routine observations and
+progress belong in worker reports, lifecycle receipts, and artifacts.
 
 Checkpoint before dispatch or consequential actions, recording intent and work
-item IDs, then record actual outcomes and worker/resource identities. Also save
-user decisions, blockers, verification, integration, and cleanup; checkpoint
-before waiting for input or ending a session. An intended action does not prove
-it ran. Writes use atomic replacement and fsync. If JSON persistence fails,
-restore it before additional delegated or consequential work.
+item IDs, then record actual outcomes and worker/resource identities. After
+that, update only changed state: material user decisions, blockers, accepted
+results, unfinished work, or the next action. Worker reports and lifecycle
+receipts hold the detailed history; link them when needed. Checkpoint before
+ending a session. An intended action does not prove it ran. Writes use atomic
+replacement and fsync. If JSON persistence fails, restore it before additional
+delegated or consequential work.
 
 ## Resume and archive
 
+If a session or worker approaches a capacity limit, checkpoint the current
+next action, blockers, and live worker locators while the session can still
+complete the write. <!-- lesson: pre-limit-checkpoint promoted 2026-09-26 -->
+
 Resolve “continue” by explicit task ID, conversation association, or a unique
-unfinished task matching the project. Ask if multiple tasks match. Load the
-record before the new-task selection gate: a resumed task keeps its own confirmed
+unfinished task matching the project. Without a handoff, use `list --project
+<absolute-project-path>` or `list` to find the record; ask if multiple tasks
+plausibly match. Load the record before the new-task selection gate: a resumed
+task keeps its own confirmed
 pool; an unresolved selection still requires the user. Recent-choice history
 never overrides the task's selection.
+
+Use `show --task <id>` to reconstruct the task before executing the saved
+`next_action`: read the objective and its `kind: intent` rationale, acceptance
+criteria, authority and constraints, material decisions, completed evidence,
+and unfinished work items. A pasted handoff is a locator and recent observation;
+the task record defines the continuing assignment. If its goal or rationale is
+missing or conflicts with current evidence, inspect linked source material and
+record the recovered context; ask the user when the remaining ambiguity would
+materially change the goal or scope.
 
 Run `check-resume --task <id>` to flag missing or changed artifacts and worker
 directories, and list unfinished work. This is a filesystem check, not proof of
@@ -187,6 +216,11 @@ live worker activity. Inspect the inbox's unread and read-but-unprocessed report
 reconcile live workers and incomplete operations, then claim/take over as needed
 and checkpoint the next action. Inspect partial output before recreating missing
 workers with the recorded pool. Ask for a replacement only if it must change.
+After each resumed action, compare the result with the goal and remaining
+criteria, update the record, and continue with the next needed work item.
+Declare the task complete only after goal-level verification; if a blocker or
+session limit interrupts it, checkpoint the remaining work for the next chat.
+Finishing the saved `next_action` alone is not a completion condition.
 
 Keep external-worker lifecycle state (`lifecycle.json`) and inboxes alongside
 the task record; link their paths from task details. Lifecycle receipts do not

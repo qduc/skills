@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import shlex
 import shutil
 import subprocess
@@ -118,6 +119,19 @@ class Herdr:
     def inspect(self, target):
         return self.call("agent", "get", target)
 
+    def term2_screen_is_settled(self, target):
+        """Accept stale working status only when two reads show an empty idle TUI."""
+        for _ in range(2):
+            screen = self.call("pane", "read", target, "--source", "visible", raw=True)
+            if ("/ commands │ @ paths │ ! shell" not in screen
+                    or re.search(r"(?im)^[ \t]*❯[ \t]*.+$", screen)
+                    or "⏎ steer │ Alt+⏎ queue" in screen
+                    or re.search(r"(?im)^[ \t]*(?:Calling tool\b|Generating\b)", screen)):
+                return False
+            if not re.search(r"(?m)^[ \t]*❯[ \t]*$", screen):
+                return False
+        return True
+
     def wait(self, target, until):
         flags = [part for status in until for part in ("--until", status)]
         result = self.call("agent", "wait", target, *flags, "--timeout", str(self.timeout_ms))
@@ -175,7 +189,10 @@ class Herdr:
         agent = self.inspect(target)["result"]["agent"]
         if os.environ.get("HERDR_PANE_ID") and agent.get("pane_id") == os.environ["HERDR_PANE_ID"]:
             raise WorkerError("Refusing mutation of the caller pane")
-        if agent.get("agent_status") not in (("idle", "done", "working") if steer else ("idle", "done")):
+        allowed = ("idle", "done", "working") if steer else ("idle", "done")
+        if agent.get("agent_status") not in allowed and not (
+                agent.get("agent") == "term2" and agent.get("agent_status") == "working"
+                and self.term2_screen_is_settled(target)):
             raise WorkerError("Worker is not ready for this operation")
         if agent.get("agent") == "term2":
             # Reuse the guarded TUI transport, including draft verification and
@@ -197,25 +214,45 @@ class Herdr:
             except WorkerError as error:
                 receipt.update(status="admission_unknown", error=str(error),
                                next_action="Inspect output and inbox before resending")
+                # agy intermittently discards its first input. Resend once, and only
+                # when the screen proves it never arrived: idle footer, no echo.
+                if agent.get("agent") == "agy" and self._agy_input_dropped(target, message):
+                    self.call("agent", "prompt", target, message)
+                    receipt["resent"] = 1
+                    try:
+                        self.wait(target, ["working"])
+                        receipt["status"] = "admitted"
+                        for key in ("error", "next_action"):
+                            receipt.pop(key, None)
+                    except WorkerError as retry_error:
+                        receipt["error"] = str(retry_error)
         return receipt
+
+    def _agy_input_dropped(self, target, message):
+        visible = " ".join(self.call("pane", "read", target, "--source", "visible", raw=True).split())
+        echo = " ".join(message.split())[:40]
+        return "? for shortcuts" in visible and echo not in visible
 
 
 def parser():
-    root = argparse.ArgumentParser(description=__doc__)
+    # No prefix matching: `--message` once silently resolved to `--message-file`.
+    root = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     root.add_argument("--herdr", default=os.environ.get("COORDINATOR_HERDR", "herdr"))
     root.add_argument("--timeout-ms", type=int, default=30000)
     sub = root.add_subparsers(dest="command", required=True)
     sub.add_parser("inventory")
-    start = sub.add_parser("start")
+    start = sub.add_parser("start", allow_abbrev=False)
     for name in ("name", "kind", "model", "workspace", "cwd"):
         start.add_argument("--" + name, required=True)
     for name in ("provider", "effort", "label", "receipt-file", "operation-id"):
         start.add_argument("--" + name)
     for name in ("inspect", "observe", "read", "wait", "stop", "submit", "steer", "close"):
-        cmd = sub.add_parser(name)
+        cmd = sub.add_parser(name, allow_abbrev=False)
         cmd.add_argument("target")
         if name in ("submit", "steer"):
-            cmd.add_argument("--message-file", required=True)
+            source = cmd.add_mutually_exclusive_group(required=True)
+            source.add_argument("--message", help="Inline message text")
+            source.add_argument("--message-file", help="File containing the message")
         if name == "wait":
             cmd.add_argument("--until", action="append", required=True, choices=["working", "idle", "done", "blocked"])
         if name == "close":
@@ -251,7 +288,7 @@ def execute(args, client):
     if args.command == "wait":
         return client.wait(args.target, args.until)
     if args.command in ("submit", "steer"):
-        message = Path(args.message_file).read_text()
+        message = args.message if args.message is not None else Path(args.message_file).read_text()
         if not message.strip():
             raise WorkerError("Message file is empty")
         return client.submit(args.target, message, steer=args.command == "steer")
@@ -264,7 +301,10 @@ def execute(args, client):
                 raise WorkerError("Unknown or blocked worker; inspect before interrupting")
             client.call("agent", "send-keys", args.target, "esc")
         return client.wait(args.target, ["idle", "done"])
-    if observed.get("agent_status") not in ("idle", "done"):
+    if observed.get("agent_status") not in ("idle", "done") and not (
+            observed.get("agent") == "term2"
+            and observed.get("agent_status") == "working"
+            and client.term2_screen_is_settled(observed["pane_id"])):
         raise WorkerError("Worker must be settled before closing its tab")
     # Verify tab membership from the pane, not from a mutable agent name.
     pane = client.call("pane", "get", observed["pane_id"])["result"]["pane"]

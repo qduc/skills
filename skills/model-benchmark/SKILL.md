@@ -1,6 +1,6 @@
 ---
 name: model-benchmark
-description: Benchmark AI models and coding harnesses on real-world engineering tasks from the term2 repository. Use when evaluating coding models, comparing agent harnesses (Codex, Pi, Term2, OpenCode), running controlled coding benchmarks, measuring solve rates, testing for regressions, grading candidate diffs with blind LLM judges, or verifying model capabilities against deterministic real-world tasks.
+description: Benchmark AI models and coding harnesses on real-world engineering tasks from the term2 repository. Use when evaluating coding models, comparing agent harnesses (Codex, Pi, Term2, OpenCode), running controlled coding benchmarks, measuring solve rates, querying or updating the model benchmark database, grading candidate diffs with blind LLM judges, or verifying model capabilities against deterministic real-world tasks.
 ---
 
 # Model Benchmark (term2 Tasks)
@@ -58,6 +58,8 @@ conclusions — several confounds are not controllable and must be reported.
    └── Run scripts/anonymize-diffs.sh -> Blind LLM Judge
 7. Generate Benchmark Report
    └── Run scripts/generate-report.py -> RESULT.md / BENCH-REPORT.md
+8. Index Saved Results
+   └── Run term2/scripts/model-benchmark-db.py ingest <run-dir>
 ```
 
 ---
@@ -271,6 +273,37 @@ Compile all metrics into a unified summary:
 ```bash
 python3 scripts/generate-report.py --benchmark-dir "$BENCH_DIR"
 ```
+
+### 7. Maintain the benchmark database
+
+The term2 repository tracks `eval/model-benchmark/results.sqlite`, a normalized
+index of saved run metadata and candidate results. After evaluating, collecting
+cost and judging (and again when late judge evidence lands), refresh the run:
+
+```bash
+python3 "${TERM2_REPO_DIR:-$PWD}/scripts/model-benchmark-db.py" ingest "$BENCH_DIR"
+python3 "${TERM2_REPO_DIR:-$PWD}/scripts/model-benchmark-db.py" summary
+```
+
+For a historical backfill, pass `~/.agents/runtime` instead of a single run.
+Ingest is idempotent: it refreshes each indexed run from its artifact directory.
+Prepared but unfinished candidates retain NULL results; `run_status=TIMEOUT`
+does not imply evaluator failure or success. `judge-summary.json` is imported
+where present; pooled judge files outside a run and conclusions recorded only
+in Markdown are not automatically imported. Do not infer missing scores.
+
+The SQLite index is committed with the repo; raw diffs, logs, judge transcripts
+and candidate workspaces remain under `.agents/runtime` and are **not** backed
+up by the database. Preserve raw artifacts separately before runtime cleanup.
+Use a consistent cohort/task and inspect evaluator quality before comparing
+scores across runs; a database row is not automatically a valid comparison.
+
+To inspect indexed results interactively, run
+`python3 "${TERM2_REPO_DIR:-$PWD}/scripts/model-benchmark-viewer.py"` and open
+`http://127.0.0.1:8765/`. It is read-only and localhost-only by default. For
+trusted-LAN access use `--host 0.0.0.0` and open the machine's LAN IP from the
+other device; there is no authentication or TLS. See
+`eval/model-benchmark/README.md` for port and database overrides.
 
 ---
 
