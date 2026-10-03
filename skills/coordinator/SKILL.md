@@ -132,6 +132,12 @@ Read additional guidance only for the applicable branch:
   <!-- lesson: routing-reference-skipped promoted 2026-09-27 -->
 - [Large work](references/large-work.md) when several dependent outcomes need
   staged delivery, milestone checks, or ongoing lane supervision.
+- [Execution protocols](references/execution-protocols.md) when a bounded
+  assignment's engineering method is `bug-fix`, `architect`, `refactor`,
+  `arena`, `swarm`, or `interrogate`. Resolve with
+  `python3 <skill-dir>/scripts/coord_protocol.py resolve --protocol <name> --catalog <installed-skill-dir>`.
+  A missing protocol falls back to the normal bounded-worker workflow, and
+  protocol output is evidence, not acceptance.
 
 Finish this step with owned outcomes, explicit dependencies, settled shared
 decisions for the next dispatch, concrete worker choices, and supported return
@@ -269,7 +275,9 @@ any effect on dependent work has been resolved or explicitly blocked.
 Accept a result when required checks pass, evidence has been inspected, and
 blocking findings are resolved. Before acceptance, run
 `python3 <skill-dir>/scripts/coord_claimcheck.py --cwd <assigned-cwd> --report <report>`:
-an unresolved cited commit or test path is a blocking finding. Acceptance means
+an unresolved cited commit or test path is a blocking finding. An
+execution-protocol report is worker evidence and is not acceptance; acceptance
+is still the coordinator's inspection. Acceptance means
 the result is suitable for incorporation; integration means it has actually been
 incorporated. Perform integration within existing authority and check the
 combined result where separate changes interact. Checkpoint immediately after
