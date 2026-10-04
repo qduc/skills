@@ -1,0 +1,10 @@
+Bug report from a user:
+
+"With a high-effort model, a reply can spend a long time thinking and then the
+whole turn dies before it gives its answer or runs its tools. The visible reply
+is small; it is the verbose private reasoning that triggers the stop. We need
+to retain only a bounded amount of that scratch output without throwing away the
+actual answer that follows. Visible text and tool-call limits must remain
+protective."
+
+Find the cause and fix it. Add tests covering the fix.

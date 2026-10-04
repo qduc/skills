@@ -1,0 +1,141 @@
+{
+  "skill_name": "coordinator",
+  "evals": [
+    {
+      "id": 1,
+      "name": "investigate-before-decomposition",
+      "prompt": "Tabletop exercise: describe the next coordinator actions, a concrete first assignment, and what gets recorded; do not launch workers or modify a real project. The user says: Make customer search fast enough for support staff to find the right account in under two seconds. Maybe split this into a database-index worker, an API-cache worker, and a UI worker. Use the already confirmed native worker pool. Constraints: preserve account visibility rules; no production deployment. Evidence: slow requests might come from database queries or an upstream entitlement lookup; no profile exists. UI work and API work would choose the result schema independently unless coordinated. Copy changes to a help page are independent. You have authority to inspect, profile locally, and implement fixes in a branch.",
+      "expected_output": "A concrete investigation assignment tied to the parent outcome, shared decision ownership before dependent implementation, and independent work allowed to proceed.",
+      "files": [],
+      "expectations": [
+        "Investigates query versus entitlement latency before assigning dependent index/cache implementation.",
+        "Gives the investigation owner the under-two-second parent goal, visibility constraint, read-only scope, and concrete evidence to return.",
+        "Resolves the shared result schema with an accountable owner before dependent UI/API implementation.",
+        "Allows independent help-copy work and uses the already confirmed pool without requiring a new selection.",
+        "Records a checkable parent outcome and distinguishes the suggested implementation from that outcome."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "surprise-invalidates-dependent-work",
+      "prompt": "Tabletop exercise: describe the next coordinator actions, worker messages, and state changes; do not launch workers or modify a real project. Resume a task with a confirmed native pool and goal: draft accurate monthly account exports; publishing is excluded. Record: assumption A-1 says account IDs are globally unique; A-2 depends on A-1 and chooses account ID as a join key. Builder owns export-mapping (active). Report-renderer (active) needs export-mapping. Sample-export (already accepted and integrated) used A-2. Help-copy is independent. Builder now proves IDs are unique only within a tenant and proposes changing the shared schema. Another worker asks to publish an output to a vendor to test it. The user said they will be offline: use reasonable reversible defaults and collect nonblocking questions. Show how to proceed without silently changing the goal or stopping all work.",
+      "expected_output": "Trace invalidated assumptions into active and integrated work, coordinate the contract change, revalidate old output, preserve independent work, and park unauthorized publication with a concrete reversible alternative.",
+      "files": [],
+      "expectations": [
+        "Traces A-1 through A-2 into mapping, renderer, and the already integrated sample; calls for revalidation of the sample.",
+        "Holds affected dependent work and sends concrete steering while allowing independent help-copy work.",
+        "Coordinates a contract owner and affected consumers before adopting the tenant-scoped schema.",
+        "Parks unauthorized vendor publication, prepares a concrete reversible alternative, and does not claim the parked action ran.",
+        "Records material assumption disposition and affected work; preserves the goal and batches nonblocking questions without treating silence as approval.",
+        "Keeps optional vendor sending outside required pending decisions so accurate local drafts can complete without new publishing authority."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "milestone-misses-parent-goal",
+      "prompt": "Tabletop exercise: describe the next coordinator actions, verification/review brief, and durable state changes; do not launch workers or modify a real project. A multi-lane feature must let support staff export one authorized tenant with all required fields and no manual repair. The user's confirmed native pool and authority cover branch implementation and tests, but not deployment or external sending. API, UI, and CSV lanes each pass their unit tests. The first integrated slice loses tenant context between UI and API and yields an incomplete CSV. The builder says this is expected and supplies a long argument that all assigned tickets are done. There are eight more export formats planned; the next wave has not started. Lane leads propose letting every worker edit the shared task record and using the builder's argument as the review brief. Determine what happens next and how the project should continue through milestones.",
+      "expected_output": "Do not accept a missed user goal, revisit decomposition, exercise seams early, keep clear contract/state ownership, review independently with rationale available, and resume compatible waves only when prerequisites are settled.",
+      "files": [],
+      "expectations": [
+        "Keeps the milestone incomplete despite passing unit tests and revisits understanding or decomposition of tenant context and required fields.",
+        "Defines an end-to-end check of tenant context and complete CSV fields before dependent format expansion.",
+        "Keeps one coordinator responsible for the authoritative task record and clear ownership of the cross-lane contract.",
+        "Gives independent review the artifact, goal, constraints, and evidence first, while keeping builder rationale available for a later pass.",
+        "Uses staged integration and milestone criteria, permits independent work, and respects deployment/sending authority limits."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "wake-sweep-approval-suspected",
+      "prompt": "Tabletop exercise: describe the next coordinator actions on this wake, before any steer, merge, or close; do not launch workers, edit files, or modify a real project. The confirmed native pool is already chosen. Worker A and worker B are live. A harness notification arrives because worker A's report file appeared. The notification body says worker A's gate `make test` failed. Worker B's lifecycle status is `working`, and the visible pane text is an approval menu (`approval_suspected`). A background waiter script for this task is still running. The user is offline. Show the sweep and what you deliberately leave alone.",
+      "expected_output": "On the wake, account for the time, sweep every live worker and read the notification body before steering, merging, or closing. Treat worker B's approval menu as a blocker while status still says working. Leave the running waiter script unchanged.",
+      "files": [],
+      "expectations": [
+        "Runs date and sweeps every live worker, including worker B, before any steer, merge, or close.",
+        "Reads the notification body, including the failing `make test` gate, rather than acting on the wake title alone.",
+        "Treats worker B's approval menu as a real blocker even though lifecycle status says working, and does not send approval keys.",
+        "Leaves the running waiter script unchanged and re-arms a watcher only after that process has exited.",
+        "Uses one debounced background wait on a report file or process exit, in place of pane polling or a fixed sleep."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "live-worktree-removal",
+      "prompt": "Tabletop exercise: describe the next coordinator actions; do not remove anything or launch workers. The confirmed native pool is already chosen. A term2 worker is live in a git worktree and still editing files. Its unread inbox and report path live outside that worktree, under the task directory. The user asks to run `git worktree remove` on the worker's worktree to free disk. A report file for the current assignment already exists. Show how you respond, including what would make a later removal legal and how you would update the tree if the worker should continue.",
+      "expected_output": "Do not remove the live worker's worktree. Stop or verify the worker idle and harvest reports and inbox first. Keep those paths outside the worktree. Reuse the tree by fast-forwarding main when the worker should continue.",
+      "files": [],
+      "expectations": [
+        "Refuses git worktree remove while the worker process is live.",
+        "Does not treat the existing report file as process exit; stops the worker or verifies it idle before a later removal.",
+        "Harvests the unread inbox and reports before any removal, and keeps those paths outside the worktree.",
+        "Uses git merge --ff-only from main to update the existing tree when the worker should continue.",
+        "Leaves unrelated workers and their trees untouched."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "preexisting-failure-claim",
+      "prompt": "Tabletop exercise: describe the next coordinator actions before acceptance or merge; do not merge or launch a new worker. The confirmed native pool and authority cover branch implementation and local gates, not deployment. The implementer owns export-mapping in an isolated worktree. Their report says the focused gate `python3 -m unittest tests/test_export.py` failed and that the failure is pre-existing on main and unrelated to their change. The report cites commit `abc1234` as the commit that introduced the test. The unit tests the implementer added are green. The base branch has not been checked in this session. Show what you run and what would block acceptance.",
+      "expected_output": "Treat the pre-existing claim as a claim. Run the same gate on the base branch before accepting it. Resolve the cited commit and test path mechanically. A base branch that passes the gate blocks acceptance of this change.",
+      "files": [],
+      "expectations": [
+        "Treats the pre-existing or unrelated failure claim as a claim, not as acceptance evidence.",
+        "Runs python3 -m unittest tests/test_export.py on the base branch before calling the failure pre-existing.",
+        "Does not accept or merge on the worker report alone, including when the worker's own new tests are green.",
+        "Resolves cited commit abc1234 and test path tests/test_export.py with a mechanical check such as coord_claimcheck.py, and treats a miss as a blocker.",
+        "If the base branch passes the same gate, the failure blocks acceptance of this change."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "fresh-chat-continues-parent-goal",
+      "prompt": "Tabletop exercise in a fresh chat: describe what you read, do, and record; do not launch workers or modify a real project. The user pastes a short handoff: 'Continue task T-42. State is at /tmp/coordinator/tasks/T-42/state.json. Next action: verify the CSV export header.' The saved task record says the original goal is to let support staff export one authorized tenant with every required field and no manual repair. The rationale says support currently fixes missing fields by hand. Acceptance criteria require tenant isolation, complete fields, and an end-to-end export check. The CSV header check is pending; the end-to-end check has not run; the UI-to-API tenant-context work item is still active. The confirmed worker pool and branch implementation authority are recorded. Assume the header check passes. What happens next?",
+      "expected_output": "Use the handoff to locate and load the task record, recover the parent goal and rationale, complete the immediate check, then continue toward the remaining acceptance criteria without asking for a new pool or declaring completion.",
+      "files": [],
+      "expectations": [
+        "Loads the authoritative task record and recovers its original goal, rationale, criteria, authority, and unfinished work before relying on the pasted next action.",
+        "Treats the passing header check as one checkpoint, records its evidence, and continues with tenant-context and end-to-end export work.",
+        "Does not close the task after the header check or treat the handoff summary as the full assignment.",
+        "Keeps the recorded confirmed pool for this resumed task and works within its existing authority."
+      ]
+    },
+    {
+      "id": 8,
+      "name": "resume-without-handoff",
+      "prompt": "Tabletop exercise in a fresh chat: describe the next coordinator actions; do not launch workers or modify a real project. The user says only, 'Continue the coordinator task in /work/customer-export.' No handoff was requested or pasted. The coordinator state directory is available. Its task list contains one unfinished task for that project and unrelated tasks for other projects. The matching record has a goal, rationale, acceptance criteria, confirmed worker pool, completed and pending work items, and a saved next action. Explain how you find the task and what you do after the saved action is finished.",
+      "expected_output": "Discover the unique unfinished task from durable state, load and reconcile its full record, then continue from the saved action toward the original goal without requiring a handoff summary.",
+      "files": [],
+      "expectations": [
+        "Uses task-state discovery, such as list --project, rather than asking the user for a handoff summary.",
+        "Loads the complete matching record and recovers goal, rationale, criteria, authority, and remaining work before acting.",
+        "Reconciles worker activity and artifacts, then continues beyond the saved next action until the goal is verified or a concrete blocker arises.",
+        "Asks for task identification only if discovery yields multiple plausible matches."
+      ]
+    },
+    {
+      "id": 9,
+      "name": "thin-resume-state-without-diary",
+      "prompt": "Tabletop exercise: describe what durable state the coordinator writes; do not launch workers or modify a real project. A coordinated coding task already has its original goal, rationale, criteria, authority, assigned worker IDs, and next action in the task record. Two workers emit routine progress updates and one publishes a report with a verified passing result. The coordinator will end this chat soon and the user has not requested a handoff. There are no new decisions, blockers, or changed contracts. Show what the coordinator saves and what a fresh chat uses to resume.",
+      "expected_output": "Save only the changed accepted result, remaining work, and next action in the durable task snapshot, linking the worker report; rely on the existing goal and lifecycle records for resumption without a narrative diary or separate resume packet.",
+      "files": [],
+      "expectations": [
+        "Does not copy routine progress updates or a chronological diary into task notes.",
+        "Records the verified result, updated unfinished work, and next action before ending the session, without a user request for handoff.",
+        "Links existing worker evidence and uses lifecycle receipts for runtime details instead of writing a separate resume packet.",
+        "Does not run a routine retrospective solely because the session ends."
+      ]
+    },
+    {
+      "id": 10,
+      "name": "pool-scoped-to-role",
+      "prompt": "Tabletop exercise: describe the next coordinator actions; do not launch workers or modify a real project. At the start of this task the user confirmed a review pool for a release-readiness review: model X at high effort and model Y as reviewers. Choice history also shows the user's most recent implementation pool on other tasks: model Z at medium effort. The review found three defects, and the user now replies 'fix for release'. Model X and model Y are both available. The user's standing preferences say model Y only reviews and never implements. Show how you staff the fixes.",
+      "expected_output": "Treat the implementation role as a new selection: ask the user to choose builders before dispatch, recommending the recent implementation choice (model Z, medium), rather than reusing the review pool for implementation.",
+      "files": [],
+      "expectations": [
+        "Does not dispatch implementation workers from the review-only pool without the user's selection.",
+        "Asks for an implementation selection and recommends the user's recent implementation choice with its effort level.",
+        "May proceed with read-only preparation and task-state bookkeeping, such as worktrees and briefs, while the selection is pending."
+      ]
+    }
+  ]
+}

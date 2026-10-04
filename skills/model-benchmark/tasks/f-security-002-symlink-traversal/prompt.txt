@@ -1,0 +1,3 @@
+Fix audit finding F-security-002: Resolve workspace paths safely against directory traversal and symlink escapes.
+
+In source/tools/utils.ts, ensure path validation prevents escapes through symbolic links or lexical trickery outside the workspace root unless explicitly allowed via options. Add robust tests for path resolution including absolute, relative, and symlink edge cases. Do not commit. Do not inspect paths outside this workspace.

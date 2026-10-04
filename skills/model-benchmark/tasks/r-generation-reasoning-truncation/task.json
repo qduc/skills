@@ -1,0 +1,8 @@
+{
+  "task_id": "r-generation-reasoning-truncation",
+  "origin_commit": "8d0e7f7adf930b14d1a3442209b22b2ad649e7c8",
+  "base_commit": "8d0e7f7a~1",
+  "evaluator_test_path": "source/services/agent-runtime/generation-guard.evaluator.test.ts",
+  "typecheck": true,
+  "strip_files": []
+}

@@ -1,0 +1,160 @@
+{
+  "_comment": "Harness registry. cli driver: bin+args run the harness non-interactively. herdr driver: kind+start_args launch the harness's interactive TUI in a herdr pane and the prompt is submitted through `herdr agent prompt`. Placeholders: {workspace} {prompt} {prompt_file} {model} {provider} {model_id}; {model} is rendered from the canonical provider/model id via model_template.",
+  "harnesses": {
+    "codex": {
+      "bin": "codex",
+      "model_template": "{model_id}",
+      "args": [
+        "exec",
+        "--json",
+        "--model",
+        "{model}",
+        "-c",
+        "model_reasoning_effort={effort}",
+        "--sandbox",
+        "workspace-write",
+        "--skip-git-repo-check",
+        "-C",
+        "{workspace}",
+        "{prompt}"
+      ],
+      "notes": "OpenAI Codex CLI, non-interactive exec mode. --json emits JSONL incl. turn.completed usage.",
+      "herdr": {
+        "kind": "codex",
+        "start_args": [
+          "--model",
+          "{model}",
+          "--sandbox",
+          "workspace-write",
+          "--skip-git-repo-check"
+        ]
+      }
+    },
+    "term2": {
+      "bin": "term2",
+      "model_template": "{model_id}",
+      "args": [
+        "--model",
+        "{model}",
+        "--provider",
+        "{provider}",
+        "-r",
+        "{effort}",
+        "--auto-approve",
+        "{prompt}"
+      ],
+      "notes": "term2 non-interactive with --auto-approve. Usage is NOT on stdout; it is recovered from the provider-traffic log (requires logging.debugLogging=true).",
+      "herdr": {
+        "kind": "term2",
+        "start_args": [
+          "--provider",
+          "{provider}",
+          "--model",
+          "{model}"
+        ]
+      }
+    },
+    "pi": {
+      "bin": "pi",
+      "model_template": "{provider}/{model_id}",
+      "args": [
+        "--print",
+        "--mode",
+        "json",
+        "--provider",
+        "{provider}",
+        "--model",
+        "{model}",
+        "--thinking",
+        "{effort}",
+        "--no-session",
+        "{prompt}"
+      ],
+      "notes": "pi --mode json emits JSONL incl. per-message usage. The model MUST be passed as provider/id: a bare id is fuzzy-matched and silently falls back to another model on that provider. Verify the resolved model in the log.",
+      "herdr": {
+        "kind": "pi",
+        "start_args": [
+          "--provider",
+          "{provider}",
+          "--model",
+          "{model_id}"
+        ]
+      }
+    },
+    "opencode": {
+      "bin": "opencode",
+      "model_template": "{provider}/{model_id}",
+      "args": [
+        "run",
+        "--model",
+        "{model}",
+        "--auto",
+        "--dir",
+        "{workspace}",
+        "{prompt}"
+      ],
+      "notes": "opencode run, permissions auto-approved.",
+      "herdr": {
+        "kind": "opencode",
+        "start_args": [
+          "--model",
+          "{model}"
+        ]
+      }
+    },
+    "claude": {
+      "bin": "claude",
+      "model_template": "{model_id}",
+      "args": [
+        "--print",
+        "--model",
+        "{model}",
+        "--dangerously-skip-permissions",
+        "{prompt}"
+      ],
+      "notes": "Claude Code headless mode.",
+      "herdr": {
+        "kind": "claude",
+        "start_args": [
+          "--model",
+          "{model}",
+          "--dangerously-skip-permissions"
+        ]
+      }
+    },
+    "manual": {
+      "bin": null,
+      "notes": "Placeholder for candidates you drive by hand; run-candidates.sh skips these."
+    },
+    "term2fix": {
+      "bin": "term2fix",
+      "model_template": "{model_id}",
+      "args": [
+        "--model",
+        "{model}",
+        "--provider",
+        "{provider}",
+        "-r",
+        "{effort}",
+        "--auto-approve",
+        "{prompt}"
+      ],
+      "notes": "term2 built from the repo WITH the generation-guard reasoning fix merged (e9ebdb83)."
+    },
+    "term2pre": {
+      "bin": "term2pre",
+      "model_template": "{model_id}",
+      "args": [
+        "--model",
+        "{model}",
+        "--provider",
+        "{provider}",
+        "-r",
+        "{effort}",
+        "--auto-approve",
+        "{prompt}"
+      ],
+      "notes": "term2 built from 38fd6928, the merge-base WITHOUT the guard fix. Control arm."
+    }
+  }
+}

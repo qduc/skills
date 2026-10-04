@@ -1,0 +1,8 @@
+Security report:
+
+"The settings picker shows the beginning of my saved provider credential next
+to the setting name. Anyone looking at the terminal or its scrollback can read
+it. Credential values must not be displayed by the settings UI; users still
+need a clear indication of whether one is configured."
+
+Find the cause and fix it. Add tests covering the fix.

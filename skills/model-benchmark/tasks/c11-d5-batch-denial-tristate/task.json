@@ -1,0 +1,6 @@
+{
+  "task_id": "c11-d5-batch-denial-tristate",
+  "evaluator_test_path": "source/services/approval/batch-denial.evaluator.test.ts",
+  "typecheck": true,
+  "strip_files": ["source/services/approval/c11-d5-batch-denial-boundary.test.ts"]
+}

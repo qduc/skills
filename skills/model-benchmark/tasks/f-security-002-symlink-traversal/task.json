@@ -1,0 +1,6 @@
+{
+  "task_id": "f-security-002-symlink-traversal",
+  "evaluator_test_path": "source/tools/security-symlink.evaluator.test.ts",
+  "typecheck": true,
+  "strip_files": []
+}

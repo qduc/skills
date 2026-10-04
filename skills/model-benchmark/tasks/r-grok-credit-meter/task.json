@@ -1,0 +1,8 @@
+{
+  "task_id": "r-grok-credit-meter",
+  "origin_commit": "9fa492c9369d06e24f5dd7bcff917cf3eab329a0",
+  "base_commit": "9fa492c9~1",
+  "evaluator_test_path": "source/components/layout/StatusBar.evaluator.test.tsx",
+  "typecheck": true,
+  "strip_files": []
+}

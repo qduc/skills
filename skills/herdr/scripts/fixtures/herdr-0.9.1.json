@@ -1,0 +1,102 @@
+{
+  "provenance": {
+    "cli": "herdr 0.9.1",
+    "protocol": 22,
+    "schema_version": 1,
+    "captured": "2026-09-19",
+    "note": "Read-only CLI receipts; content and IDs redacted, lists reduced to one item. Mutation required fields extracted from herdr api schema --json; mutations were not executed."
+  },
+  "result_required_fields": {
+    "tab_created": [
+      "type",
+      "tab",
+      "root_pane"
+    ],
+    "agent_started": [
+      "type",
+      "agent",
+      "argv"
+    ],
+    "agent_prompted": [
+      "type",
+      "agent"
+    ],
+    "agent_info": [
+      "type",
+      "agent"
+    ],
+    "agent_list": [
+      "type",
+      "agents"
+    ],
+    "pane_info": [
+      "type",
+      "pane"
+    ],
+    "pane_list": [
+      "type",
+      "panes"
+    ],
+    "output_matched": [
+      "type",
+      "pane_id",
+      "revision",
+      "read"
+    ],
+    "ok": [
+      "type"
+    ]
+  },
+  "receipts": {
+    "agent_get": {
+      "returncode": 0,
+      "stdout": "{\"id\": \"cli:agent:get\", \"result\": {\"agent\": {\"agent\": \"term2\", \"agent_status\": \"done\", \"focused\": false, \"pane_id\": \"fixture:p\", \"revision\": 14, \"state_change_seq\": 418, \"tab_id\": \"fixture:t\", \"terminal_id\": \"fixture-terminal\", \"workspace_id\": \"fixture:w\"}, \"type\": \"agent_info\"}}\n",
+      "stderr": ""
+    },
+    "agent_list": {
+      "returncode": 0,
+      "stdout": "{\"id\": \"cli:agent:list\", \"result\": {\"agents\": [{\"agent\": \"claude\", \"agent_status\": \"idle\", \"focused\": false, \"pane_id\": \"fixture:p\", \"revision\": 8, \"state_change_seq\": 8, \"tab_id\": \"fixture:t\", \"terminal_id\": \"fixture-terminal\", \"workspace_id\": \"fixture:w\"}], \"type\": \"agent_list\"}}\n",
+      "stderr": ""
+    },
+    "agent_wait": {
+      "returncode": 0,
+      "stdout": "{\"id\": \"cli:agent:wait\", \"result\": {\"agent\": {\"agent\": \"term2\", \"agent_status\": \"done\", \"focused\": false, \"pane_id\": \"fixture:p\", \"revision\": 14, \"state_change_seq\": 418, \"tab_id\": \"fixture:t\", \"terminal_id\": \"fixture-terminal\", \"workspace_id\": \"fixture:w\"}, \"type\": \"agent_info\"}}\n",
+      "stderr": ""
+    },
+    "pane_get": {
+      "returncode": 0,
+      "stdout": "{\"id\": \"cli:pane:get\", \"result\": {\"pane\": {\"agent\": \"term2\", \"agent_status\": \"done\", \"focused\": false, \"pane_id\": \"fixture:p\", \"revision\": 14, \"tab_id\": \"fixture:t\", \"terminal_id\": \"fixture-terminal\", \"workspace_id\": \"fixture:w\"}, \"type\": \"pane_info\"}}\n",
+      "stderr": ""
+    },
+    "pane_list": {
+      "returncode": 0,
+      "stdout": "{\"id\": \"cli:pane:list\", \"result\": {\"panes\": [{\"agent_status\": \"unknown\", \"focused\": false, \"pane_id\": \"fixture:p\", \"revision\": 1, \"tab_id\": \"fixture:t\", \"terminal_id\": \"fixture-terminal\", \"workspace_id\": \"fixture:w\"}], \"type\": \"pane_list\"}}\n",
+      "stderr": ""
+    },
+    "output_matched": {
+      "returncode": 0,
+      "stdout": "{\"id\": \"cli:pane:wait-output\", \"result\": {\"matched_line\": \"fixture text\\n\", \"pane_id\": \"fixture:p\", \"read\": {\"format\": \"text\", \"pane_id\": \"fixture:p\", \"revision\": 0, \"source\": \"visible\", \"tab_id\": \"fixture:t\", \"text\": \"fixture text\\n\", \"truncated\": true, \"workspace_id\": \"fixture:w\"}, \"revision\": 0, \"type\": \"output_matched\"}}\n",
+      "stderr": ""
+    },
+    "pane_read": {
+      "returncode": 0,
+      "stdout": "fixture text\n",
+      "stderr": ""
+    },
+    "agent_read": {
+      "returncode": 0,
+      "stdout": "fixture text\n",
+      "stderr": ""
+    },
+    "not_found": {
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "{\"error\": {\"code\": \"agent_not_found\", \"message\": \"fixture error\"}, \"id\": \"cli:agent:get\"}\n"
+    },
+    "timeout": {
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "{\"error\": {\"code\": \"timeout\", \"message\": \"fixture error\"}, \"id\": \"cli:agent:wait\"}\n"
+    }
+  }
+}

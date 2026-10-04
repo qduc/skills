@@ -1,0 +1,48 @@
+Continue this work from where the previous session left off. Do not start
+over and do not re-diagnose from scratch.
+
+## Where the work stands
+
+A handoff from the previous session is below; it names the two production
+bugs, what was already learned before the session ended, and the intended
+direction. The task is to finish the diagnosis if incomplete, implement the
+fix, and add tests covering both bugs.
+
+## Handoff from the previous session
+
+<handoff>
+Two production reports against the Codex WebSocket transport, which keeps a
+socket open per agent across that agent's turns:
+
+1. A user left term2 idle for a while with a Codex session open, came back,
+   and the process had died. The terminal showed an unhandled promise
+   rejection originating from the WebSocket layer. It reproduces only when
+   the socket is idle between turns — never while a turn is streaming.
+
+2. In long sessions, a turn occasionally dies mid-stream with a connection
+   error, and the next turn then works fine. Operationally we know the
+   provider force-closes these WebSocket connections at roughly the 60-minute
+   mark; the failures cluster in sessions that have been open about that
+   long.
+
+Progress so far: both reports trace to
+source/providers/responses-websocket-sessions.ts, which retains one idle
+socket per agent across turns. Report 1 is a missing-'error'-listener crash:
+the SDK's _onError does a bare Promise.reject with no listener attached once
+a stream iterator has detached, so an idle server-side close kills the
+process. Report 2 is a socket-lifetime issue: sockets retained past the
+provider's ~60-minute force-close get handed to the next turn already dying.
+
+Intended direction (agreed before the session ended): attach a defensive
+error listener at socket creation, and retire idle sockets older than a
+safety margin below the 60-minute cap instead of retaining them forever.
+Finish the diagnosis, implement, and add tests covering both behaviors.
+</handoff>
+
+## Constraints
+
+- Work only inside this workspace.
+- Verify with the repo's normal test tooling.
+- You may consult prior session transcripts with session_list /
+  session_search / session_read if you need detail the handoff above does
+  not carry; retrieve only what you need — never replay a whole transcript.

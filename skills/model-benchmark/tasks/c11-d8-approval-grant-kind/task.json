@@ -1,0 +1,6 @@
+{
+  "task_id": "c11-d8-approval-grant-kind",
+  "evaluator_test_path": "source/services/conversation/grant-kind.evaluator.test.ts",
+  "typecheck": true,
+  "strip_files": []
+}

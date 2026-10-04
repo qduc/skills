@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "id": "aa771d8152f741789fca86053297cf52",
+  "title": "Self-healing coordinator skill",
+  "project": "/tmp/fixture-project",
+  "conversation": null,
+  "created_at": "2026-09-28T06:17:00.459345+00:00",
+  "updated_at": "2026-09-28T06:47:54.208479+00:00",
+  "revision": 10,
+  "owner": "8d96e657-ea88-4746-8187-83e75d2d562d",
+  "status": "completed",
+  "archived_at": null,
+  "selection": [
+    {
+      "harness": "term2",
+      "provider": "codex",
+      "model": "gpt-6-luna",
+      "effort": "high",
+      "role": "helper-script heal implementer"
+    }
+  ],
+  "choice_events": [
+    {
+      "id": "55534205e7df4378856096d540be99e4",
+      "at": "2026-09-28T06:17:55.448735+00:00",
+      "task_id": "aa771d8152f741789fca86053297cf52",
+      "project": "/tmp/fixture-project",
+      "pool": [
+        {
+          "harness": "term2",
+          "provider": "codex",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "role": "helper-script heal implementer"
+        }
+      ],
+      "source": "User chose term2 codex gpt-6-luna high for helper heals (2026-09-28)"
+    }
+  ],
+  "ownership_events": [
+    {
+      "at": "2026-09-28T06:29:35.965488+00:00",
+      "from": "b83761a093e44e51b8d3a688c4d1bd52",
+      "to": null,
+      "reason": "release"
+    },
+    {
+      "at": "2026-09-28T06:31:58.655527+00:00",
+      "from": null,
+      "to": "8d96e657-ea88-4746-8187-83e75d2d562d",
+      "reason": null
+    }
+  ],
+  "details": {
+    "objective": "The agent driving the coordinator skill detects defects in the skill's instructions and helpers during normal use and repairs them in-flow (captured, classified, tested, announced), without a separate retro request; seeded by healing the defects observed on 2026-09-28",
+    "authority": "User 2026-09-28: 'can you make the coordination skill self-healing by the agent driving it'. Standing heal authority recorded in SKILL.md 'Heal as you drive'. Implementer: term2 codex gpt-6-luna high (user choice).",
+    "next_action": "Done. SKILL.md 'Heal as you drive' + retro.md edits remain uncommitted in ~/.agents primary (files carry other sessions' edits).",
+    "constraints": [],
+    "deliverables": [],
+    "acceptance_criteria": [
+      "SKILL.md 'Heal as you drive' procedure in place, retro routing points at it",
+      "Each seed helper incident has a reproducing test that failed before and passes after; owning skill suites green",
+      "Heals merged by path without touching other sessions' uncommitted edits",
+      "Every seed incident heal: done or deferred with next step; heals announced to user"
+    ],
+    "pending_decisions": [],
+    "work_items": [
+      {
+        "id": "heal-procedure",
+        "status": "completed",
+        "owner": "coordinator",
+        "note": "SKILL.md 'Heal as you drive' replaces 'Improve from evidence'; retro.md route rows point to heal lanes (uncommitted: files carry other sessions' edits)"
+      },
+      {
+        "id": "heal-seed",
+        "status": "completed",
+        "owner": "luna-high worker heal-seed wS:p37",
+        "write_scope": "/tmp/fixture-project/.worktrees/heal-seed (branch heal-seed)",
+        "needs": []
+      },
+      {
+        "id": "review-merge",
+        "status": "completed",
+        "needs": [
+          "heal-seed"
+        ],
+        "note": "ff main ef47fb2->5d1cd8b by path; worktree removed; p37/p35 closed"
+      },
+      {
+        "id": "heal-ack",
+        "status": "completed",
+        "owner": "luna-high worker heal-ack wS:p3A",
+        "write_scope": "/tmp/fixture-project/.worktrees/heal-ack",
+        "needs": []
+      }
+    ],
+    "workers": [],
+    "artifacts": [],
+    "verification": [],
+    "blockers": [],
+    "background_work": [],
+    "notes": [
+      {
+        "kind": "incident",
+        "at": "2026-09-28",
+        "scope": "host",
+        "key": "herdr-submit-stale-status",
+        "heal": "done",
+        "lane": "helper",
+        "what": "herdr_worker.py submit wS:p35 --message-file dispatch-2.txt -> {\"status\":\"failed\",\"error\":\"Worker is not ready for this operation\"}; herdr agent_status 'working' while the term2 pane visibly showed the idle footer ('/ commands │ @ paths │ ! shell') with an empty input line",
+        "workaround": "delivered the same message with start_term2.py steer --no-ack",
+        "cost": "minutes; submit unusable for a settled worker whose herdr status is stale",
+        "healed_by": "~/.agents main 3e0505f (ff 2026-09-28 13:40); herdr 66 OK, coordinator 86 OK in primary"
+      },
+      {
+        "kind": "incident",
+        "at": "2026-09-28",
+        "scope": "host",
+        "key": "herdr-close-stale-status",
+        "heal": "done",
+        "lane": "helper",
+        "what": "herdr_worker.py close wS:p35 --owned-tab wS:t35 -> {\"status\":\"failed\",\"error\":\"Worker must be settled before closing its tab\"} twice, 20 s apart; pane idle (empty prompt, idle footer) but herdr agent_status 'working'. wS:p35 is still open as a live repro",
+        "workaround": "left the finished worker's tab open",
+        "cost": "orphaned worker tab; context/resources held",
+        "healed_by": "~/.agents main 9ae85c3 (ff 2026-09-28 13:40); herdr 66 OK, coordinator 86 OK in primary; live: herdr_worker.py close --owned-tab wS:t35 wS:p35 -> ok"
+      },
+      {
+        "kind": "incident",
+        "at": "2026-09-28",
+        "scope": "host",
+        "key": "steer-paste-placeholder-not-submitted",
+        "heal": "done",
+        "lane": "helper",
+        "what": "start_term2.py steer wS:p36 --message-file review-fixes.md --no-ack -> {\"status\":\"failed\",\"error\":\"Message did not land in the input box; Enter was not sent\"} while the pane showed '❯ [Paste text #1 · 16 lines]'. term2 collapses a multi-line paste into a placeholder, so the text never appears verbatim. Same pattern for steer-1 to wS:p35 at 09:50 (draft landed, no Enter). The follow-up steer then failed 'No empty Term2 input line; refusing to append to a pending draft'",
+        "workaround": "herdr pane send-keys <pane> Enter",
+        "cost": "steers silently undelivered until noticed; ~minutes each, 2 occurrences",
+        "healed_by": "~/.agents main 3d59587 (ff 2026-09-28 13:40); herdr 66 OK, coordinator 86 OK in primary"
+      },
+      {
+        "kind": "incident",
+        "at": "2026-09-28",
+        "scope": "host",
+        "key": "claimcheck-uuid-fragment-false-positive",
+        "heal": "done",
+        "lane": "helper",
+        "what": "coord_claimcheck.py --report request-bisect/report.md -> 'blocker: commit 01a0e3d1 does not resolve', 'commit c48dc10f5ca8 does not resolve', 'commit 01a0e5e7', 'commit 7df71c0f54a0'. These are hex groups inside Codex rollout filenames like rollout-2026-09-28T00-02-18-01a0e3d1-4737-7893-8dc2-c48dc10f5ca8.jsonl (UUIDs), not commit citations",
+        "workaround": "judged them false positives by hand",
+        "cost": "false blockers on acceptance; risk of ignoring real ones",
+        "healed_by": "~/.agents main 5d1cd8b (ff 2026-09-28 13:40); herdr 66 OK, coordinator 86 OK in primary"
+      },
+      {
+        "kind": "incident",
+        "at": "2026-09-28",
+        "scope": "host",
+        "key": "host-inventory-luna-stale",
+        "heal": "done",
+        "lane": "host-fact",
+        "what": "luna profile claimed 'it's term2+medium, not the model alone' and told coordinators to brief 'call apply_patch top-level, not inside run_code' (impossible in term2)",
+        "change": "host-inventory.md luna entry + routing exception rewritten 2026-09-28 (task 17ab71b3 CONCLUSION.md)",
+        "workaround": "n/a"
+      },
+      {
+        "kind": "incident",
+        "at": "2026-09-28",
+        "scope": "host",
+        "key": "herdr-stale-status-root-cause",
+        "heal": "deferred",
+        "lane": "host-fact",
+        "what": "Stale herdr status root cause: agent processes spawned from a pane's shell tool inherit HERDR_ENV/HERDR_PANE_ID and report/release on the parent pane (term2 child pid 776175 released wS:p36 at 04:52; codex child set herdr:codex working on wS:p35). Heals 1-2 are defenses; root fix is a separate term2 task.",
+        "next": "term2 herdr-env-leak task (gpt-6-luna medium, user choice 13:37)"
+      },
+      {
+        "kind": "incident",
+        "at": "2026-09-28",
+        "scope": "host",
+        "key": "launch-prompt-requests-ack",
+        "heal": "done",
+        "lane": "helper",
+        "what": "start_term2.py launch prompt appends 'First acknowledge the task ID and your provider/model route.' contradicting lesson no-ack-request; wS:p39 (gpt-6-luna medium) acked and went idle ~1 min after launch (watch stall event 13:42).",
+        "workaround": "steered p39 with a continue message",
+        "next": "heal-ack worker wS:p3A, branch heal-ack",
+        "healed_by": "~/.agents main 0a9a3ab (ff 13:48); herdr 67 OK, coordinator 86 OK; steer ack now opt-in via --ack-marker"
+      }
+    ]
+  }
+}

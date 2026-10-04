@@ -1,0 +1,11 @@
+Provider bug report:
+
+"After switching to the new Responses-compatible provider, a conversation can
+lose its private reasoning on the next tool step. Worse, switching between it
+and the existing Responses provider can replay encrypted provider-native data
+to the wrong vendor. They share a wire shape, but their private payloads are not
+interchangeable. Preserve each provider’s native data across its own turn while
+keeping the existing provider’s behavior unchanged."
+
+Trace the request and continuation paths, then fix the issue. Add tests
+covering the behavior.

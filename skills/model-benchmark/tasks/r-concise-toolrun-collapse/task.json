@@ -1,0 +1,8 @@
+{
+  "task_id": "r-concise-toolrun-collapse",
+  "origin_commit": "8224b693ac391d3cf71f585b29cf8e7802f8a1f2",
+  "base_commit": "8224b693~1",
+  "evaluator_test_path": null,
+  "typecheck": true,
+  "strip_files": []
+}
