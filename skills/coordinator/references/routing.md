@@ -68,8 +68,7 @@ harness, or task changes.
 
 For local external CLI selection, consult the optional
 [host inventory](host-inventory.md) only when it describes the intended host.
-Its user routing preferences are the user's standing policy for model choice;
-its host facts are a dated discovery aid, so verify entries you intend to use
+Its host facts are a dated discovery aid, so verify entries you intend to use
 against that host's live tools. Native workers do not require this inventory. Choose model
 capability first, then provider cost and latency; a running pane does not decide
 which model the task deserves.

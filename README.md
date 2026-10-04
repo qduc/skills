@@ -45,6 +45,7 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **adversarial-review** — Looks at one change or document, such as a pull request, spec, design, or plan, and reports concrete defects and gaps that the evidence supports.
 - **bug-retro** — After a bug is fixed, turns that single fix into a lasting improvement for the whole class of bug.
 - **coordinator** — Splits substantial work across bounded workers, then tracks dependencies, checks the results, and integrates them.
+- **coordinator-setup** — Discovers host capabilities and configures optional coordinator adapters in an external host profile without rewriting the base skill.
 - **deep-module-review** — Judges one module or API for cohesion, what it hides, how heavy its interface is, what leaks out, and how much callers have to carry.
 - **finding-triage** — Decides which review findings must be fixed, what each fix would cost, and whether to route, narrow, accept, or reject it.
 - **herdr** — Inspects and coordinates Herdr workspaces, tabs, panes, terminals, and agents from the command line without disrupting work already running.

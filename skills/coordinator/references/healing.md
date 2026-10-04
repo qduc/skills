@@ -3,9 +3,10 @@
 This skill and the helper skills it drives (`herdr`, `term2`) have defects that
 only show up in real use. The agent driving the skill **heals** them in-flow:
 when you find a defect while coordinating, fix it in that same task, and don't
-leave it behind as a workaround. The standing authority for these lanes is recorded in
-[Operational status](operational-status.md). A heal never widens a task's authority or its acceptance
-criteria.
+leave it behind as a workaround when repair is within existing authority.
+Check the current task or explicitly applicable user preferences for that authority;
+the skill grants none. Otherwise capture and defer the repair with a next step.
+A heal never widens task authority or acceptance criteria.
 
 A **defect** is evidence that the skill or a helper told you something false:
 - a helper errors on valid input;

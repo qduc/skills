@@ -11,6 +11,12 @@ authorized goal and success criteria unless the user changes them.
 
 ## Entry and durable state
 
+Read [Host profile](references/host-profile.md) at entry. If it is missing or a
+required capability changed, discover and read the installed `coordinator-setup`
+skill before using host helpers. Verify prerequisites: bundled task state requires
+Unix locking; the process runtime is Linux-only. Use only supported routes and
+report missing requirements. Host configuration never grants task authority.
+
 At task entry, read [Task state](references/task-state.md). Create and own a
 record with `scripts/coord_state.py`, or load, reconcile, and claim the existing
 record. Keep a concise snapshot of the goal, rationale, acceptance criteria,
@@ -29,9 +35,8 @@ plan, dispatch through its runtime contract, independently verify, accept,
 integrate, and verify the combined goal. Existing records retain their workflow;
 research can return inline findings without an automatic migration.
 
-Consult [Operational status](references/operational-status.md) before using
-optional integrations. Keep the memory sidecar disabled unless that status
-explicitly authorizes it; write decisions into task-state `notes` by hand.
+Keep the memory sidecar disabled with the shipped implementation; write decisions
+into task-state `notes` by hand. Configure optional adapters through host setup.
 
 Checkpoint before dispatch, when material state changes, immediately after
 integration before dependent work starts, and before ending a session. Preserve
