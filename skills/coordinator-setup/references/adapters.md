@@ -1,5 +1,10 @@
 # Optional adapters
 
+These are known routes, not an exhaustive list. For an unfamiliar host, apply
+the setup skill's adaptive probe loop. A supported native surface or existing
+adapter can satisfy the same capability requirements without these product names.
+Configuration cannot make an incompatible helper implementation portable.
+
 ## Native host
 
 Inspect current tool definitions. Record dispatch, observation, return, correction,

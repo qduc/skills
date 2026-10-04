@@ -13,6 +13,9 @@ Schema version 1 contains `verified_at`, `platform`, `python`, `prerequisites`,
 `executables`, `adapters`, `catalogs`, and `memory_sidecar: "disabled"`.
 Each adapter entry records `status` (`verified`, `unavailable`, or `unknown`),
 supported operations, paths where applicable, verification date, and evidence.
+Record limitations, unresolved required capabilities, and revalidation triggers
+in the same entry. Distinguish capabilities established by interface inspection
+from those exercised in a live probe; `verified` never implies untested operations.
 `catalogs` contains absolute directories. Recheck paths and required capabilities
 before use; saved native tool observations do not survive a harness change.
 
