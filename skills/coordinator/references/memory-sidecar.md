@@ -1,12 +1,9 @@
 # Memory sidecar
 
-**Paused (2026-09-28). Don't install the hooks, bind sessions, or run `flush`.**
-The judge runs as a non-interactive term2 agent. With the user's
-`shell.autoApproveMode: always`, transcript content hijacked it into editing
-live source during testing. It stays off until the judge can't act: isolated
-judge settings without auto-approve, or a term2 no-tools mode. Use
-hand-written `notes` meanwhile. The read-only `coord_state.py resume` is
-unaffected.
+Read [Operational status](operational-status.md) before using this integration.
+Keep it disabled unless that status explicitly authorizes use. The installation,
+binding, and flush instructions below apply only when enabled; otherwise write
+task-state `notes` by hand. Read-only `coord_state.py resume` is independent.
 
 The sidecar captures semantic decisions and findings at `PreCompact` and
 `SessionEnd` boundaries (or an explicit flush). It is not operational state:

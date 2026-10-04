@@ -38,6 +38,16 @@ PROTOCOLS = (
     "interrogate",
 )
 
+PLAYBOOKS = (
+    "investigation", "bug-fix", "perf-issue", "hillclimb",
+    "runtime-forensics", "trace-forensics", "feature", "refactoring",
+    "prototype", "visual-parity", "authoring-a-skill", "eval", "babysit",
+    "shipping", "autonomous-run", "orchestrate", "autopilot-full",
+    "autopilot-stack", "session-pickup", "pause-safely", "multi-phase-plan",
+    "worktree-cleanup", "opening-a-pr",
+)
+PLAYBOOK_ALIASES = {"refactor": "refactoring"}
+
 PROTOCOL_OWNS = ["engineering_method", "local_verification"]
 COORDINATOR_OWNS = [
     "outcome",
@@ -207,7 +217,8 @@ def cmd_resolve(args):
         if not Path(catalog).is_dir():
             print(error_line("missing_catalog", catalog=catalog))
             return 1
-    if args.protocol not in PROTOCOLS:
+    playbook = PLAYBOOK_ALIASES.get(args.protocol, args.protocol)
+    if args.protocol not in PROTOCOLS and playbook not in PLAYBOOKS:
         print(json.dumps(resolve_payload(
             args.protocol,
             event="protocol_fallback",
@@ -218,6 +229,13 @@ def cmd_resolve(args):
         )))
         return 0
     matches = compatible_skills(args.protocol, catalogs)
+    if not matches and playbook in PLAYBOOKS:
+        for raw in catalogs:
+            root = Path(raw).resolve()
+            candidate = root / "poteto-mode" / "playbooks" / (playbook + ".md")
+            if candidate.is_file() and candidate.resolve().is_relative_to(root):
+                matches.append((2, 0, 0, "", str(candidate.resolve()), playbook))
+                break
     if not matches:
         print(json.dumps(resolve_payload(
             args.protocol,
