@@ -154,6 +154,75 @@ class ProtocolTests(unittest.TestCase):
                 "protocol output is evidence for coordinator inspection, not acceptance",
             )
 
+    def test_all_playbooks_and_refactor_alias_resolve(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for name in coord_protocol.PLAYBOOKS:
+                path = Path(directory) / "poteto-mode" / "playbooks" / (name + ".md")
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("### " + name + "\nEngineering steps.\n")
+                code, event = self.run_cli([
+                    "resolve", "--protocol", name, "--catalog", directory,
+                ])
+                self.assertEqual(code, 0)
+                self.assertEqual(event["event"], "protocol_selected")
+                self.assertEqual(event["skill"], str(path.resolve()))
+                self.assertEqual(event["coordinator_owns"], COORDINATOR_OWNS)
+                self.assertIs(event["accepted"], False)
+            code, event = self.run_cli([
+                "resolve", "--protocol", "refactor", "--catalog", directory,
+            ])
+            self.assertEqual(code, 0)
+            self.assertEqual(event["skill_name"], "refactoring")
+
+    def test_declared_skill_precedes_playbook(self):
+        with tempfile.TemporaryDirectory() as directory:
+            playbook = Path(directory) / "poteto-mode/playbooks/bug-fix.md"
+            playbook.parent.mkdir(parents=True)
+            playbook.write_text("Repair steps.\n")
+            chosen = self.write_skill(directory, "repair/SKILL.md",
+                                      "name: repair\nexecution-protocol: bug-fix")
+            code, event = self.run_cli([
+                "resolve", "--protocol", "bug-fix", "--catalog", directory,
+            ])
+            self.assertEqual(code, 0)
+            self.assertEqual(event["skill"], str(chosen.resolve()))
+
+    def test_missing_playbook_and_unallowlisted_paths_fall_back(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for name, reason in [("feature", "not_installed"),
+                                 ("../../outside", "unknown_protocol")]:
+                code, event = self.run_cli([
+                    "resolve", "--protocol", name, "--catalog", directory,
+                ])
+                self.assertEqual(code, 0)
+                self.assertEqual(event["reason"], reason)
+
+    def test_playbook_cannot_escape_catalog_through_symlink(self):
+        with tempfile.TemporaryDirectory() as directory, tempfile.TemporaryDirectory() as outside:
+            target = Path(outside) / "feature.md"
+            target.write_text("External steps.\n")
+            path = Path(directory) / "poteto-mode/playbooks/feature.md"
+            path.parent.mkdir(parents=True)
+            path.symlink_to(target)
+            code, event = self.run_cli([
+                "resolve", "--protocol", "feature", "--catalog", directory,
+            ])
+            self.assertEqual(code, 0)
+            self.assertEqual(event["reason"], "not_installed")
+
+    def test_playbook_uses_catalog_order_including_environment(self):
+        with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
+            for directory in (first, second):
+                path = Path(directory) / "poteto-mode/playbooks/feature.md"
+                path.parent.mkdir(parents=True)
+                path.write_text("Feature steps.\n")
+            os.environ["COORDINATOR_PROTOCOL_CATALOG"] = second
+            code, event = self.run_cli([
+                "resolve", "--protocol", "feature", "--catalog", first,
+            ])
+            self.assertEqual(code, 0)
+            self.assertEqual(event["skill"], str(Path(first) / "poteto-mode/playbooks/feature.md"))
+
 
 if __name__ == "__main__":
     unittest.main()

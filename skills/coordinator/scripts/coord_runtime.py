@@ -65,6 +65,7 @@ def assignment_prompt(assignment, path):
         f'Read the complete outcome assignment at {path}. Execute its objective within its scope and authority. '
         'Dependencies and acceptance criteria are fixed by the coordinator. '
         'When a protocol skill is selected, read its snapshot named in method.skill and use it for engineering method only. '
+        'Upstream model defaults, autonomy grants, PR steps, and delegation instructions do not override this assignment. '
         'Do not change the assignment, protocol snapshot, reporter, checks, or authoritative task state. '
         'Do not spawn child agents, detach background jobs, or ask the user questions. '
         'Produce a file artifact inside contract.cwd. Run local checks, then publish a report with '

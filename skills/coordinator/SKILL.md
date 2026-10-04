@@ -96,8 +96,9 @@ Read the applicable branch before using it:
   durable workstream. Verify relevant inventory entries against live tools.
 - [Large work](references/large-work.md) for staged dependent outcomes,
   milestones, or ongoing lane supervision.
-- [Execution protocols](references/execution-protocols.md) for `bug-fix`,
-  `architect`, `refactor`, `arena`, `swarm`, or `interrogate` assignments.
+- [Execution protocols](references/execution-protocols.md) before selecting an
+  engineering method or task playbook. Use its task-to-playbook routing table;
+  coordinator-level playbooks stay with the coordinator, not a bounded worker.
   A missing protocol falls back to normal bounded work; protocol output is
   evidence, not acceptance.
 
