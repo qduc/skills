@@ -9,7 +9,7 @@ There is no installer. A skill is a directory under `skills/<name>/` with a `SKI
 The skills in this repository do not need to be installed. If you want the coordinator to look for outside engineering skills as well, run this once from the repository root:
 
 ```sh
-python3 scripts/setup-protocols.py
+./scripts/setup-protocols.sh
 ```
 
 That downloads two public collections into `.external/`, which git ignores. They are not part of the skills published here:
