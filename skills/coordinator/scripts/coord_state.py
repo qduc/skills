@@ -369,6 +369,9 @@ def load(path):
             raise StateError(f'invalid choice event: {source}')
         validate_pool(event.get('pool'))
     validate_details(state['details'])
+    if 'outcome_plan' in state:
+        import coord_outcomes
+        coord_outcomes.validate_record(state)
     if state['schema_version'] == 2:
         legacy_ids = []
         for note in state['details'].get('notes', []):
@@ -399,6 +402,8 @@ def markdown(state):
         if state['memory']['journal']:
             lines.extend(['## Pending journal', '',
                           json.dumps(state['memory']['journal'], ensure_ascii=False, indent=2), ''])
+    if 'outcome_plan' in state:
+        lines.extend(['## Outcome contracts', '', json.dumps(state['outcome_plan'], ensure_ascii=False, indent=2), ''])
     return '\n'.join(lines)
 
 
@@ -598,6 +603,9 @@ def apply_patch(state, patch):
             raise StateError('resolve blockers, decisions, and background work before completion')
         if any(item['status'] not in {'completed', 'cancelled'} for item in merged['work_items']):
             raise StateError('settle all work items before completion')
+        if 'outcome_plan' in state:
+            import coord_outcomes
+            coord_outcomes.completion_guard(state)
 
 
 def validate_pool(pool):
@@ -1246,6 +1254,9 @@ def mutate(args, root):
             elif args.command == 'archive':
                 if state['status'] != 'completed':
                     raise StateError('only completed tasks may be archived')
+                if 'outcome_plan' in state:
+                    import coord_outcomes
+                    coord_outcomes.completion_guard(state)
                 state['archived_at'] = now()
                 state['owner'] = None
         if args.command == 'memory-apply' and not changed:
@@ -1399,6 +1410,10 @@ def resume_task(root, args):
             'blockers': details['blockers'], 'pending_decisions': details['pending_decisions'],
             'next_action': details['next_action'], 'updated_at': state['updated_at'],
             'owner': state['owner']}
+    if 'outcome_plan' in state:
+        task['outcome_plan'] = state['outcome_plan']
+        task['authority'] = details['authority']
+        task['selection'] = state['selection']
     if state['schema_version'] == 1:
         memory = {'legacy': True}
     else:
