@@ -73,6 +73,21 @@ class TaskStateTests(unittest.TestCase):
                               '--takeover', '--reason', 'inspected')
         self.assertNotEqual(denied.returncode, 0)
 
+    def test_unambiguous_task_id_prefix_resolves_to_full_id(self):
+        shown = self.cli('show', '--task', self.task[:8])
+        self.assertEqual(shown['state']['id'], self.task)
+        self.patch_path.write_text(json.dumps({'status': 'active'}))
+        self.cli('checkpoint', '--task', self.task[:8], '--owner', self.owner, '--revision', '1',
+                 '--patch-file', str(self.patch_path))
+
+    def test_ambiguous_or_short_task_id_prefix_is_rejected(self):
+        (self.root / 'tasks' / (self.task[:8] + 'ffff')).mkdir()
+        ambiguous = self.run_cli('show', '--task', self.task[:8])
+        self.assertNotEqual(ambiguous.returncode, 0)
+        self.assertIn('ambiguous', ambiguous.stdout + ambiguous.stderr)
+        short = self.run_cli('show', '--task', self.task[:3])
+        self.assertNotEqual(short.returncode, 0)
+
     def test_default_location_honors_only_absolute_xdg_path(self):
         with patch.dict(os.environ, {'XDG_STATE_HOME': '/tmp/state-root'}):
             self.assertEqual(state.root_path(), Path('/tmp/state-root/coordinator'))
@@ -1013,3 +1028,4 @@ class TaskStateTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

@@ -1,5 +1,8 @@
 # Skills
 
+This collection is maintained as `skills/qduc-skills/` in the agents repository.
+Edit it here; the former standalone `qduc/skills` publishing workflow is retired.
+
 These are agent skills: procedures an agent can follow for a particular kind of work.
 
 There is no installer. A skill is a directory under `skills/<name>/` with a `SKILL.md` file. Read that file. The `name` and `description` in the frontmatter say when the skill applies. The rest of the file is the procedure. A skill may also keep notes, scripts, or other files next to `SKILL.md`. Use those only when the procedure tells you to.
@@ -36,3 +39,4 @@ The script records both directories in `.external/catalog.env`. If you skip the 
 - **slop-audit** — Surveys a whole repository for piled-up problems in design, correctness, tests, duplication, security, dependencies, and overbuilding, then ranks what to repair.
 - **term2** — Starts, configures, and runs term2 for interactive coding sessions or one-shot command-line tasks.
 - **workflow-evolution** — Improves an agent workflow by revising its skills through experiments backed by evidence, leaving the harness unchanged.
+

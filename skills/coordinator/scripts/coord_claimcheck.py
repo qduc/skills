@@ -21,7 +21,7 @@ import subprocess
 import sys
 
 # 7–40 so a 64-char digest is not treated as a commit. Pure digits qualify.
-COMMIT = re.compile(r"(?<![0-9a-fA-F_-])([0-9a-fA-F]{7,40})(?![0-9a-fA-F_-])")
+COMMIT = re.compile(r"(?<![\w/\\-])([0-9a-fA-F]{7,40})(?![\w/\\-])")
 DOTTED_TEST_ID = re.compile(r"(?:[A-Za-z_]\w*\.)*[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*")
 UUID = re.compile(r"(?i)(?<![0-9a-f])([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?![0-9a-f])")
 FILENAME_TOKEN = re.compile(r"(?<![\w])[\w.-]+\.[A-Za-z0-9]{1,8}(?![\w])")
@@ -177,3 +177,4 @@ def main(argv=None):
 
 if __name__ == "__main__":
     sys.exit(main())
+

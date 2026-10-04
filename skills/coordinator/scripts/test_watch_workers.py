@@ -35,6 +35,36 @@ class WorkerWatchTests(unittest.TestCase):
                 watch_workers.cmd_watch(args)
             return [json.loads(line) for line in output.getvalue().splitlines()]
 
+    def test_follow_reports_each_worker_once_and_exits_when_all_reported(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first, second = root / 'first.md', root / 'second.md'
+            args = argparse.Namespace(state=str(root / 'watch.json'), worker=[f'a={first}', f'b={second}'],
+                                      timeout_minutes=1, idle_grace=10 ** 6, stall_minutes=10 ** 6,
+                                      interval=1, settle=0, debounce=1, progress_path=[],
+                                      worker_progress=[], follow=True)
+            ticks = []
+
+            def fake_sleep(_seconds):
+                ticks.append(1)
+                if len(ticks) == 1:
+                    first.write_text('one')
+                elif len(ticks) == 3:
+                    second.write_text('two')
+                elif len(ticks) > 10:
+                    raise AssertionError('follow mode did not finish')
+
+            output = io.StringIO()
+            with patch.object(watch_workers, 'status', return_value='working'), \
+                 patch.object(watch_workers, 'footer', return_value='stable'), \
+                 patch.object(watch_workers.time, 'sleep', fake_sleep), \
+                 contextlib.redirect_stdout(output):
+                watch_workers.cmd_watch(args)
+            events = [json.loads(line) for line in output.getvalue().splitlines()]
+            reports = [e for e in events if e['event'] == 'report']
+            self.assertEqual([e['pane'] for e in reports], ['a', 'b'])
+            self.assertEqual(events[-1]['event'], 'all_reported')
+
     def test_stopped_lifecycle_without_report_wakes_as_stall(self):
         # done/idle without the expected report is a stall, not a completion.
         for status in ('blocked', 'unknown', 'done', 'idle'):
@@ -135,3 +165,4 @@ class WorkerWatchTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

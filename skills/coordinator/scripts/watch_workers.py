@@ -263,6 +263,9 @@ def cmd_watch(a):
         for pane in workers
     }
 
+    follow = getattr(a, 'follow', False)
+    announced = set()  # follow mode: an event is announced once, not on every poll
+    reported_panes = set()
     end = time.time() + a.timeout_minutes * 60
     while time.time() < end:
         events = unread_reports(a.state, workers)
@@ -304,12 +307,27 @@ def cmd_watch(a):
                 events.append({"event": "no_progress", "pane": pane, "since": stamp(stalled_since),
                                "for": span(now - stalled_since), "footer": f,
                                "progress_paths": progress_paths})
+        if follow:
+            events = [e for e in events if (e["event"], e["pane"], e.get("version") or e.get("since")) not in announced]
         if events:
             if any(e["event"] == "report" for e in events):
                 time.sleep(a.settle)  # let a worker finish writing, then re-list
                 events = [e for e in events if e["event"] != "report"] + unread_reports(a.state, workers)
+                if follow:
+                    events = [e for e in events
+                              if (e["event"], e["pane"], e.get("version") or e.get("since")) not in announced]
+            if not follow:
+                emit(started, events)
+                return 0
+            for e in events:
+                announced.add((e["event"], e["pane"], e.get("version") or e.get("since")))
+                if e["event"] == "report":
+                    reported_panes.add(e["pane"])
             emit(started, events)
-            return 0
+            sys.stdout.flush()
+            if reported_panes >= set(workers):
+                print(json.dumps({"event": "all_reported"}), flush=True)
+                return 0
         time.sleep(a.interval)
     emit(started, [{"event": "timeout"}])
     return 0
@@ -330,6 +348,9 @@ def main():
     w.add_argument("--timeout-minutes", type=float, default=180)
     w.add_argument("--interval", type=int, default=15)
     w.add_argument("--settle", type=int, default=20, help="seconds to wait after a report before listing")
+    w.add_argument("--follow", action="store_true",
+                   help="keep running after an event: announce each new report/stall once, exit when every "
+                        "worker has reported (or on timeout). Use with the Monitor tool so no re-arming is needed")
     w.add_argument("--debounce", type=int, default=5, help="sliding window of samples; the majority status counts")
     w.set_defaults(func=cmd_watch)
 
@@ -349,3 +370,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+

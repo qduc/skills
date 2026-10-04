@@ -27,6 +27,9 @@ Invoke `python3 <skill-dir>/scripts/coord_state.py` with:
   Filter with `--project` or `--conversation`; `--all` includes completed/archived
   tasks. Unreadable records produce warnings rather than silently disappearing.
 - `show --task <id>`: reads the complete authoritative state.
+  Every `--task` accepts an unambiguous prefix of 6+ characters (for example
+  `3182beea`); an ambiguous prefix is an error listing the matches.
+  <!-- lesson: task-id-prefix promoted 2026-09-30 -->
 - `claim --task <id> --owner <session-id> --revision <observed-revision>`:
   claims a released task. To replace another owner, first reconcile that session
   and its workers, then add `--takeover --reason <explanation>`. A new session
@@ -247,3 +250,4 @@ For consecutive `select`/`checkpoint` operations by the current owner,
 manual revision chaining while retaining owner fencing. Keep numeric revisions
 when an edit depends on an exact snapshot. `claim`/takeover always requires a
 numeric revision after reconciliation.
+

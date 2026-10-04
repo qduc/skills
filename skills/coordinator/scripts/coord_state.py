@@ -191,6 +191,18 @@ def task_path(root, task_id):
     return path
 
 
+def resolve_task_id(root, task_id):
+    """Expand an unambiguous prefix (6+ chars) of an existing task ID to the full ID."""
+    if not task_id or (root / 'tasks' / task_id).exists() or len(task_id) < 6:
+        return task_id
+    if not re.fullmatch(r'[a-zA-Z0-9_-]+', task_id):
+        return task_id
+    matches = sorted(p.name for p in (root / 'tasks').glob(task_id + '*') if p.is_dir())
+    if len(matches) > 1:
+        raise StateError(f'ambiguous task ID prefix {task_id}: ' + ', '.join(matches))
+    return matches[0] if matches else task_id
+
+
 def canonical_project(project):
     """Return the identity used for workspace memory (including symlink resolution)."""
     return str(Path(project).expanduser().resolve())
@@ -1475,6 +1487,8 @@ def main():
     args = parser().parse_args()
     root = root_path(args.root)
     try:
+        if getattr(args, 'task', None):
+            args.task = resolve_task_id(root, args.task)
         if args.command == 'create':
             result = create(args, root)
         elif args.command == 'session-nonce':
@@ -1517,3 +1531,4 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

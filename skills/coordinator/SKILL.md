@@ -189,7 +189,15 @@ worker; `--progress-path` is accepted for a single-worker watch and rejected
 for multi-worker watches (use `--worker-progress PANE=PATH`).
 It wakes on any unread report, on a sustained non-`working` status without a
 report (stall), or on a frozen footer while `working` (no_progress), and lists
-every event at once. Reports stay unread until `watch_workers.py mark-read
+every event at once.
+Without `--follow` the watcher exits after its first wake and must be re-armed
+each time, so a report that lands while you are busy can go unseen. Prefer
+`--follow` under the Monitor tool: it stays alive, prints each new report,
+stall, or no_progress event once as its own line, and exits with an
+`all_reported` line when every worker has reported (or on timeout), so nothing
+needs re-arming per event. Monitor caps a run at 30 minutes, so re-arm only on
+its expiry notice; unread reports are re-announced then.
+<!-- lesson: watcher-follow-mode promoted 2026-09-30 --> Reports stay unread until `watch_workers.py mark-read
 --state <same> <report>`, so a report that lands while you are busy fires on
 the next run; mark it read only after reading it. Each wake starts with a
 `wake` line giving the current time and how long the watch waited; use it to
@@ -376,3 +384,4 @@ or `heal: deferred` with a named next step. Before a session ends, move every
 `heal: open` note to one of those two states. The [retro](references/retro.md)
 handles lessons that recur across tasks, and pruning. Use the installed
 `workflow-evolution` skill for authorized experiments.
+

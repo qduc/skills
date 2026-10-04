@@ -89,6 +89,18 @@ class ClaimcheckTests(unittest.TestCase):
         self.assertIn("commit cafebabe does not resolve", result.stdout)
         self.assertIn("commit 1234567 does not resolve", result.stdout)
 
+    def test_hex_substrings_in_prose_words_are_not_commit_citations(self):
+        result = self.run_check("Commit succeeded; checker exceeded expectations.\n")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(claimcheck.commits("commit succeeded, cafebabe"), ["cafebabe"])
+
+    def test_hex_task_path_components_are_not_commit_citations(self):
+        result = self.run_check(
+            "Probe /tmp/tasks/a4a30412c9a74458a805da1244cafce4/probe.ts passed.\n"
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(claimcheck.commits("tasks/cafebabe/report.md; commit deadbeef"), ["deadbeef"])
+
     def test_hex_owner_id_is_not_a_commit_citation(self):
         result = self.run_check(
             'The report included owner claude-coord-20260928-e09fed0d in pasted JSON.\n'
@@ -211,3 +223,4 @@ class ClaimcheckTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
