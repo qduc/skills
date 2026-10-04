@@ -5,357 +5,201 @@ description: Coordinate work through bounded delegation, dependency management, 
 
 # Coordinator
 
-Native coordination uses the available worker tools. The optional external-agent
-helper uses Python's standard library and explicitly configured harness adapters.
-
 Own the goal, plan, assignments, verification, and integrated result. Workers
 own bounded outcomes. Revise the plan when evidence changes; preserve the
 authorized goal and success criteria unless the user changes them.
 
-The main agent maintains durable task state on disk with `scripts/coord_state.py`.
-For new delivery work with runnable acceptance checks, read
+## Entry and durable state
+
+At task entry, read [Task state](references/task-state.md). Create and own a
+record with `scripts/coord_state.py`, or load, reconcile, and claim the existing
+record. Keep a concise snapshot of the goal, rationale, acceptance criteria,
+authority, decisions, owned work, blockers, evidence, and next action. Link
+reports and artifacts rather than copying a running narrative.
+
+On resume, run `coord_state.py resume --task <id>` first. Treat its
+`commits_since_update` and `checks` as possible staleness evidence. Recover the
+original goal and unfinished work before acting on `next_action`; reconcile
+saved workers and background resources before deriving new locators or dispatching
+replacements. Finishing the saved action is not finishing the task.
+
+For new delivery work with runnable acceptance checks, read and follow
 [Outcome contracts](references/outcome-contracts.md): initialize the protected
-outcome plan, dispatch through the runtime contract, independently verify, record
-an inspection decision, reconcile integration, and verify the integrated goal.
-Read [Architecture and success criteria](references/architecture.md) when changing
-these boundaries or validating a new runtime.
-Research can retain inline findings; existing records remain readable without an
-automatic migration. Read
-[Task state](references/task-state.md) and [Memory sidecar](references/memory-sidecar.md) at task entry: create and own a record for new
-work or load, reconcile, and claim the existing record before continuing. Keep
-it as a current snapshot of the goal, acceptance criteria, authority, owned
-work, blockers, evidence, and next action. Update it when one of those changes
-and before ending a session. Link to worker reports and artifacts instead of
-copying a running narrative into the record.
+plan, dispatch through its runtime contract, independently verify, accept,
+integrate, and verify the combined goal. Existing records retain their workflow;
+research can return inline findings without an automatic migration.
 
-The memory sidecar is **paused** (2026-09-28): its judge runs as a full term2
-agent and can act on transcript content. Don't bind sessions, install its hooks,
-or run `coord_memory.py flush`. Write decisions into task-state `notes` by hand.
-See [Memory sidecar](references/memory-sidecar.md).
-On resume, run `coord_state.py resume --task <id>` first and treat its
-`commits_since_update` and `checks` as evidence that the record may be stale
-before acting on `next_action`.
-Reconcile every still-running worker and watcher from the saved `workers` and
-`background_work` lists (pane, worktree, report, watch-state path); restore
-those lists before deriving any new locator.
+Consult [Operational status](references/operational-status.md) before using
+optional integrations. Keep the memory sidecar disabled unless that status
+explicitly authorizes it; write decisions into task-state `notes` by hand.
 
-When continuing in a fresh chat, locate the unfinished task record by task ID,
-conversation, or project; a pasted handoff can provide a shortcut. Recover the
-original goal, rationale, acceptance criteria, authority, decisions, and
-unfinished work from that record before acting on its `next_action`. After
-finishing that action, choose the next action against the original goal and keep
-going within existing authority. Completing the saved next action does not
-complete the task; verify the goal or identify a specific unresolved blocker
-before stopping work on it.
+Checkpoint before dispatch, when material state changes, immediately after
+integration before dependent work starts, and before ending a session. Preserve
+prior evidence and notes; update the next action and affected work-item status
+and phase. Capture coordination hiccups at the next checkpoint using
+[Retro](references/retro.md), without a separate incident log.
 
 ## 1. Establish the goal and decision policy
 
-Identify the target project, desired observable outcome, why it matters,
-success criteria, constraints, non-goals, and existing authority. Separate the
-user's need from a suggested implementation so a failed approach does not erase
-the goal. Infer these from the request and available evidence; ask a focused
-question only when missing information blocks useful work or makes a wrong
-assumption consequential. State the resulting understanding concisely; require
-confirmation only for a material unresolved choice.
+Identify the project, observable outcome, rationale, success criteria,
+constraints, non-goals, and authority. Separate the user's need from a suggested
+implementation. Infer routine details; ask only when missing information blocks
+useful work or makes a wrong assumption consequential.
 
-- **Research** returns knowledge or recommendations. A discovered solution does
-  not itself authorize implementation.
+- **Research** returns knowledge or recommendations; discovering a solution
+  does not authorize implementation.
 - **Delivery** produces an authorized change or consequential output.
-- **Provisioning** sets up workspaces, panes, or sessions for human use. Perform
+- **Provisioning** sets up workspaces, panes, or sessions for human use; perform
   it directly with the relevant tools or installed tool skill.
 
-Before starting each new coordinated task, read the recent choices using
-[Choice history](references/choice-history.md), inspect available options, and ask
-the user to choose the harness and model (or a harness/model pool for multiple
-workers). Present verified available choices and a recommendation, then wait
-for their selection before execution or worker dispatch. Scope clarification,
-read-only capability discovery, and task-state bookkeeping may proceed while
-the choice is pending.
-An explicit harness/model choice in the current task request, including “same
-as previous” resolved against that history, satisfies this step. History alone,
-defaults, and running workers do not authorize a selection. Record each confirmed
-choice so it can be reused in later tasks.
-Keep the choice for follow-ups within the same task. If it becomes unavailable
-or needs to change, ask the user to choose a replacement before continuing.
-A choice covers only the roles it was confirmed for, such as review or
-implementation. When a task adds a role, such as a review turning into fixes,
-ask for that role's selection before dispatch, recommending the user's recent
-choice for that role. <!-- lesson: pool-scoped-to-role promoted 2026-09-27 -->
+Before a new coordinated task, read [Choice history](references/choice-history.md),
+verify available harness/model options, recommend a choice, and wait for the
+user's selection before execution or dispatch. An explicit current-task choice,
+including an unambiguous resolved reuse request, satisfies this gate. History,
+defaults, and running workers alone do not. Record confirmed choices.
+Keep the selection for same-task follow-ups; ask before replacing an unavailable
+choice or adding a role it does not cover. Read-only discovery, clarification,
+and bookkeeping may proceed while selection is pending.
 
-Establish how to decide under uncertainty using existing user preferences and
-authority. Read [Decision policy](references/decision-policy.md) before work
-begins; it defines when to decide and log, batch questions, or seek input.
-Record the goal, criteria, non-goals, and policy in task state. This step is
-complete when the outcome is checkable and the authorized scope and decision
-boundaries are clear enough for the next work.
+Read [Decision policy](references/decision-policy.md) before work begins.
+Record the goal and policy in task state. Proceed when the outcome is checkable
+and scope and decision boundaries are clear enough for the next work.
 
 ## 2. Understand, then decompose
 
-Inspect the relevant system and evidence before dividing implementation.
-Identify unknowns that could change task boundaries, shared interfaces, or the
-proposed solution. Resolve those through focused investigation, directly or
-with bounded read-only scouts in the selected pool. Implementation can proceed
-where it is independent of the unknowns. Finish investigation with findings,
-remaining uncertainty, and the implications for the plan.
+Inspect the relevant system before dividing implementation. Resolve unknowns
+that could change boundaries, shared interfaces, or the solution through focused
+investigation, directly or with bounded read-only scouts in the selected pool.
+Independent implementation can proceed. Record findings, uncertainty, and plan
+implications.
 
-Decompose into outcomes that each serve the goal, with exactly one accountable
-owner per active outcome. Contributors and reviewers do not share that
-accountability. Split along seams where each piece can merge on its own and is
-checked against the real boundary (not only stubs): splitting by file can turn
-one contract into a mismatch between two workers, and disjoint files alone do
-not establish independence. Resolve shared decisions before dependent work
-starts: record the agreed interface, schema, or behavior, its owner, and
-affected work items. Workers can propose a contract change; its owner
-coordinates affected consumers before adopting it.
-After each merge, verify the combined result against its live consumers: each
-slice being green is not the same as the whole working.
-<!-- lesson: decompose-at-mergeable-seams promoted 2026-09-29 --> <!-- evidence: tonight's heals: phase required by SKILL.md rejected by coord_state.py; watcher CLI change broke live orchestrator -->
+Give each active outcome one accountable owner. Split at independently mergeable
+seams checked against real consumers; disjoint files alone do not establish
+independence. Settle shared interfaces, schemas, and behavior before dependent
+work starts, recording the agreement, owner, and consumers. Its owner coordinates
+consumer changes before adopting a worker's proposed contract revision.
 
-Delegate substantial bounded work when startup and integration costs are
-justified by speed, specialization, or independent validation. Work directly
-when the task is small, suitable workers are unavailable, or shared-state risk
-dominates. Do glue work and final synthesis yourself.
+Delegate substantial bounded work when speed, specialization, or independent
+validation justifies startup and integration costs. Work directly for small tasks,
+unavailable workers, or dominant shared-state risk; own glue and final synthesis.
+Inspect actual tool capabilities and use only supported operations and return
+channels. Prefer suitable native workers within the authorized pool.
 
-Inspect available worker tools and their actual capabilities. Recommend native
-workers for ordinary bounded assignments when suitable, and route within the
-user's chosen harness/model pool. For repeated or concurrent dispatches, spread
-them across the available pools the local [host inventory](references/host-inventory.md)
-lists: run `scripts/coord_route.py pick --dry-run`, check the chosen
-candidate's quota and availability, record the pick without `--dry-run` or
-exclude the candidate and re-pick, unless a task's risk calls for one specific
-model. Keep assignments within known limits;
-split work when needed. Missing optional quota telemetry alone does not block
-routine native delegation.
+Read the applicable branch before using it:
 
-Read additional guidance only for the applicable branch:
+- [Routing](references/routing.md) when choosing model groups or harnesses,
+  rotating repeated/concurrent dispatches, reusing workers, or handling material
+  acceptance risk. It owns pool rotation and quota-check mechanics.
+- [External agents](references/external-agents.md), Routing, and the local
+  [Host inventory](references/host-inventory.md) before presenting external
+  options or dispatching through a distinct harness, persistent terminal, or
+  durable workstream. Verify relevant inventory entries against live tools.
+- [Large work](references/large-work.md) for staged dependent outcomes,
+  milestones, or ongoing lane supervision.
+- [Execution protocols](references/execution-protocols.md) for `bug-fix`,
+  `architect`, `refactor`, `arena`, `swarm`, or `interrogate` assignments.
+  A missing protocol falls back to normal bounded work; protocol output is
+  evidence, not acceptance.
 
-- [Routing](references/routing.md) when choosing between model groups or
-  harnesses, reusing a persistent worker, or handling material acceptance risk.
-- [External agents](references/external-agents.md) before dispatch through a
-  distinct harness or persistent terminal, or into a durable workstream.
-  Before any external dispatch, including options you present for selection,
-  read [Routing](references/routing.md) and the local
-  [host inventory](references/host-inventory.md). The inventory's model profiles
-  and default roles override model names remembered from earlier sessions.
-  <!-- lesson: routing-reference-skipped promoted 2026-09-27 -->
-- [Large work](references/large-work.md) when several dependent outcomes need
-  staged delivery, milestone checks, or ongoing lane supervision.
-- [Execution protocols](references/execution-protocols.md) when a bounded
-  assignment's engineering method is `bug-fix`, `architect`, `refactor`,
-  `arena`, `swarm`, or `interrogate`. Resolve with
-  `python3 <skill-dir>/scripts/coord_protocol.py resolve --protocol <name> --catalog <installed-skill-dir>`.
-  A missing protocol falls back to the normal bounded-worker workflow, and
-  protocol output is evidence, not acceptance.
-
-Finish this step with owned outcomes, explicit dependencies, settled shared
-decisions for the next dispatch, concrete worker choices, and supported return
-channels. Use only operations the selected surface exposes.
-See [Management principles](references/management-principles.md) for the transferable systems ideas behind this workflow and candidate experiments.
+Proceed with owned outcomes, explicit dependencies, settled shared decisions
+for the next dispatch, confirmed worker choices, and supported return channels.
 
 ## 3. Assign bounded work
 
-Read the [communication contract](references/communication.md) before first
-dispatch. Use its outcome brief and result contract for builders, scouts, and
-reviewers. Give workers the parent intent and discretion within their scope,
-including permission to challenge an assignment with evidence.
+Read [Communication](references/communication.md) before first dispatch and use
+its brief and result contract for builders, scouts, and reviewers. Give parent
+intent, scope, authority, decision policy, relevant evidence, and discretion to
+challenge the assignment. Modifying work needs a runnable focused verification
+command. Use files for long briefs when accessible, otherwise supported transport;
+keep completion inboxes and upstream callers out of the worker pool.
 
-For modifying work, include a runnable focused verification command. Research
-can return findings and citations directly in the native result channel.
-Put long briefs in a file when workers can read it; otherwise use the supported
-message transport. Keep completion inboxes and upstream callers out of the
-worker pool.
+Run independent tasks concurrently. Isolate modifying workers where practical;
+keep reports and inboxes outside their working copies. Otherwise use disjoint
+write ownership and serialize shared operations, including dependency installation
+and Git index changes. Serialize checks that race with mutations; independent
+read-only reviews can share a stable artifact.
 
-Run independent tasks concurrently. Serialize overlapping writers and checks
-that would race with mutations; independent read-only reviews may inspect the
-same stable artifact. Give modifying workers isolated working copies when
-practical, and keep each worker's report and inbox paths outside that copy; if
-sharing one, use disjoint write ownership and serialize shared operations such
-as dependency installation or Git index changes.
+Record assignments, ownership, contracts, and dependencies before dispatch,
+then capture returned identities. On task-graph surfaces use stable IDs and
+explicit dependency edges, leaving independent nodes unchained. For outcome-plan
+work, follow [Runtime contracts](references/runtime-contracts.md), binding native
+handles immediately. Runtime and engineering protocol are separate choices.
 
-For an outcome-plan task, `coord_runtime.py start` persists the assignment and
-launch intent before returning a native host request or starting a process. Bind
-native tool handles immediately; preserve an uncertain request instead of spawning
-again. Runtime choice and engineering protocol are separate selections.
-
-Record assignments, ownership, contracts, and dependencies in the task state before
-dispatch, then capture returned worker identities. On task-graph surfaces, use
-stable node IDs and explicit dependency edges; leave independent nodes unchained.
-Dispatch is complete when each assignment has an attributable owner, a bounded
-outcome, applicable decision policy, and a supported result channel.
-After each dispatch/helper error, surface the exact failure and recovery step,
-then verify receipt from supported evidence or the worker's subsequent activity.
-A helper return proves transport acceptance, not admission. If delivery remains
-unknown, reconcile the worker before retrying; never count an unverified
-dispatch as active work.
+Transport acceptance is not worker admission. After a dispatch/helper error,
+report the exact failure and recovery step; verify receipt through supported
+evidence or subsequent worker activity. Preserve uncertain attempts and reconcile
+before retrying. Dispatch is complete only with an attributable owner, bounded
+outcome, decision policy, supported result channel, and confirmed admission.
 
 ## 4. Supervise and inspect
 
-Observe through the selected runtime's supported wait and inspection operations.
-A report, a quiet terminal, or process exit is a scheduling signal; inspect the
-artifact and evidence before deciding what happened. Preserve delivery uncertainty
-and reconcile saved attempt handles before any replacement dispatch.
-For terminal panes and report watchers, read [Worker observation](references/worker-observation.md).
-Use [Runtime contracts](references/runtime-contracts.md) for native host and
-non-interactive process attempts. Runtime-specific retries and transport details
-belong in those references, not in outcome or acceptance decisions.
+Use supported wait and inspection operations. Read
+[Worker observation](references/worker-observation.md) before supervising terminal
+panes or report watchers; use Runtime contracts for native/process attempts.
+Reports, quiet terminals, and process exit are signals, not proof of success.
+Reconcile saved attempt handles before replacement dispatch.
 
-Treat surprises as planning input even when a worker can complete its assigned
-task. When evidence invalidates an assumption, contract, or assignment:
+When evidence invalidates an assumption, contract, or assignment:
 
-1. Identify affected work items and their transitive dependents, including
-   already accepted or integrated results that now need revalidation.
-2. Hold affected dependent work and steer active owners through supported
-   controls; let independent work continue. Reconcile unconfirmed corrections
-   before accepting more output from those assignments.
-3. Investigate remaining uncertainty, then revise the plan, contracts, and
-   assignments within existing authority. Record the evidence and what changed.
-4. Resume affected work once owners have the revised brief and dependencies
-   are settled; reverify results whose supporting assumptions changed.
+1. Identify affected work and transitive dependents, including accepted or
+   integrated results requiring revalidation.
+2. Hold affected dependents and steer their owners through supported controls;
+   let independent work continue. Reconcile unconfirmed corrections.
+3. Investigate and revise the plan, contracts, and assignments within authority;
+   record evidence and changes.
+4. Resume when owners have revised briefs and dependencies are settled; reverify
+   results whose supporting assumptions changed.
 
-An assignment shown to be unnecessary or wrong is a useful finding. Preserve
-the goal; seek user direction if the evidence calls the goal itself into
-question. Replanning does not authorize weaker success criteria.
+A wrong or unnecessary assignment is useful evidence. Preserve the goal; seek
+user direction if the goal itself is in question. Replanning never authorizes
+weaker success criteria.
 
-Treat reports as claims to inspect. Select checks from the changed behavior and
-integration risk, and inspect the resulting artifact independently. For changed
-process, filesystem, network, terminal, browser, plugin, or provider boundaries,
-exercise the actual boundary and retain concise evidence. Label fixture-based
-checks accurately. Add an independent verifier when the risk warrants one,
-using the reviewer guidance in the communication contract.
+Independently inspect artifacts and choose checks from changed behavior and
+integration risk. Exercise actual process, filesystem, network, terminal, browser,
+plugin, or provider boundaries when changed; label fixture evidence accurately.
+Confirm cited tests exist and ran, and run the same gate on the base branch before
+calling a failure pre-existing. Read the verification details in Communication;
+add independent verification when risk warrants it.
 
-Confirm cited tests exist and actually ran. Run that same gate on the base
-branch before treating a failure as pre-existing or unrelated. <!-- lesson: preexisting-gate promoted 2026-09-26 -->
-Directory and glob selectors may
-select many files; compare intended coverage with discovered tests, not the
-number of selectors. Check that evidence attributed to production behavior
-exercises the production definition.
-
-Use the `finding-triage` skill when you write a reviewer brief and before you
-route any finding to an implementer. Findings go to the implementer only after
-triage; never forward a review wholesale.
-<!-- lesson: triage-review-findings promoted 2026-09-28 -->
-
-Judge progress against fixed acceptance criteria, not falling finding counts.
-If repeated passes fail the same criterion, change the execution method rather
-than weakening acceptance.
-Advance a result only after its evidence and surprises have been inspected and
-any effect on dependent work has been resolved or explicitly blocked.
+Use `finding-triage` when writing reviewer briefs and before routing findings to
+implementers; never forward a review wholesale. Judge progress against fixed
+criteria, not finding counts. Change the execution method when repeated passes
+fail the same criterion. Advance only after inspecting evidence and surprises
+and resolving or explicitly blocking effects on dependent work.
 
 ## 5. Accept and integrate
 
-For outcome-plan tasks, run `coord_outcomes.py verify`, inspect the artifact and
-captured checks, then use `accept --decision` to record your decision. After
-incorporation, use `integrate` against the actual target artifact. Run `verify-goal`
-on the combined result before completing the task through `coord_state.py`.
-Workers and protocol reports cannot perform these transitions.
+Accept only after required checks pass, evidence is inspected, and blocking
+findings are resolved. Run `scripts/coord_claimcheck.py --cwd <assigned-cwd>
+--report <report>` before acceptance; unresolved cited commits or test paths block
+it. For outcome-plan work, follow Outcome contracts for verification and explicit
+acceptance/integration decisions; workers and protocol reports cannot make them.
 
-Accept a result when required checks pass, evidence has been inspected, and
-blocking findings are resolved. Before acceptance, run
-`python3 <skill-dir>/scripts/coord_claimcheck.py --cwd <assigned-cwd> --report <report>`:
-an unresolved cited commit or test path is a blocking finding. An
-execution-protocol report is worker evidence and is not acceptance; acceptance
-is still the coordinator's inspection. Acceptance means
-the result is suitable for incorporation; integration means it has actually been
-incorporated. Perform integration within existing authority and check the
-combined result where separate changes interact. Checkpoint immediately after
-each merge or incorporation — updating `next_action`, the affected work item's
-status, and `phase` — before dispatching or starting any work that depends on
-the integrated result; until that checkpoint lands, the record still presents
-the merged phase as pending.
+Acceptance means suitable for incorporation; integration means actually
+incorporated. Integrate within authority, then checkpoint before dependent work.
+Verify the combined result against live consumers and every authorized goal-level
+criterion, non-goal, and constraint, not just individual worker checks. Apply this
+at milestones too. If the goal is unmet, identify missing work and repeat the
+loop; a parked required action remains unfinished.
 
-Stop the worker, or verify it is idle, before editing its branch. A report file
-is not that idle state. <!-- lesson: stop-worker-before-editing-its-branch promoted 2026-09-26 -->
-Remove a worktree only after its worker has stopped and its reports and inbox
-have been harvested. Keep those paths outside the worktree. To reuse the worker,
-fast-forward its tree with `git merge --ff-only` from the base branch. <!-- lesson: worktree-removed-under-worker promoted 2026-09-26 -->
+Stop a worker or verify it is idle before editing its branch; a report is not
+proof of idle state. Remove its worktree only after it stops and reports/inboxes
+are harvested. Reuse its tree by fast-forwarding from the base branch.
 
-Verify the integrated result against the current authorized observable goal
-as well as worker acceptance criteria. Record evidence for each goal-level criterion and
-check non-goals and constraints. If local checks pass but the goal is unmet,
-revisit the understanding and decomposition, identify missing work, and run the
-affected loop again. For staged work, apply this check at each milestone too.
-Account for material assumptions and pending decisions using the decision
-policy; a parked required action remains unfinished work.
+For new or materially changed skills or orchestration workflows, apply
+[Real-use verification](references/real-use-verification.md) before closing; keep
+that gate pending until it passes or the user explicitly waives it.
 
-When the deliverable adds or materially changes a skill or orchestration workflow,
-apply [Real-use verification](references/real-use-verification.md) before closing:
-a fresh agent must read the shipped skill, complete a representative real repository
-task, and have its result independently checked. Keep this gate pending until it
-passes or the user explicitly waives it.
-
-Before closing, account for remaining workers and background processes,
-including `tail -f` and orphan processes, and confirm each has exited. Stop
-only resources owned by this task when they are no longer needed. Report the
-outcome, evidence, and unresolved limitations as one coherent handoff.
-
-Checkpoint the final outcome or exact next action whenever ending a session,
-without waiting for the user to request a handoff. Keep the chat handoff short:
-include the task ID and record path, the current outcome or next action, and any
-blocker that needs attention. The record holds the full goal and reasoning for
-the next session.
-
-## Hiccup intake
-
-At the next checkpoint, capture each orchestration hiccup as one incident note
-in the existing task-record retro stream: what happened, an evidence path or
-exact output, and its class (`host`, `general`, or `one-off`). Append through
-`coord_state.py checkpoint` while preserving existing notes; `coord_retro.py`
-harvests those notes. Do not create a separate log.
-
-<!-- lesson: coordinator-hiccup-intake promoted 2026-09-29 -->
+Before closing, confirm owned workers and background processes have exited;
+stop only task-owned resources no longer needed. Checkpoint the outcome or exact
+next action and report evidence and unresolved limitations coherently. Keep the
+chat handoff short: task ID, record path, outcome/next action, and blocker.
 
 ## Heal as you drive
 
-This skill and the helper skills it drives (`herdr`, `term2`) have defects that
-only show up in real use. The agent driving the skill **heals** them in-flow:
-when you find a defect while coordinating, fix it in that same task, and don't
-leave it behind as a workaround. The user gave standing authority for the lanes
-below (2026-09-28). A heal never widens a task's authority or its acceptance
-criteria.
-
-A **defect** is evidence that the skill or a helper told you something false:
-- a helper errors on valid input;
-- a helper refuses an operation the evidence shows is safe;
-- a helper reports a false positive or false negative;
-- an instruction or host fact is contradicted by what you observed.
-
-A manual workaround is the signature: an extra keypress, a blocker you had to
-ignore, a result you re-derived by hand.
-
-1. **Capture** an `incident` note at the next checkpoint (schema in
-   [retro](references/retro.md)) with `heal: open`, the exact command and
-   output, and the workaround you used.
-2. **Heal by lane:**
-   - *Host fact* (a tool quirk, model profile, path, or quota): correct its
-     entry in the [host inventory](references/host-inventory.md).
-   - *Instruction defect* (wording in this skill or a helper skill that is
-     unclear, missing, or contradicted): make a small edit and mark it
-     `<!-- lesson: <key> promoted <date> -->`.
-   - *Helper defect* (a script under a skill's `scripts/`): add a test to that
-     skill's suite that reproduces the observed output and fails, then fix the
-     script. If your harness is review-only, route the fix to an implementer.
-     Before changing a helper's CLI or output format, check for running
-     consumers (for example `ps` for live invocations and other coordinators'
-     watch commands), and keep the old form working or migrate them first.
-     <!-- lesson: live-consumer-compat promoted 2026-09-29 -->
-   - *Behavior rule* (changes planning, delegation, routing, verification, or
-     stop behavior): record it in [Candidate experiments](references/experiments.md).
-     It is an experiment, not a heal.
-3. **Gate:** the owning skill's tests pass
-   (`python3 -m unittest discover -s <skill-dir>/scripts`), and a changed
-   instruction reads correctly in its context. Make a refusal accurate: fix what
-   it detects and keep what it guards.
-4. **Record:** set `heal: done` with the commit or changed paths.
-   - If the heal would take more than about 30 minutes, or would change a
-     contract other skills depend on, set `heal: deferred` with the next step.
-   - Commit a heal by its paths (`git commit -- <paths>`). If a healed file also
-     holds another session's uncommitted edits, leave the heal uncommitted and
-     say so in the note.
-5. **Announce** each heal in your next update to the user: the defect, its
-   lane, and the evidence the fix works.
-
-A heal is complete when its note reads `heal: done` with passing-test evidence,
-or `heal: deferred` with a named next step. Before a session ends, move every
-`heal: open` note to one of those two states. The [retro](references/retro.md)
-handles lessons that recur across tasks, and pruning. Use the installed
-`workflow-evolution` skill for authorized experiments.
+When coordination exposes a skill/helper defect, read and follow
+[Healing](references/healing.md): capture evidence, apply an authorized narrow
+heal, verify it, record its disposition, and announce it. A heal does not widen
+task authority or weaken acceptance; behavior changes are experiments, not heals.
+Read [Architecture](references/architecture.md) when changing coordination
+boundaries or validating a new runtime.

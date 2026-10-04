@@ -4,6 +4,13 @@ Use the selected harness's native assignments, worker identities, and result
 channels. A separate inbox, file, or transport is needed only when that harness
 cannot carry the required result.
 
+## Verification coverage
+
+Compare intended coverage with the tests actually discovered: directory and glob
+selectors can select many files, so selector count is not test count. Evidence
+attributed to production behavior must exercise the production definition, not
+only a fixture or stub. Label fixture-based evidence accurately.
+
 ## Receipt ladder
 
 Keep these observations distinct:

@@ -143,9 +143,9 @@ conventions inside existing lists, not new top-level detail fields:
 | Replanning and goal changes | `notes` entries with `kind: replan` or `kind: goal_change`, evidence, affected IDs, and authorization when required |
 | Coordination lessons | `notes` entries with `kind: incident`, `key`, `what`, `cost`, `rule`, and `scope`, as in [Retro](retro.md) |
 
-When a session is bound, plain decisions and discoveries are captured by the
-memory sidecar and need no hand-written note. The structured note kinds above
-are still written by hand.
+Write decisions and discoveries by hand unless [Operational status](operational-status.md)
+explicitly enables the memory sidecar. When enabled and bound, it captures plain
+decisions and discoveries; structured note kinds above remain hand-written.
 
 For example, an assumption note can be:
 
@@ -192,7 +192,7 @@ delegated or consequential work.
 
 ## Resume and archive
 
-New delivery tasks can opt into the protected `outcome_plan` described in
+New delivery tasks with runnable acceptance checks use the protected `outcome_plan` described in
 [Outcome contracts](outcome-contracts.md). Generic checkpoints cannot replace
 that plan or its acceptance records. `resume` retains its goal, authority,
 confirmed pool, contracts, attempts, evidence, and integration state; reconcile
