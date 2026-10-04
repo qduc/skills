@@ -21,6 +21,10 @@ installed and either named as the protocol (`architect`, `arena`, and
 `interrogate` match by name) or they declare `execution-protocol` in
 frontmatter. Do not copy those skills into this package.
 
+For outcome-plan tasks, `coord_runtime.py start` resolves the method and pins
+the selected text in the attempt. Runtime selection is independent of method
+selection; use [Runtime contracts](runtime-contracts.md) for delivery.
+
 `resolve` prints one JSON line and does not read or write task state.
 `protocol_selected` means the worker reads that skill as the method and local
 verification only. `protocol_fallback` means use the normal bounded-worker
@@ -42,5 +46,10 @@ acceptance or exits 0. The coordinator still independently inspects the
 evidence. Acceptance stays section 5: `coord_claimcheck`, inspected evidence,
 and the coordinator's decision. `finished`, `verified`, `accepted`, and
 `integrated` stay distinct.
+
+Outcome-plan tasks use `coord_outcomes.py verify`, `accept`, `integrate`, and
+`verify-goal` to bind that decision to the current assignment and artifact.
+Read [Outcome contracts](outcome-contracts.md); protocol claims cannot write
+these protected transitions.
 
 This is not pool routing. Keep using `coord_route.py` to rotate worker pools.

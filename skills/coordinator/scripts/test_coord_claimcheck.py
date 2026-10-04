@@ -101,6 +101,21 @@ class ClaimcheckTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(claimcheck.commits("tasks/cafebabe/report.md; commit deadbeef"), ["deadbeef"])
 
+    def test_labeled_coordinator_identifiers_are_not_commit_citations(self):
+        token = "2164861382234a9d9107b9b488e9653d"
+        result = self.run_check(f"Assignment: {token}. Attempt: `{token}`.\n")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for label in ("task", "task_id", "assignment", "assignment_id", "attempt", "attempt_id", "owner", "owner_id"):
+            with self.subTest(label=label):
+                self.assertEqual(claimcheck.commits(f'{label}: {token}'), [])
+                self.assertEqual(claimcheck.commits(f'"{label}": "{token}"'), [])
+        self.assertEqual(claimcheck.commits(f"Commit {token}; commit `{token}`"), [token])
+        self.assertEqual(claimcheck.commits(token), [token])
+        self.assertEqual(claimcheck.commits("Assignment: cafebabe"), ["cafebabe"])
+        explicit = self.run_check(f"Assignment: {token}. Commit {token}.\n")
+        self.assertEqual(explicit.returncode, 1, explicit.stdout)
+        self.assertIn(f"commit {token} does not resolve", explicit.stdout)
+
     def test_hex_owner_id_is_not_a_commit_citation(self):
         result = self.run_check(
             'The report included owner claude-coord-20260928-e09fed0d in pasted JSON.\n'

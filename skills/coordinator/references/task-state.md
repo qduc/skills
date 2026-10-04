@@ -192,6 +192,13 @@ delegated or consequential work.
 
 ## Resume and archive
 
+New delivery tasks can opt into the protected `outcome_plan` described in
+[Outcome contracts](outcome-contracts.md). Generic checkpoints cannot replace
+that plan or its acceptance records. `resume` retains its goal, authority,
+confirmed pool, contracts, attempts, evidence, and integration state; reconcile
+runtime resources before acting on a saved next action. Completion and archival
+also require its current artifact hashes and successful independent goal gate.
+
 If a session or worker approaches a capacity limit, checkpoint the current
 next action, blockers, and live worker locators while the session can still
 complete the write. <!-- lesson: pre-limit-checkpoint promoted 2026-09-26 -->

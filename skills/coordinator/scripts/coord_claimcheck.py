@@ -2,8 +2,9 @@
 """Check commit hashes and test paths cited in a worker report. Read-only.
 
 A commit citation is a 7–40 hex token. It blocks when `git rev-parse --verify`
-cannot resolve it to a commit in --cwd. A test citation is a path that looks
-like a test file. A path with a directory component must exist at that path
+cannot resolve it to a commit in --cwd. Labeled compact Coordinator task,
+assignment, attempt, and owner IDs are data, not commit citations.
+A test citation is a path that looks like a test file. A path with a directory component must exist at that path
 under --cwd. A bare basename resolves when `git ls-files` lists a tracked file
 of that name, or, when --cwd is not a git repo, when a filesystem walk finds
 one. A dotted unittest ID is checked only when at least one segment starts
@@ -22,6 +23,9 @@ import sys
 
 # 7–40 so a 64-char digest is not treated as a commit. Pure digits qualify.
 COMMIT = re.compile(r"(?<![\w/\\-])([0-9a-fA-F]{7,40})(?![\w/\\-])")
+COORDINATOR_ID_LABEL = re.compile(
+    r"(?i)\b(?:task|assignment|attempt|owner)(?:_id|[ -]id)?[\"'`]?\s*(?::|=)?\s*[\"'`]?$"
+)
 DOTTED_TEST_ID = re.compile(r"(?:[A-Za-z_]\w*\.)*[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*")
 UUID = re.compile(r"(?i)(?<![0-9a-f])([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?![0-9a-f])")
 FILENAME_TOKEN = re.compile(r"(?<![\w])[\w.-]+\.[A-Za-z0-9]{1,8}(?![\w])")
@@ -43,6 +47,9 @@ def commits(text):
     found = []
     for match in COMMIT.finditer(text):
         start, end = match.span(1)
+        if (len(match.group(1)) == 32
+                and COORDINATOR_ID_LABEL.search(text[max(0, start - 64):start])):
+            continue
         citation = (re.search(r"(?i)\bcommit\s*$", text[max(0, start - 16):start])
                     or text[start - 1:start] == "`" and text[end:end + 1] == "`")
         inside_uuid = any(start < uuid_end and end > uuid_start for uuid_start, uuid_end in uuid_spans)
