@@ -4,6 +4,21 @@ These are agent skills: procedures an agent can follow for a particular kind of 
 
 There is no installer. A skill is a directory under `skills/<name>/` with a `SKILL.md` file. Read that file. The `name` and `description` in the frontmatter say when the skill applies. The rest of the file is the procedure. A skill may also keep notes, scripts, or other files next to `SKILL.md`. Use those only when the procedure tells you to.
 
+## Setup
+
+The skills in this repository do not need to be installed. If you want the coordinator to look for outside engineering skills as well, run this once from the repository root:
+
+```sh
+python3 scripts/setup-protocols.py
+```
+
+That downloads two public collections into `.external/`, which git ignores. They are not part of the skills published here:
+
+- [mattpocock/skills](https://github.com/mattpocock/skills) lands in `.external/mattpocock-skills/skills`
+- [cursor/plugins](https://github.com/cursor/plugins) (`pstack/skills`) lands in `.external/cursor-plugins/pstack/skills`
+
+The script records both directories in `.external/catalog.env`. If you skip the download, or remove `.external/`, the coordinator still works without them.
+
 ## Skills
 
 - **adversarial-review** — Looks at one change or document, such as a pull request, spec, design, or plan, and reports concrete defects and gaps that the evidence supports.
