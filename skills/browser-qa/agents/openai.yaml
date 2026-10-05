@@ -1,0 +1,14 @@
+interface:
+  display_name: Browser QA
+  short_description: Verify user journeys in a real browser
+  default_prompt: Use $browser-qa to verify the scoped user journey in the current
+    app and report evidence and limits.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

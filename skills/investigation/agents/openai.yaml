@@ -1,0 +1,14 @@
+interface:
+  display_name: Investigation
+  short_description: Gather evidence and resolve engineering uncertainty
+  default_prompt: Use $investigation to resolve this engineering question with traceable
+    evidence and explicit remaining uncertainty.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

@@ -1,0 +1,8 @@
+# Method provenance
+
+Read this optional reference for attribution or rationale behind the method; it is not required to execute an investigation. Sources were inspected on 2026-10-05. These are methodology examples, not evidence that this new skill performs successfully.
+
+- **TGPSKI, Abductive Triage, actual public skill:** https://github.com/TGPSKI/abductive-triage/blob/main/SKILL.md (GPL-3.0 as displayed in its frontmatter). Adapt the ideas of verifying observation coordinates, separating stated and inferred information, and choosing a discriminating check. Do not adopt its unsupported claim that coordinate mismatches explain most incidents, its rigid two-tier gates, its automatic trust in system output, or its requirement to create diagnostic skills. Generalize to non-incident engineering questions. Write all instructions independently rather than copying its text.
+- **Google SRE, Effective Troubleshooting, primary engineering methodology:** https://sre.google/sre-book/effective-troubleshooting/. Adapt its treatment of inspection through logs, metrics, traces, and exposed state; checks that distinguish alternatives; confounding factors and observer effects; and recording negative results. Keep root-cause diagnosis, containment, and remediation outside this primitive. A useful observation reduces uncertainty without necessarily explaining a failure.
+
+The bounded question, decision threshold, qualified handoff, and composition boundaries are this skill's synthesis for the existing agentic-loop adapter contract. They are design choices, not claims of an established industry standard. No repository popularity or empirical effectiveness was established during this review.

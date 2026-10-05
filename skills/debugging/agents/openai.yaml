@@ -1,0 +1,14 @@
+interface:
+  display_name: Debugging
+  short_description: Test explanations with discriminating experiments
+  default_prompt: Use $debugging to test the leading explanation for this unexpected
+    behavior and update the causal model.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

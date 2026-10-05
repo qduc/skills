@@ -43,18 +43,33 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 ## Skills
 
 - **adversarial-review** — Looks at one change or document, such as a pull request, spec, design, or plan, and reports concrete defects and gaps that the evidence supports.
+- **[agentic-loop](skills/agentic-loop/SKILL.md)** — Pursues delegated outcomes through planning, action, observation, verification, and adaptation, loading methodology only when needed.
+- **[browser-qa](skills/browser-qa/SKILL.md)** — Verifies scoped user journeys and rendered behavior in a real browser, with reproducible evidence and explicit coverage limits.
 - **bug-retro** — After a bug is fixed, turns that single fix into a lasting improvement for the whole class of bug.
+- **[code-review](skills/code-review/SKILL.md)** — Inspects code changes for evidence-backed correctness, security, and compatibility risks.
 - **coordinator** — Splits substantial work across bounded workers, then tracks dependencies, checks the results, and integrates them.
 - **coordinator-setup** — Discovers host capabilities and configures optional coordinator adapters in an external host profile without rewriting the base skill.
+- **[debugging](skills/debugging/SKILL.md)** — Tests causal explanations through hypotheses, discriminating experiments, and model updates.
 - **deep-module-review** — Judges one module or API for cohesion, what it hides, how heavy its interface is, what leaks out, and how much callers have to carry.
 - **finding-triage** — Decides which review findings must be fixed, what each fix would cost, and whether to route, narrow, accept, or reject it.
 - **herdr** — Inspects and coordinates Herdr workspaces, tabs, panes, terminals, and agents from the command line without disrupting work already running.
+- **[implementation](skills/implementation/SKILL.md)** — Makes controlled code changes while preserving contracts, surrounding conventions, and existing user work.
 - **invariant-reviewer** — Looks for reachable failures and broken invariants in a design or implementation, and weighs how much complexity a proposed fix would add.
+- **[investigation](skills/investigation/SKILL.md)** — Gathers traceable evidence to answer bounded engineering questions and reduce uncertainty.
 - **model-benchmark** — Measures coding models and agent harnesses on real engineering tasks from the term2 repository, including solve rates and blind grading of candidate diffs.
 - **playwright-cli** — Drives a browser to interact with web pages and to run or work with Playwright tests.
+- **[profiling](skills/profiling/SKILL.md)** — Measures representative workloads, locates limiting mechanisms, and verifies optimizations with comparable evidence.
 - **proportionality-review** — Judges whether a proposal or design is more complex than the problem needs.
+- **[research](skills/research/SKILL.md)** — Sources, compares, and synthesizes evidence into traceable answers to bounded questions.
 - **simplicity-architect** — Proposes software designs built on strong invariants and a small complexity budget, keeping edge cases from growing into extra defensive machinery.
 - **skill-creator** — Creates and revises agent skills, and measures how well they perform, including tests and how accurately a description gets the skill selected.
 - **slop-audit** — Surveys a whole repository for piled-up problems in design, correctness, tests, duplication, security, dependencies, and overbuilding, then ranks what to repair.
 - **term2** — Starts, configures, and runs term2 for interactive coding sessions or one-shot command-line tasks.
+- **[testing](skills/testing/SKILL.md)** — Establishes proportionate behavioral evidence through meaningful assertions, isolated execution, and explicit test limits.
 - **workflow-evolution** — Improves an agent workflow by revising its skills through experiments backed by evidence, leaving the harness unchanged.
+
+## Agentic Loop primitives
+
+Use `agentic-loop` to own the delegated outcome. Load `investigation`, `debugging`, `implementation`, `testing`, `code-review`, `research`, `browser-qa`, and `profiling` only when the current phase needs their methodology. Compose them for the task instead of loading the entire set up front.
+
+Each primitive includes optional source notes describing its methodological influences. Use the existing `skill-creator` when a real methodology gap remains; keep generated methods provisional and promote them only after repeated successful use, checking for overlap with existing skills.

@@ -1,0 +1,15 @@
+interface:
+  display_name: Agentic Loop
+  short_description: Pursue delegated outcomes with evidence and adapters
+  default_prompt: Use $agentic-loop to carry this task through to a verified outcome,
+    resolve suitable supplemental skills, and bring me only decisions that need my
+    judgment.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

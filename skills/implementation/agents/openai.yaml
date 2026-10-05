@@ -1,0 +1,14 @@
+interface:
+  display_name: Implementation
+  short_description: Make controlled changes with focused evidence
+  default_prompt: Use $implementation to make this bounded code change while preserving
+    its contract and surrounding conventions.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

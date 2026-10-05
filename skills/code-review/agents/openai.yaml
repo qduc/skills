@@ -1,0 +1,14 @@
+interface:
+  display_name: Code Review
+  short_description: Inspect changes for actionable bugs and release risks
+  default_prompt: Use $code-review to inspect this change for actionable correctness,
+    security, and compatibility issues.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

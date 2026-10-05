@@ -1,0 +1,14 @@
+interface:
+  display_name: Research
+  short_description: Source, compare, and synthesize credible evidence
+  default_prompt: Use $research to answer this question with inspected sources, comparisons,
+    and a concise evidence-based synthesis.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

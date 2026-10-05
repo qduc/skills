@@ -1,0 +1,14 @@
+interface:
+  display_name: Profiling
+  short_description: Measure bottlenecks and verify bounded optimizations
+  default_prompt: Use $profiling to measure this workload, locate its bottleneck,
+    and verify an authorized optimization.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
