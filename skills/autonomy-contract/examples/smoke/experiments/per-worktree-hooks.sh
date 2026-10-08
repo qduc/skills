@@ -1,7 +1,10 @@
 #!/bin/sh
 # Can one linked worktree use a different hooks directory from the others?
 set -e
-d=$(mktemp -d); cd "$d"
+d=$(mktemp -d)
+trap 'rm -rf "$d"' EXIT
+trap 'exit 130' INT TERM HUP
+cd "$d"
 git init -q main && cd main
 git -c user.email=a@b -c user.name=x commit -q --allow-empty -m init
 printf '#!/bin/sh\necho "HOOK shared pre-commit fired"\n' > .git/hooks/pre-commit

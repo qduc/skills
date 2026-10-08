@@ -99,10 +99,21 @@ class LabTest(unittest.TestCase):
             self.assertIn("at least 1", self.lab("charge", self.run_dir, "web", "--n", n, ok=(2,)).stderr)
         self.assertEqual(len((self.run_dir / "ledger.jsonl").read_text().splitlines()), 1)
         self.lab("charge", self.run_dir, "web")
-        # A refund left in a ledger by an older lab.py: re-chain it so only the n check can catch it.
+        self.inject_charge(-2)
+        self.assertIn("AUDIT FAIL charge seq 2 has n=-2", self.lab("audit", self.run_dir, ok=(5,)).stdout)
+
+    def test_audit_rejects_non_integer_n_without_crashing(self):
+        self.init()
+        self.lab("charge", self.run_dir, "web")
+        for bad, shown in (("1", "n='1'"), (True, "n=True"), (None, "n=None"), (1.5, "n=1.5")):
+            self.inject_charge(bad)
+            self.assertIn(f"AUDIT FAIL charge seq 2 has {shown}", self.lab("audit", self.run_dir, ok=(5,)).stdout)
+
+    def inject_charge(self, n):
+        """Replace the ledger tail with a charge of n, re-chained with a matching log head (a deliberate rewrite)."""
         ledger = self.run_dir / "ledger.jsonl"
-        entries = [json.loads(l) for l in ledger.read_text().splitlines()]
-        entries.append(dict(entries[-1], n=-2, seq=len(entries)))
+        entries = [json.loads(l) for l in ledger.read_text().splitlines()][:2]
+        entries.append(dict(entries[-1], n=n, seq=2))
         prev, lines = hashlib.sha256((self.run_dir / "budget.json").read_bytes()).hexdigest(), []
         for entry in entries:
             lines.append(json.dumps(dict(entry, prev=prev), ensure_ascii=False, sort_keys=True))
@@ -111,7 +122,6 @@ class LabTest(unittest.TestCase):
         with (self.run_dir / "log.jsonl").open("a") as log:
             log.write(json.dumps({"phase": "act", "event": "budget_charged", "ts": "t",
                                   "data": {"ledger_head": prev}}) + "\n")
-        self.assertIn("has n=-2", self.lab("audit", self.run_dir, ok=(5,)).stdout)
 
     def test_unresolved_is_not_progress(self):
         self.init("--max-stall", 1, cycles=5)

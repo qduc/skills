@@ -1,7 +1,10 @@
 #!/bin/sh
 # Does a hook installed in the main worktree fire in a linked worktree?
 set -e
-d=$(mktemp -d); cd "$d"
+d=$(mktemp -d)
+trap 'rm -rf "$d"' EXIT
+trap 'exit 130' INT TERM HUP
+cd "$d"
 git init -q main && cd main
 git -c user.email=a@b -c user.name=x commit -q --allow-empty -m init
 printf '#!/bin/sh\necho "HOOK pre-commit fired in $(pwd)"\n' > .git/hooks/pre-commit

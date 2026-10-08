@@ -6,12 +6,17 @@
 # an interactive first pass and are replayed here so the run is reproducible.
 # The fetches and experiments are real. Needs network for 3 fetches of
 # git-scm.com, plus git and python3. Writes runs/, store/, and transcript.log
-# to a fresh temp dir (or to $SMOKE_OUT if set) and prints its path; nothing is
-# written next to this script.
+# to a fresh temp dir (or to $SMOKE_OUT, which must be missing or empty) and
+# prints its path; nothing is written next to this script. The output dir is
+# kept; the download dir and the experiments' temp repos are always removed.
 #
 # Each step states the exit code it expects; the script stops on a mismatch.
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
+if [ -n "${SMOKE_OUT:-}" ] && [ -e "$SMOKE_OUT" ] && [ -n "$(ls -A "$SMOKE_OUT" 2>/dev/null)" ]; then
+  echo "SMOKE FAIL: SMOKE_OUT=$SMOKE_OUT exists and is not empty; refusing to write into it" >&2
+  exit 2
+fi
 OUT=${SMOKE_OUT:-$(mktemp -d)}
 mkdir -p "$OUT" && cd "$OUT" || exit 1
 ln -sf "$HERE/../../scripts/lab.py" lab.py
@@ -20,8 +25,9 @@ ln -sf "$HERE/brief-run1.md" brief-run1.md
 ln -sf "$HERE/brief-run2.md" brief-run2.md
 LAB=lab.py
 RAW=$(mktemp -d)
+trap 'rm -rf "$RAW"' EXIT
+trap 'exit 130' INT TERM HUP
 FETCHES=0
-rm -rf runs store transcript.log
 : > transcript.log
 echo "smoke output dir: $OUT"
 
@@ -147,5 +153,4 @@ step 0 "cp brief-run2.md runs/run2/brief.md"
 step 0 "python3 $LAB validate runs/run2"
 step 0 "python3 $LAB audit runs/run2 --observed-web $((FETCHES - RUN1_FETCHES))"
 step 0 "grep -h '\"knowledge_recalled\"\|\"knowledge_used\"' runs/run2/log.jsonl"
-rm -rf "$RAW"
 echo "SMOKE OK: $FETCHES real fetches (outputs in $OUT)"

@@ -6,7 +6,8 @@ hooks between worktrees?"
 
 Run it with `./smoke.sh` (needs network for 3 fetches of git-scm.com, plus
 git and python3). It writes `runs/`, `store/`, and `transcript.log` to a fresh
-temp dir (or to `$SMOKE_OUT`) and prints the path; generated output is not
+temp dir (or to `$SMOKE_OUT`, which must be missing or empty) and prints the path;
+the download dir and the experiments' temp git repos are always removed. Generated output is not
 committed. The script replays the research decisions an agent made in an
 interactive first pass. The fetches, the excerpt checks against the fetched
 pages, and the two local git experiments are real. Every step states the exit

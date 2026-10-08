@@ -442,9 +442,11 @@ def cmd_audit(args) -> int:
     for entry in entries[1:]:
         if entry["kind"] != "charge":
             continue
-        if not isinstance(entry["n"], int) or entry["n"] < 1:
-            problems.append(f"charge seq {entry['seq']} has n={entry['n']} (must be a positive integer)")
-        used[entry["what"]] += entry["n"]
+        n = entry.get("n")
+        if isinstance(n, bool) or not isinstance(n, int) or n < 1:
+            problems.append(f"charge seq {entry.get('seq')} has n={n!r} (must be a positive integer)")
+            continue
+        used[entry["what"]] += n
         limit = run.limits["cycles" if entry["what"] == "cycle" else "web"]
         if used[entry["what"]] > limit:
             problems.append(f"charge seq {entry['seq']} exceeded the {entry['what']} limit {limit}")
