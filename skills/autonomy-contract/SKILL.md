@@ -93,6 +93,7 @@ charge also logs the new chain head in `log.jsonl`. `audit` re-checks the
 chain and the head, and compares ledger totals with counts observed outside
 the run (for example, tool calls counted from the transcript). The chain makes
 edits evident; it does not make them impossible.
+Ledger lines carry `kind` (`init`, `charge`, `refused`); charge and refused lines also carry `what` (`cycle` or `web`) and `n`. Read totals from `audit`'s `used` instead of counting lines by hand.
 
 ### Stop rule
 
