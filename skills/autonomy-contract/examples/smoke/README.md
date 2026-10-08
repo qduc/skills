@@ -4,8 +4,10 @@ This is not research output. It shows that the helper does what the contract
 says, on a question unrelated to any experiment: "Does `git worktree` share
 hooks between worktrees?"
 
-Re-run it with `./smoke.sh` (needs network for 3 fetches of git-scm.com, plus
-git and python3). The script replays the research decisions an agent made in an
+Run it with `./smoke.sh` (needs network for 3 fetches of git-scm.com, plus
+git and python3). It writes `runs/`, `store/`, and `transcript.log` to a fresh
+temp dir (or to `$SMOKE_OUT`) and prints the path; generated output is not
+committed. The script replays the research decisions an agent made in an
 interactive first pass. The fetches, the excerpt checks against the fetched
 pages, and the two local git experiments are real. Every step states the exit
 code it expects, so the script fails if the behaviour changes.
@@ -28,10 +30,22 @@ Files:
 - `smoke.sh`: the replay script.
 - `experiments/`: the two local git experiments.
 - `brief-run1.md`, `brief-run2.md`: the briefs the script installs into each run.
-- `runs/run1`, `runs/run2`: run directories as the script left them.
-- `runs/run1-fault-injection`: a copy of run 1 with an injected bad citation.
-- `store/knowledge.jsonl`: the durable knowledge store shared by both runs.
-- `transcript.log`: every command, its output, and its exit code.
+
+In the output dir: `runs/run1`, `runs/run2`, `runs/run1-fault-injection` (a copy
+of run 1 with an injected bad citation), `store/knowledge.jsonl` (shared by
+both runs), and `transcript.log` (every command, its output, and its exit code).
+
+Sample output (2026-10-09; the last line is stdout, the rest are from `transcript.log`):
+
+```text
+REFUSED web: web limit reached: 3 used + 1 requested > 3
+STOP cycle budget spent (2/2); web budget spent (3/3); no open claims left (2 resolved, 1 unresolved)
+ERROR finding F9 cites unknown source S99
+ERROR brief.md cites https://example.com/never-fetched, which is not a recorded source
+AUDIT OK
+STOP no open claims left (2 resolved, 0 unresolved)
+SMOKE OK: 3 real fetches (outputs in /tmp/tmp.XXXXXXXXXX)
+```
 
 Not shown here (covered by `scripts/test_lab.py` instead): the wall-clock
 refusal, the stall stop, ledger tampering, and a `via` source that no recall
