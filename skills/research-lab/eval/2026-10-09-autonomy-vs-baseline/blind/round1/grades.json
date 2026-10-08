@@ -1,0 +1,72 @@
+{
+  "reports": {
+    "X": {
+      "claims": [
+        {"claim": "BrowseComp: Deep Research 51.5%, GPT-4o 0.6%, GPT-4o+browsing 1.9%, o1 9.9%; humans solved 29.2%; best-of-N/voting +15-25%", "label": "CORRECT", "checked_url": "https://arxiv.org/html/2504.12516", "note": "All figures match Table 3 and text."},
+        {"claim": "HLE: deep research 26.6% vs GPT-4o 3.3%, o1 9.1%, o3-mini-high 13.0%; DR used browsing+python; hallucination and calibration caveats", "label": "CORRECT", "checked_url": "https://openai.com/index/introducing-deep-research/", "note": "Matches the table, footnotes and limitation quotes."},
+        {"claim": "Anthropic multi-agent beat single-agent Opus 4 by 90.2%; tokens explain 80% of BrowseComp variance; ~15x tokens vs chat; eval set of ~20 queries", "label": "CORRECT", "checked_url": "https://www.anthropic.com/engineering/multi-agent-research-system", "note": "All quotes verified. The report says the set was not released, which fits the post."},
+        {"claim": "Scaling Agent Systems (Google/MIT): 260 configs, matched token budgets, +80.8% to -70%, ~45% threshold, error amplification 17.2x vs 4.4x", "label": "CORRECT", "checked_url": "https://arxiv.org/html/2512.08296v2", "note": "Verified in the abstract and introduction. Google Research, DeepMind and MIT affiliations confirmed."},
+        {"claim": "Tran & Kiela 2026: SAS consistently match or outperform MAS on multi-hop reasoning at equal reasoning tokens; API budget-control artifacts", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2604.02460v1", "note": "Quotes match the abstract."},
+        {"claim": "DeepResearch Bench RACE: Gemini DR 48.88, OpenAI DR 46.98, Claude-3.7 w/search 40.67 > Grok 40.24; citation accuracy Claude-3.5 94.04 / 3.7 93.68 vs OpenAI DR 77.96 / Gemini DR 81.44; Gemini DR 111.21 effective citations", "label": "CORRECT", "checked_url": "https://arxiv.org/html/2506.11763", "note": "Every number matches Table 1 and the FACT table. This counter-evidence appears only in X."},
+        {"claim": "PaperBench: best 21.0% (Claude 3.5 Sonnet BasicAgent); humans 41.4% vs o1 26.6% on 3-paper subset at 48h; IterativeAgent o1 13.2->24.4, Claude 21.0->16.1; o1 plateaus after first hour", "label": "CORRECT", "checked_url": "https://arxiv.org/html/2504.01848", "note": "All figures match."},
+        {"claim": "MAST (NeurIPS 2025): 7 frameworks, 200+ tasks, 14 failure modes, gains minimal vs single-agent", "label": "MINOR_ERROR", "checked_url": "https://arxiv.org/abs/2503.13657v2", "note": "The content is correct. The NeurIPS 2025 venue does not appear on the arXiv page and was not confirmed."},
+        {"claim": "HAL: 21,730 rollouts; higher reasoning effort did not improve accuracy in 21/36; most expensive model on frontier in 1/9 benchmarks; agents searched HuggingFace for answers", "label": "CORRECT", "checked_url": "https://arxiv.org/pdf/2510.11977", "note": "Verified. The HuggingFace shortcut appears in only a few documented cases."},
+        {"claim": "Sakana AI Scientist independent eval: 42% experiments failed due to coding errors; hallucinated numerical results", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2502.14297", "note": "Matches the abstract (Beel, Kan, Baumgart)."},
+        {"claim": "Co-scientist: 15 expert goals, Elo auto-evaluated caveat, reasoning models competitive with less compute; Nature coverage 3 of 5 lab-tested AML candidates positive", "label": "CORRECT", "checked_url": "https://arxiv.org/html/2502.18864v1 ; https://www.resultsense.com/news/2026-05-20-ai-scientists-nature-papers-limits/", "note": "Verified. The report correctly marks the Nature claim as secondary coverage."}
+      ],
+      "citations_checked": 15,
+      "bad_citations": [],
+      "source_quality": 5,
+      "contradiction_detection": 5,
+      "useful_findings": 5,
+      "rank": 1,
+      "summary": "Most precise and best sourced of the three. Every checked number traces to a primary source, and the only slip is an unconfirmed NeurIPS venue label. It is the only report that brings in the matched-budget scaling study (45% threshold, task-type dependence) and the DeepResearch Bench citation-accuracy counter-evidence, and it separates the two baselines (no-tool model vs tool-using agent) clearly."
+    },
+    "Y": {
+      "claims": [
+        {"claim": "BrowseComp DR 51.5% vs o1 9.9% (5.2x) and 27x GPT-4o with browsing", "label": "CORRECT", "checked_url": "https://arxiv.org/html/2504.12516", "note": "51.5/9.9=5.2 and 51.5/1.9=27.1."},
+        {"claim": "HLE 26.6% vs o3-mini-high 13.0% (2x); baselines partly scored on text-only subset", "label": "CORRECT", "checked_url": "https://openai.com/index/introducing-deep-research/", "note": "The text-only footnote is verified. Only Y raises this caveat."},
+        {"claim": "Anthropic 90.2%; 80% variance from tokens; 15x vs chat and 4x for single agent (~3.75x more per task)", "label": "CORRECT", "checked_url": "https://www.anthropic.com/engineering/multi-agent-research-system", "note": "Both token multiples are verified, and the derived ratio is correct arithmetic."},
+        {"claim": "Tran & Kiela: MAS advantages better explained by unaccounted computation; SAS match MAS at equal thinking tokens", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2604.02460v1", "note": "Quote matches."},
+        {"claim": "Equal-inference-cost preprint (2609.04217) finds no significant multi-agent benefit", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2609.04217", "note": "Title matches and the finding holds (ALFWorld 0.769 vs 0.754, p=0.80). The report says it checked this only at abstract level."},
+        {"claim": "DeepTRACE: deep-research outputs contain many unsupported statements; citation accuracy 40-80% depending on system", "label": "MINOR_ERROR", "checked_url": "https://arxiv.org/abs/2509.04499", "note": "The abstract gives 40-80% 'across systems' but does not tie that range specifically to deep-research systems. The unsupported-statements claim is correct."},
+        {"claim": "AI Agents That Matter: SOTA HumanEval agents do not beat simple baselines; escalation beats LDB at under half the cost", "label": "CORRECT", "checked_url": "https://arxiv.org/pdf/2407.01502v1", "note": "Matches section heading and Table A1, but only against LDB (GPT-3.5)."},
+        {"claim": "RE-Bench 4x at 2h, humans narrowly ahead at 8h, 2x at 32h; PaperBench best 21.0%", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2411.15114", "note": "Verified, and PaperBench was checked against arxiv.org/html/2504.01848."},
+        {"claim": "MAST: 14 failure modes across 1,600+ traces from 7 frameworks; Kim et al. -70% to +80.8%", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2503.13657", "note": "The 1,600+ traces figure is from v3. Kim et al. figures verified."}
+      ],
+      "citations_checked": 13,
+      "bad_citations": [],
+      "source_quality": 5,
+      "contradiction_detection": 4,
+      "useful_findings": 3,
+      "rank": 2,
+      "summary": "Accurate, compact and fully primary-sourced, with no bad citations and one small overreach on how DeepTRACE's range is scoped. It names the compute confound and the vendor-eval issue well, and adds the text-only HLE caveat and the citation-reliability angle. It is thin, though: it leaves out the 45% threshold, error amplification, the co-scientist work and the AI-scientist evidence, so a decision-maker gets less to act on."
+    },
+    "Z": {
+      "claims": [
+        {"claim": "BrowseComp GPT-4o ~0.6%, +browsing ~1.9%, o1 ~9.9%, DR ~51.5%", "label": "CORRECT", "checked_url": "https://arxiv.org/html/2504.12516", "note": "Matches."},
+        {"claim": "HLE 26.6% vs o3-mini-high ~13% (flagged from memory); GAIA SOTA", "label": "CORRECT", "checked_url": "https://openai.com/index/introducing-deep-research/", "note": "Matches, including the GAIA SOTA claim."},
+        {"claim": "Anthropic: tokens ~80% of BrowseComp variance; ~15x vs ~4x tokens; 90.2% with Opus 4 lead and Sonnet 4 subagents", "label": "CORRECT", "checked_url": "https://www.anthropic.com/engineering/multi-agent-research-system", "note": "Matches."},
+        {"claim": "GAIA humans ~92% vs GPT-4 with plugins ~15%", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2311.12983", "note": "Matches the abstract."},
+        {"claim": "MLE-bench: o1-preview + AIDE at least bronze in 16.9% of 75 competitions", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2410.07095", "note": "Matches."},
+        {"claim": "AlphaEvolve: 48-multiplication algorithm for 4x4 complex matrices", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2506.13131", "note": "Verified in the AlphaEvolve white paper abstract. The cited DeepMind blog itself could not be fetched."},
+        {"claim": "CORE-Bench best agents ~21% on hard tier (flagged unverified)", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2409.11363", "note": "Matches the abstract."},
+        {"claim": "METR time horizon doubling ~7 months (Kwa et al.)", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2503.14499", "note": "Correct. The current arXiv title is 'Measuring AI Ability to Complete Long Software Tasks'."},
+        {"claim": "Si et al. ideation-execution follow-up: LLM ideas' advantage shrank or reversed after execution", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2506.20803", "note": "The approximate title is actually exact. The report gave no ID; the paper is arXiv:2506.20803."},
+        {"claim": "Smit et al.: debate did not reliably beat self-consistency/ensembling at equal budget", "label": "MINOR_ERROR", "checked_url": "https://arxiv.org/abs/2311.17371", "note": "The core claim is correct, but 'at equal budget' is not in the abstract, and the paper also finds tuned MAD can beat all the baselines, which Z leaves out."},
+        {"claim": "Independent eval of Sakana AI Scientist (Beel et al., arXiv:2502.14297, flagged unverified)", "label": "CORRECT", "checked_url": "https://arxiv.org/abs/2502.14297", "note": "The ID and authors flagged as unverified are both correct."}
+      ],
+      "citations_checked": 16,
+      "bad_citations": [
+        {"citation": "https://www.anthropic.com/engineering/built-multi-agent-research-system", "problem": "Not the canonical slug (the real one is /engineering/multi-agent-research-system). The fetch tool reported that it resolved to the right article, so this is not counted as a wrong paper, but the URL is nonstandard."},
+        {"citation": "Si et al. 'Ideation-Execution Gap' and FunSearch (Nature)", "problem": "No ID or URL given, so neither can be traced from the report alone. Both papers do exist (FunSearch was not checked)."}
+      ],
+      "source_quality": 3,
+      "contradiction_detection": 4,
+      "useful_findings": 4,
+      "rank": 3,
+      "summary": "Broadest coverage (GAIA, MLE-bench, AlphaEvolve, CORE-Bench, METR horizons, the ideation-execution gap), and every number I checked was correct; it also flags its memory-sourced items honestly. It rests on memory rather than fetched primary pages, gives few URLs, and leaves out the central compute-matched studies (Kim et al. 2512.08296, Tran & Kiela), so its C2/C3 matched-compute verdict leans on older or indirect evidence. It also pads with tangential items such as Snell, More Agents and the IMO results."
+    }
+  },
+  "tool_calls": {"webfetch": 30, "websearch": 5}
+}

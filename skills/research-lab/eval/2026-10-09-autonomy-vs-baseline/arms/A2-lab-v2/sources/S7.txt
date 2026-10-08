@@ -1,0 +1,15 @@
+url: https://arxiv.org/html/2504.01848
+title: PaperBench full text (Sections 5.3-5.4, Tables 4-5)
+type: primary
+year: 2025
+fetched: 2026-10-08T20:13:43+00:00
+via: webfetch-verbatim
+---
+[Table 4, BasicAgent, as returned by WebFetch] o3-mini-high scored 2.6±0.2 and o1-high scored 13.2±0.3.
+[Table 5, IterativeAgent, as returned by WebFetch] o3-mini-high scored 8.5±0.8 and o1-high scored 24.4±0.7.
+We see a significant uplift in scores from o1 and o3-mini with IterativeAgent.
+We note that Claude 3.5 Sonnet outperforms o1 with BasicAgent but underperforms o1 with IterativeAgent.
+our human baseline of ML PhDs (best of 3 attempts) achieved 41.4% after 48 hours of effort
+o1’s scores mostly plateau after the first hour
+humans start outperforming the AI agent after 24 hours
+o1 initially outperforms the human baseline but plateaus after the first hour

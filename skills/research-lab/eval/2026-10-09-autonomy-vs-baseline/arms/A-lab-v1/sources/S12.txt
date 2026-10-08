@@ -1,0 +1,10 @@
+url: https://arxiv.org/abs/2407.01489
+title: Agentless: Demystifying LLM-based Software Engineering Agents - abstract fragments
+type: primary
+year: 2024
+fetched: 2026-10-08T19:55:50+00:00
+via: webfetch-verbatim
+---
+Agentless: Demystifying LLM-based Software Engineering Agents (Xia, Deng, Dunn, Zhang)
+the simplistic Agentless is able to achieve both the highest performance (32.00%, 96 correct fixes) and low cost ($0.70)
+compared with all existing open-source software agents

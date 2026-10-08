@@ -1,0 +1,39 @@
+{"id": "E1", "claim": "C1", "stance": "supports", "snapshot": "S2", "quote": "outperformed single-agent Claude Opus 4 by 90.2% on our internal research eval.", "locator": ""}
+{"id": "E2", "claim": "C2", "stance": "supports", "snapshot": "S2", "quote": "token usage by itself explains 80% of the variance", "locator": ""}
+{"id": "E3", "claim": "C2", "stance": "context", "snapshot": "S2", "quote": "multi-agent systems use about 15× more tokens than chats", "locator": ""}
+{"id": "E4", "claim": "C3", "stance": "supports", "snapshot": "S3", "quote": "Under equal inference cost, multi-agent structure adds cost without clear benefit.", "locator": ""}
+{"id": "E5", "claim": "C3", "stance": "supports", "snapshot": "S3", "quote": "the full team achieves the highest mean but is not statistically better than the single agent", "locator": ""}
+{"id": "E6", "claim": "C3", "stance": "supports", "snapshot": "S4", "quote": "We find that SAS consistently match or outperform MAS on multi-hop reasoning tasks when reasoning tokens are held constant.", "locator": ""}
+{"id": "E7", "claim": "C2", "stance": "supports", "snapshot": "S4", "quote": "these gains are often confounded by increased test-time computation.", "locator": ""}
+{"id": "E8", "claim": "C3", "stance": "context", "snapshot": "S4", "quote": "when a single agent's effective context utilization is degraded", "locator": ""}
+{"id": "E9", "claim": "C4", "stance": "supports", "snapshot": "S5", "quote": "Gemini-2.5-Pro Deep Research, 48.88", "locator": "Table 1"}
+{"id": "E10", "claim": "C4", "stance": "context", "snapshot": "S5", "quote": "Claude-3.7-Sonnet w/Search, 40.67", "locator": "Table 1"}
+{"id": "E11", "claim": "C4", "stance": "contradicts", "snapshot": "S5", "quote": "Claude-3.7-Sonnet delivers an impressive performance, with its overall score exceeding Grok Deeper Search", "locator": "Sec 4.2.1"}
+{"id": "E12", "claim": "C5", "stance": "supports", "snapshot": "S6", "quote": "achieves an average replication score of 21.0%.", "locator": ""}
+{"id": "E13", "claim": "C5", "stance": "supports", "snapshot": "S6", "quote": "models do not yet outperform the human baseline.", "locator": ""}
+{"id": "E14", "claim": "C6", "stance": "supports", "snapshot": "S7", "quote": "We see a significant uplift in scores from o1 and o3-mini with IterativeAgent.", "locator": "Sec 5.3"}
+{"id": "E15", "claim": "C6", "stance": "supports", "snapshot": "S7", "quote": "o1-high scored 24.4±0.7", "locator": "Table 5"}
+{"id": "E16", "claim": "C6", "stance": "contradicts", "snapshot": "S7", "quote": "Claude 3.5 Sonnet outperforms o1 with BasicAgent but underperforms o1 with IterativeAgent.", "locator": "Sec 5.3"}
+{"id": "E17", "claim": "C5", "stance": "supports", "snapshot": "S7", "quote": "our human baseline of ML PhDs (best of 3 attempts) achieved 41.4% after 48 hours of effort", "locator": ""}
+{"id": "E18", "claim": "C5", "stance": "supports", "snapshot": "S7", "quote": "humans start outperforming the AI agent after 24 hours", "locator": ""}
+{"id": "E19", "claim": "C5", "stance": "supports", "snapshot": "S8", "quote": "achieves at least the level of a Kaggle bronze medal in 16.9% of competitions.", "locator": ""}
+{"id": "E20", "claim": "C6", "stance": "supports", "snapshot": "S9", "quote": "GPT-4o (AIDE) achieves more medals on average than both MLAB and OpenHands (8.7% vs. 0.8% and 4.4% respectively)", "locator": ""}
+{"id": "E21", "claim": "C6", "stance": "context", "snapshot": "S9", "quote": "Notably, AIDE is purpose-built for Kaggle competitions, whereas the other scaffolds are general-purpose.", "locator": ""}
+{"id": "E22", "claim": "C2", "stance": "context", "snapshot": "S9", "quote": "o1-preview's score doubles from 16.9% using pass@1 to 34.1% using pass@8.", "locator": ""}
+{"id": "E23", "claim": "C3", "stance": "contradicts", "snapshot": "S10", "quote": "centralized coordination improved performance by 80.9% over a single agent.", "locator": ""}
+{"id": "E24", "claim": "C3", "stance": "supports", "snapshot": "S10", "quote": "every multi-agent variant we tested degraded performance by 39-70%.", "locator": ""}
+{"id": "E25", "claim": "C3", "stance": "contradicts", "snapshot": "S11", "quote": "+80.8% on decomposable financial reasoning to -70.0% on sequential planning", "locator": ""}
+{"id": "E26", "claim": "C3", "stance": "context", "snapshot": "S11", "quote": "standardizing tools, prompts, and compute to isolate architectural effects", "locator": ""}
+{"id": "E27", "claim": "C3", "stance": "context", "snapshot": "S11", "quote": "a coordination yields diminishing returns once single-agent baselines exceed certain performance", "locator": ""}
+{"id": "E28", "claim": "C4", "stance": "context", "snapshot": "S12", "quote": "Deep-research configurations reduce overconfidence", "locator": ""}
+{"id": "E29", "claim": "C4", "stance": "contradicts", "snapshot": "S12", "quote": "still exhibit large fractions of unsupported statements", "locator": ""}
+{"id": "E30", "claim": "C5", "stance": "contradicts", "snapshot": "S13", "quote": "the best AI agents achieve a score 4x higher than human experts when both are given a total time budget of 2 hours", "locator": ""}
+{"id": "E31", "claim": "C5", "stance": "supports", "snapshot": "S13", "quote": "achieving 2x the score of the top AI agent when both are given 32 total hours", "locator": ""}
+{"id": "E32", "claim": "C6", "stance": "contradicts", "snapshot": "S14", "quote": "comparable with approaches using carefully tuned agent scaffolds (32%)", "locator": ""}
+{"id": "E33", "claim": "C6", "stance": "context", "snapshot": "S14", "quote": "falls short of the strongest agentic architectures", "locator": ""}
+{"id": "E34", "claim": "C7", "stance": "supports", "snapshot": "S15", "quote": "42% of experiments failed due to coding errors.", "locator": ""}
+{"id": "E35", "claim": "C7", "stance": "supports", "snapshot": "S15", "quote": "The system's literature reviews produced poor novelty assessments, often misclassifying established concepts.", "locator": ""}
+{"id": "E36", "claim": "C7", "stance": "contradicts", "snapshot": "S15", "quote": "Despite these flaws, the AI Scientist represents a leap forward in research automation.", "locator": ""}
+{"id": "E37", "claim": "C7", "stance": "contradicts", "snapshot": "S16", "quote": "Rating: 7: Good paper, accept", "locator": ""}
+{"id": "E38", "claim": "C7", "stance": "supports", "snapshot": "S16", "quote": "Of the 3 papers submitted, two papers did not meet the bar for acceptance.", "locator": ""}
+{"id": "E39", "claim": "C7", "stance": "supports", "snapshot": "S16", "quote": "none of the 3 papers passed our internal bar", "locator": ""}

@@ -1,0 +1,11 @@
+url: https://arxiv.org/abs/2411.15114
+title: RE-Bench: Evaluating frontier AI R&D capabilities of language model agents against human experts (METR, ICML 2025)
+type: primary
+year: 2024
+fetched: 2026-10-08T20:15:41+00:00
+via: webfetch-verbatim
+---
+the best AI agents achieve a score 4x higher than human experts when both are given a total time budget of 2 hours
+narrowly exceeding the top AI agent scores given an 8-hour budget
+achieving 2x the score of the top AI agent when both are given 32 total hours
+can generate and test solutions over ten times faster than humans, at much lower cost

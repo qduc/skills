@@ -1,0 +1,4 @@
+{"run": "run", "question": "Is there an independent, compute-matched comparison of a deep-research agent against a single model with the same search tools and token budget on BrowseComp or HLE?", "t": "2026-10-08T19:57:19+00:00"}
+{"run": "run", "question": "Do newer (2026) agents close the human gap on RE-Bench or PaperBench at 8-32 hour budgets?", "t": "2026-10-08T19:57:19+00:00"}
+{"run": "run", "question": "Which task properties (decomposability, breadth, sequential dependency) predict when agent architecture helps beyond extra compute?", "t": "2026-10-08T19:57:19+00:00"}
+{"run": "run", "question": "How does citation and claim faithfulness compare between deep-research agents and a single model with retrieval at equal cost?", "t": "2026-10-08T19:57:19+00:00"}

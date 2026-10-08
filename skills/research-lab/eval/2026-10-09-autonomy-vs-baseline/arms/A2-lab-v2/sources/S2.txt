@@ -1,0 +1,20 @@
+url: https://www.anthropic.com/engineering/multi-agent-research-system
+title: How we built our multi-agent research system (Anthropic Engineering) - verbatim fragments only
+type: primary
+year: 2025
+fetched: 2026-10-08T20:11:54+00:00
+via: webfetch-verbatim
+---
+outperformed single-agent Claude Opus 4 by 90.2% on our internal research eval.
+three factors explained 95% of the performance variance
+token usage by itself explains 80% of the variance
+with the number of tool calls and the model choice as the two other explanatory factors.
+agents typically use about 4× more tokens than chat interactions
+multi-agent systems use about 15× more tokens than chats
+There is a downside: in practice, these architectures burn through tokens fast.
+tasks where the value of the task is high enough to pay for the increased performance.
+some domains that require all agents to share the same context
+not a good fit for multi-agent systems today.
+most coding tasks involve fewer truly parallelizable tasks than research
+LLM agents are not yet great at coordinating and delegating to other agents in real time.
+the lead agent can't steer subagents, subagents can't coordinate.

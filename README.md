@@ -60,6 +60,7 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **playwright-cli** — Drives a browser to interact with web pages and to run or work with Playwright tests.
 - **[profiling](skills/profiling/SKILL.md)** — Measures representative workloads, locates limiting mechanisms, and verifies optimizations with comparable evidence.
 - **proportionality-review** — Judges whether a proposal or design is more complex than the problem needs.
+- **[research-lab](skills/research-lab/SKILL.md)** — Runs a budgeted, mostly unsupervised investigation: decomposes a goal into claims, gathers and challenges evidence, mechanically verifies quotes, and promotes settled findings to a reusable knowledge base.
 - **[research](skills/research/SKILL.md)** — Sources, compares, and synthesizes evidence into traceable answers to bounded questions.
 - **simplicity-architect** — Proposes software designs built on strong invariants and a small complexity budget, keeping edge cases from growing into extra defensive machinery.
 - **skill-creator** — Creates and revises agent skills, and measures how well they perform, including tests and how accurately a description gets the skill selected.
@@ -73,3 +74,29 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 Use `agentic-loop` to own the delegated outcome. Load `investigation`, `debugging`, `implementation`, `testing`, `code-review`, `research`, `browser-qa`, and `profiling` only when the current phase needs their methodology. Compose them for the task instead of loading the entire set up front.
 
 Each primitive includes optional source notes describing its methodological influences. Use the existing `skill-creator` when a real methodology gap remains; keep generated methods provisional and promote them only after repeated successful use, checking for overlap with existing skills.
+
+## Research Lab
+
+`research-lab` is the first application of a reusable autonomy contract
+(Observe → Decide → Act → Verify → Learn; see
+`skills/research-lab/references/autonomy-contract.md`). The agent does the
+thinking; `skills/research-lab/scripts/lab.py` (stdlib Python) holds the state
+that must not live in model context: a budget meter that stops predictably,
+an append-only event log, a claim and evidence ledger, a deterministic
+verifier, a report renderer, and a knowledge base.
+
+To use it, give any agent host that can read skills a goal and a budget:
+
+```text
+Use the research-lab skill. Goal: "<question>". Budget: 20 searches, 20 fetches,
+45 minutes. Run directory: runs/<slug>. Knowledge base: kb/.
+```
+
+You get back `runs/<slug>/findings.md`: the answer, judgment calls, the claim
+ledger with verified quotes, contradictions, and budget accounting. Settled
+claims, follow-up questions, and lessons accumulate in `kb/`. Each later run
+starts with `lab.py kb-search kb <terms> --lessons`.
+
+Tests: `python3 -m unittest discover -s skills/research-lab/scripts`.
+The first evaluation, with honest results, is in
+`skills/research-lab/eval/2026-10-09-autonomy-vs-baseline/RESULTS.md`.

@@ -1,0 +1,19 @@
+url: https://openai.com/index/introducing-deep-research/
+title: Introducing deep research (OpenAI)
+type: primary
+year: 2025
+fetched: 2026-10-08T19:52:37+00:00
+via: webfetch-verbatim
+---
+| GPT-4o | 3.3 |
+| OpenAI o1 | 9.1 |
+| DeepSeek-R1* | 9.4 |
+| OpenAI o3-mini (medium)* | 10.5 |
+| OpenAI o3-mini (high)* | 13.0 |
+| OpenAI deep research** | 26.6 |
+the model powering deep research scores a new high at 26.6% accuracy.
+with browsing + python tools
+It can sometimes hallucinate facts in responses or make incorrect inferences
+at a notably lower rate than existing ChatGPT models, according to internal evaluations.
+It may struggle with distinguishing authoritative information from rumors
+currently shows weakness in confidence calibration, often failing to convey uncertainty accurately

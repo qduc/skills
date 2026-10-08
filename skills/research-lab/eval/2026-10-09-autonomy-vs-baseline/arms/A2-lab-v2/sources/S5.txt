@@ -1,0 +1,12 @@
+url: https://arxiv.org/html/2506.11763
+title: DeepResearch Bench: A Comprehensive Benchmark for Deep Research Agents (Du et al., ICLR 2026)
+type: primary
+year: 2025
+fetched: 2026-10-08T20:13:09+00:00
+via: webfetch-verbatim
+---
+100 PhD-level research tasks, each meticulously crafted by domain experts across 22 distinct fields
+within the DRA category, Gemini-2.5-Pro Deep Research demonstrates leading overall performance on the RACE framework.
+Claude-3.7-Sonnet delivers an impressive performance, with its overall score exceeding Grok Deeper Search
+[Table 1 RACE overall, as returned by WebFetch] Gemini-2.5-Pro Deep Research, 48.88
+[Table 1 RACE overall, as returned by WebFetch] Claude-3.7-Sonnet w/Search, 40.67

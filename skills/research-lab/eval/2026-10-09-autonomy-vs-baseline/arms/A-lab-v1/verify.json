@@ -1,0 +1,32 @@
+{
+  "t": "2026-10-08T19:56:56+00:00",
+  "pass": true,
+  "checks": {
+    "quotes": {
+      "pass": true,
+      "issues": []
+    },
+    "coverage": {
+      "pass": true,
+      "issues": []
+    },
+    "challenge": {
+      "pass": true,
+      "issues": []
+    },
+    "primary": {
+      "pass": true,
+      "issues": []
+    },
+    "contradictions": {
+      "pass": true,
+      "issues": []
+    },
+    "budget": {
+      "pass": true,
+      "issues": []
+    }
+  },
+  "verified_evidence": 31,
+  "evidence": 31
+}

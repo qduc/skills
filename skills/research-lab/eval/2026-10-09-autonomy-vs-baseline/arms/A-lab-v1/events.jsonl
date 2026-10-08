@@ -1,0 +1,94 @@
+{"t": "2026-10-08T19:47:20+00:00", "event": "init", "goal": "What evidence shows that autonomous research agents outperform a single well-prompted model on difficult technical research tasks?", "budget": {"search": 20, "fetch": 20, "experiment": 3, "minutes": 45.0}}
+{"t": "2026-10-08T19:47:35+00:00", "event": "claim_add", "id": "C1", "text": "A multi-agent research system substantially outperforms a single agent using the same frontier model on an internal breadth-heavy research evaluation (Anthropic reports ~90% improvement).", "key": true}
+{"t": "2026-10-08T19:47:35+00:00", "event": "claim_add", "id": "C2", "text": "Agentic deep-research systems score far higher than the same vendor's single non-agentic models on hard public benchmarks such as Humanity's Last Exam and BrowseComp.", "key": true}
+{"t": "2026-10-08T19:47:35+00:00", "event": "claim_add", "id": "C3", "text": "Most of the measured advantage of research agents is explained by extra compute/token spend and tool access rather than by agent architecture per se; equal-budget comparisons are rarely reported.", "key": true}
+{"t": "2026-10-08T19:47:35+00:00", "event": "claim_add", "id": "C4", "text": "When cost is controlled, simple baselines (single model with retries/sampling) can match or beat complex agent systems on some benchmarks.", "key": true}
+{"t": "2026-10-08T19:47:35+00:00", "event": "claim_add", "id": "C5", "text": "On long-horizon difficult research-engineering tasks, autonomous agents still underperform skilled humans given larger time budgets, limiting claims of autonomous superiority.", "key": true}
+{"t": "2026-10-08T19:47:35+00:00", "event": "claim_add", "id": "C6", "text": "Multi-agent LLM systems often show only minimal gains over single-agent baselines and fail in systematic ways.", "key": true}
+{"t": "2026-10-08T19:47:39+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C1/C3: Anthropic multi-agent research system post (primary)"}
+{"t": "2026-10-08T19:47:54+00:00", "event": "snapshot", "id": "S1", "url": "https://www.anthropic.com/engineering/multi-agent-research-system", "type": "primary", "chars": 929}
+{"t": "2026-10-08T19:48:02+00:00", "event": "evidence", "id": "E1", "claim": "C1", "stance": "supports", "snapshot": "S1", "quote": "outperformed single-agent Claude Opus 4 by 90.2% on our internal research eval.", "locator": ""}
+{"t": "2026-10-08T19:48:02+00:00", "event": "evidence", "id": "E2", "claim": "C3", "stance": "supports", "snapshot": "S1", "quote": "We found that token usage by itself explains 80% of the variance,", "locator": ""}
+{"t": "2026-10-08T19:48:02+00:00", "event": "evidence", "id": "E3", "claim": "C3", "stance": "supports", "snapshot": "S1", "quote": "multi-agent systems use about 15× more tokens than chats.", "locator": ""}
+{"t": "2026-10-08T19:48:02+00:00", "event": "evidence", "id": "E4", "claim": "C6", "stance": "supports", "snapshot": "S1", "quote": "LLM agents are not yet great at coordinating and delegating to other agents in real time.", "locator": ""}
+{"t": "2026-10-08T19:48:02+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C2: OpenAI deep research HLE/BrowseComp scores vs GPT-4o/o1"}
+{"t": "2026-10-08T19:48:13+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C2: BrowseComp paper arXiv primary"}
+{"t": "2026-10-08T19:52:14+00:00", "event": "snapshot", "id": "S2", "url": "https://arxiv.org/abs/2504.12516", "type": "primary", "chars": 836}
+{"t": "2026-10-08T19:52:14+00:00", "event": "evidence", "id": "E5", "claim": "C2", "stance": "supports", "snapshot": "S2", "quote": "Deep Research significantly outperforms all other models, solving around half of the problems.", "locator": ""}
+{"t": "2026-10-08T19:52:14+00:00", "event": "evidence", "id": "E6", "claim": "C2", "stance": "supports", "snapshot": "S2", "quote": "GPT-4o and GPT-4.5 achieved near-zero accuracy", "locator": ""}
+{"t": "2026-10-08T19:52:14+00:00", "event": "evidence", "id": "E7", "claim": "C3", "stance": "supports", "snapshot": "S2", "quote": "performance scales smoothly as a function of the amount of test-time compute used.", "locator": ""}
+{"t": "2026-10-08T19:52:14+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C2: Humanity's Last Exam deep research score vs o3-mini"}
+{"t": "2026-10-08T19:52:22+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C2: OpenAI deep research launch post primary"}
+{"t": "2026-10-08T19:52:37+00:00", "event": "snapshot", "id": "S3", "url": "https://openai.com/index/introducing-deep-research/", "type": "primary", "chars": 602}
+{"t": "2026-10-08T19:52:37+00:00", "event": "evidence", "id": "E8", "claim": "C2", "stance": "supports", "snapshot": "S3", "quote": "the model powering deep research scores a new high at 26.6% accuracy.", "locator": ""}
+{"t": "2026-10-08T19:52:37+00:00", "event": "evidence", "id": "E9", "claim": "C2", "stance": "context", "snapshot": "S3", "quote": "with browsing + python tools", "locator": ""}
+{"t": "2026-10-08T19:52:37+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C4: equal-cost baselines vs complex agents (AI Agents That Matter)"}
+{"t": "2026-10-08T19:52:43+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C4: AI Agents That Matter abstract/findings"}
+{"t": "2026-10-08T19:52:57+00:00", "event": "snapshot", "id": "S4", "url": "https://arxiv.org/abs/2407.01502", "type": "primary", "chars": 117}
+{"t": "2026-10-08T19:52:57+00:00", "event": "evidence", "id": "E10", "claim": "C4", "stance": "supports", "snapshot": "S4", "quote": "SOTA agents are needlessly complex and costly", "locator": ""}
+{"t": "2026-10-08T19:52:57+00:00", "event": "evidence", "id": "E11", "claim": "C3", "stance": "supports", "snapshot": "S4", "quote": "there is a narrow focus on accuracy without attention to other metrics", "locator": ""}
+{"t": "2026-10-08T19:52:57+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C4: AI Agents That Matter full text for baseline result"}
+{"t": "2026-10-08T19:53:08+00:00", "event": "snapshot", "id": "S5", "url": "https://arxiv.org/pdf/2407.01502v1", "type": "primary", "chars": 315}
+{"t": "2026-10-08T19:53:08+00:00", "event": "evidence", "id": "E12", "claim": "C4", "stance": "supports", "snapshot": "S5", "quote": "agent architectures for HumanEval do not outperform simple baselines.", "locator": ""}
+{"t": "2026-10-08T19:53:08+00:00", "event": "evidence", "id": "E13", "claim": "C4", "stance": "supports", "snapshot": "S5", "quote": "the escalation strategy strictly improves accuracy while costing less than half of LDB (GPT-3.5).", "locator": ""}
+{"t": "2026-10-08T19:53:08+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C5: RE-Bench agents vs human experts time budgets"}
+{"t": "2026-10-08T19:53:21+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C5: RE-Bench abstract"}
+{"t": "2026-10-08T19:53:33+00:00", "event": "snapshot", "id": "S6", "url": "https://arxiv.org/abs/2411.15114", "type": "primary", "chars": 380}
+{"t": "2026-10-08T19:53:33+00:00", "event": "evidence", "id": "E14", "claim": "C5", "stance": "supports", "snapshot": "S6", "quote": "achieving 2x the score of the top AI agent when both are given 32 total hours (across different attempts)", "locator": ""}
+{"t": "2026-10-08T19:53:33+00:00", "event": "evidence", "id": "E15", "claim": "C5", "stance": "contradicts", "snapshot": "S6", "quote": "find that the best AI agents achieve a score 4x higher than human experts", "locator": ""}
+{"t": "2026-10-08T19:53:33+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C6: Why do multi-agent LLM systems fail (MAST) minimal gains"}
+{"t": "2026-10-08T19:53:42+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C6: MAST paper abstract arXiv 2503.13657"}
+{"t": "2026-10-08T19:53:55+00:00", "event": "snapshot", "id": "S7", "url": "https://arxiv.org/abs/2503.13657", "type": "primary", "chars": 361}
+{"t": "2026-10-08T19:53:55+00:00", "event": "evidence", "id": "E16", "claim": "C6", "stance": "supports", "snapshot": "S7", "quote": "their performance gains on popular benchmarks are often minimal.", "locator": ""}
+{"t": "2026-10-08T19:53:55+00:00", "event": "evidence", "id": "E17", "claim": "C6", "stance": "supports", "snapshot": "S7", "quote": "This process identifies 14 unique modes, clustered into 3 categories", "locator": ""}
+{"t": "2026-10-08T19:53:55+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C1 challenge: critique of Anthropic multi-agent claim / single agent equal tokens"}
+{"t": "2026-10-08T19:54:06+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C1/C3 challenge: arXiv 2604.02460 equal-token single vs multi agent"}
+{"t": "2026-10-08T19:54:22+00:00", "event": "snapshot", "id": "S8", "url": "https://arxiv.org/abs/2604.02460", "type": "primary", "chars": 494}
+{"t": "2026-10-08T19:54:22+00:00", "event": "evidence", "id": "E18", "claim": "C3", "stance": "supports", "snapshot": "S8", "quote": "many reported advantages of multi-agent systems are better explained by unaccounted computation", "locator": ""}
+{"t": "2026-10-08T19:54:22+00:00", "event": "evidence", "id": "E19", "claim": "C4", "stance": "supports", "snapshot": "S8", "quote": "We find that SAS consistently match or outperform MAS on multi-hop reasoning tasks when reasoning tokens are held constant.", "locator": ""}
+{"t": "2026-10-08T19:54:22+00:00", "event": "evidence", "id": "E20", "claim": "C1", "stance": "contradicts", "snapshot": "S8", "quote": "We find that SAS consistently match or outperform MAS on multi-hop reasoning tasks when reasoning tokens are held constant.", "locator": ""}
+{"t": "2026-10-08T19:54:22+00:00", "event": "challenge", "claim": "C1", "query": "single agent matches multi-agent equal token budget compute-matched comparison LLM research agents 2025", "found": "yes"}
+{"t": "2026-10-08T19:54:23+00:00", "event": "challenge", "claim": "C3", "query": "single agent matches multi-agent equal token budget compute-matched comparison LLM research agents 2025", "found": "no"}
+{"t": "2026-10-08T19:54:23+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C2 challenge: deep research benchmark failures / hallucination / closed-book vs agent"}
+{"t": "2026-10-08T19:54:31+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C2 challenge: DeepTRACE audit of deep research citation reliability"}
+{"t": "2026-10-08T19:54:44+00:00", "event": "snapshot", "id": "S9", "url": "https://arxiv.org/abs/2509.04499", "type": "primary", "chars": 126}
+{"t": "2026-10-08T19:54:44+00:00", "event": "evidence", "id": "E21", "claim": "C2", "stance": "context", "snapshot": "S9", "quote": "still exhibit large fractions of unsupported statements", "locator": ""}
+{"t": "2026-10-08T19:54:45+00:00", "event": "evidence", "id": "E22", "claim": "C2", "stance": "context", "snapshot": "S9", "quote": "from 40--80% across systems", "locator": ""}
+{"t": "2026-10-08T19:54:45+00:00", "event": "challenge", "claim": "C2", "query": "deep research agents benchmark fail citation accuracy evaluation DeepResearch Bench limitations compared to LLM with search", "found": "yes"}
+{"t": "2026-10-08T19:54:45+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C4/C5 challenge: agents beat strong baselines on research engineering, e.g. MLE-bench / PaperBench"}
+{"t": "2026-10-08T19:54:51+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C5: PaperBench abstract"}
+{"t": "2026-10-08T19:55:05+00:00", "event": "snapshot", "id": "S10", "url": "https://arxiv.org/abs/2504.01848", "type": "primary", "chars": 97}
+{"t": "2026-10-08T19:55:05+00:00", "event": "evidence", "id": "E23", "claim": "C5", "stance": "supports", "snapshot": "S10", "quote": "models do not yet outperform the human baseline.", "locator": ""}
+{"t": "2026-10-08T19:55:05+00:00", "event": "evidence", "id": "E24", "claim": "C5", "stance": "context", "snapshot": "S10", "quote": "achieves an average replication score of 21.0%.", "locator": ""}
+{"t": "2026-10-08T19:55:05+00:00", "event": "challenge", "claim": "C5", "query": "PaperBench results agents replicate ICML papers vs human ML PhDs 21% scaffold IterativeAgent", "found": "yes"}
+{"t": "2026-10-08T19:55:05+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C4/C6 challenge: evidence multi-agent or agent scaffolds beat strong single-model baselines cost-matched"}
+{"t": "2026-10-08T19:55:13+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C6/C4: Towards a science of scaling agent systems abstract"}
+{"t": "2026-10-08T19:55:30+00:00", "event": "snapshot", "id": "S11", "url": "https://arxiv.org/abs/2512.08296", "type": "primary", "chars": 350}
+{"t": "2026-10-08T19:55:30+00:00", "event": "evidence", "id": "E25", "claim": "C6", "stance": "supports", "snapshot": "S11", "quote": "to -70.0% on sequential planning", "locator": ""}
+{"t": "2026-10-08T19:55:30+00:00", "event": "evidence", "id": "E26", "claim": "C6", "stance": "contradicts", "snapshot": "S11", "quote": "Relative performance change compared to single-agent baseline ranges from +80.8% on decomposable financial reasoning", "locator": ""}
+{"t": "2026-10-08T19:55:30+00:00", "event": "evidence", "id": "E27", "claim": "C1", "stance": "supports", "snapshot": "S11", "quote": "Relative performance change compared to single-agent baseline ranges from +80.8% on decomposable financial reasoning", "locator": ""}
+{"t": "2026-10-08T19:55:30+00:00", "event": "evidence", "id": "E28", "claim": "C4", "stance": "supports", "snapshot": "S11", "quote": "a coordination yields diminishing returns once single-agent baselines exceed certain performance", "locator": ""}
+{"t": "2026-10-08T19:55:30+00:00", "event": "challenge", "claim": "C6", "query": "\"Towards a science of scaling agent systems\" multi-agent vs single-agent controlled evaluation improvement degradation", "found": "yes"}
+{"t": "2026-10-08T19:55:31+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C4 challenge: evidence that agent scaffolds beat cost-matched baselines (counter to C4)"}
+{"t": "2026-10-08T19:55:38+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C4: Agentless paper abstract (simple pipeline vs complex agents)"}
+{"t": "2026-10-08T19:55:50+00:00", "event": "snapshot", "id": "S12", "url": "https://arxiv.org/abs/2407.01489", "type": "primary", "chars": 263}
+{"t": "2026-10-08T19:55:50+00:00", "event": "evidence", "id": "E29", "claim": "C4", "stance": "supports", "snapshot": "S12", "quote": "the simplistic Agentless is able to achieve both the highest performance (32.00%, 96 correct fixes) and low cost ($0.70)", "locator": ""}
+{"t": "2026-10-08T19:55:50+00:00", "event": "challenge", "claim": "C4", "query": "agent scaffold outperforms best-of-n repeated sampling same cost baseline SWE-bench ablation agentless", "found": "no"}
+{"t": "2026-10-08T19:55:51+00:00", "event": "charge", "kind": "experiment", "n": 1, "note": "C2/C3: re-analyze published BrowseComp numbers: deep research vs best single non-agentic model, ratios"}
+{"t": "2026-10-08T19:56:10+00:00", "event": "experiment", "claim": "C2", "hypothesis": "Published numbers show agentic deep research beats the strongest non-agentic single model by a large margin on BrowseComp and HLE; and Anthropic's multi-agent gain coincides with a several-fold token increase", "command": "python3 -I /home/claude/lab-runs/A/tmp/exp1.py", "result": "BrowseComp: Deep Research 5.2x o1 (+41.6 pts), 27x GPT-4o w/ browsing; HLE: 2.05x o3-mini-high (+13.6 pts). Anthropic: multi-agent uses ~3.75x the tokens of a single agent (15x vs 4x of chat) for a reported 1.90x eval gain - gains not compute-matched.", "artifact": "/home/claude/lab-runs/A/tmp/exp1.out"}
+{"t": "2026-10-08T19:56:16+00:00", "event": "charge", "kind": "search", "n": 1, "note": "C3 challenge: architecture gains persist at matched compute"}
+{"t": "2026-10-08T19:56:22+00:00", "event": "charge", "kind": "fetch", "n": 1, "note": "C3: arXiv 2609.04217 equal inference cost"}
+{"t": "2026-10-08T19:56:36+00:00", "event": "snapshot", "id": "S13", "url": "https://arxiv.org/abs/2609.04217", "type": "primary", "chars": 555}
+{"t": "2026-10-08T19:56:36+00:00", "event": "evidence", "id": "E30", "claim": "C3", "stance": "supports", "snapshot": "S13", "quote": "Under equal inference cost, multi-agent structure adds cost without clear benefit.", "locator": ""}
+{"t": "2026-10-08T19:56:36+00:00", "event": "evidence", "id": "E31", "claim": "C1", "stance": "contradicts", "snapshot": "S13", "quote": "achieves the highest mean but is not statistically better than the single agent", "locator": ""}
+{"t": "2026-10-08T19:56:37+00:00", "event": "challenge", "claim": "C3", "query": "multi-agent outperforms single agent at matched compute budget deep research agent ablation same token cost evidence", "found": "no"}
+{"t": "2026-10-08T19:56:55+00:00", "event": "claim_set", "id": "C1", "status": "supported", "confidence": "medium"}
+{"t": "2026-10-08T19:56:55+00:00", "event": "claim_set", "id": "C2", "status": "supported", "confidence": "high"}
+{"t": "2026-10-08T19:56:55+00:00", "event": "claim_set", "id": "C3", "status": "supported", "confidence": "medium"}
+{"t": "2026-10-08T19:56:55+00:00", "event": "claim_set", "id": "C4", "status": "supported", "confidence": "medium"}
+{"t": "2026-10-08T19:56:55+00:00", "event": "claim_set", "id": "C5", "status": "supported", "confidence": "high"}
+{"t": "2026-10-08T19:56:56+00:00", "event": "claim_set", "id": "C6", "status": "supported", "confidence": "medium"}
+{"t": "2026-10-08T19:56:56+00:00", "event": "verify", "passed": true, "failed": []}
+{"t": "2026-10-08T19:57:19+00:00", "event": "report", "verified": true}
+{"t": "2026-10-08T19:57:19+00:00", "event": "learn", "kb": "/home/claude/lab-kb", "promoted": 6, "questions": 4}
+{"t": "2026-10-08T19:57:19+00:00", "event": "stop", "status": "FINISHED", "reason": "answered"}

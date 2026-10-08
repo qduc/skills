@@ -1,0 +1,15 @@
+url: https://arxiv.org/html/2410.07095
+title: MLE-bench full text (scaffold comparison, pass@k, time scaling)
+type: primary
+year: 2024
+fetched: 2026-10-08T20:14:14+00:00
+via: webfetch-verbatim
+---
+GPT-4o (AIDE) achieves more medals on average than both MLAB and OpenHands (8.7% vs. 0.8% and 4.4% respectively)
+despite making a similar number of valid submissions.
+Notably, AIDE is purpose-built for Kaggle competitions, whereas the other scaffolds are general-purpose.
+MLAB and OpenHands tend to end their runs early, sometimes within the first few minutes,
+performance significantly improves when agents are given multiple attempts per competition;
+o1-preview's score doubles from 16.9% using pass@1 to 34.1% using pass@8.
+GPT-40 scores 8.7% given 24 hours to attempt each competition, but 11.8% when given 100 hours.
+GPT-40 (AIDE) achieves a significant number of medals in the first couple hours of execution,

@@ -1,0 +1,12 @@
+url: https://arxiv.org/abs/2411.15114
+title: RE-Bench (Wijk et al., METR) - abstract
+type: primary
+year: 2024
+fetched: 2026-10-08T19:53:33+00:00
+via: webfetch-verbatim
+---
+find that the best AI agents achieve a score 4x higher than human experts
+when both are given a total time budget of 2 hours per environment
+humans currently display better returns to increasing time budgets
+narrowly exceeding the top AI agent scores given an 8-hour budget
+achieving 2x the score of the top AI agent when both are given 32 total hours (across different attempts)

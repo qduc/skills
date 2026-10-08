@@ -1,0 +1,119 @@
+[
+  {
+    "id": "C1",
+    "text": "In Anthropic's own internal research evaluation, its multi-agent research system substantially outperformed a single-agent Claude Opus 4 baseline.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "medium",
+    "note": "Primary source (Anthropic engineering blog) states 90.2% gain; eval is internal, unpublished, and not compute-matched (multi-agent ~15x chat tokens), so medium confidence that it generalizes; no independent replication found.",
+    "challenges": [
+      {
+        "query": "Anthropic 90.2% multi-agent research claim critique internal eval not public token cost confound",
+        "found": "no",
+        "t": "2026-10-08T20:14:26+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C2",
+    "text": "Most of the performance gain of multi-agent research systems is explained by greater token/compute spend rather than by agent structure per se.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "medium",
+    "note": "Anthropic's own BrowseComp analysis: token usage alone explains 80% of variance; Tran & Kiela show MAS gains confounded by test-time compute. No study found showing structure-only gains dominate. Variance-explained is not causal attribution, hence medium.",
+    "challenges": [
+      {
+        "query": "multi-agent vs single agent equal compute budget comparison critique (counter: structure matters beyond tokens)",
+        "found": "yes",
+        "t": "2026-10-08T20:16:04+00:00"
+      },
+      {
+        "query": "multi-agent gains not explained by token budget alone architecture effect controlling for tokens deep research ablation",
+        "found": "no",
+        "t": "2026-10-08T20:16:42+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C3",
+    "text": "At matched inference cost or token budget, multi-agent research/reasoning systems do not reliably outperform a single well-prompted agent.",
+    "key": true,
+    "parent": null,
+    "status": "contested",
+    "confidence": "medium",
+    "note": "Two equal-budget studies (Tran & Kiela multi-hop reasoning; MA-Evolve on ALFWorld/WebShop) find no MAS advantage. Google's 260-config study (compute standardized) finds +80.8% on decomposable financial reasoning but -39 to -70% on sequential planning. Resolution: matched-budget MAS advantage is task-dependent (decomposable/parallel tasks only); none of these studies are on difficult technical research specifically.",
+    "challenges": [
+      {
+        "query": "multi-agent outperforms single agent under matched compute budget controlled study research tasks 2026",
+        "found": "no",
+        "t": "2026-10-08T20:14:32+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C4",
+    "text": "On deep-research report benchmarks (e.g., DeepResearch Bench), dedicated deep-research agents score higher than LLMs given only search tools.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "medium",
+    "note": "DeepResearch Bench (100 PhD-level tasks): best DRA (Gemini DR 48.88 RACE) > best LLM+search (Claude 3.7 w/Search 40.67), but ranking not uniform (Claude w/Search beats Grok Deeper Search). DeepTRACE: DR configs reduce overconfidence yet still have large fractions of unsupported statements. Not compute-matched; LLM-as-judge scoring.",
+    "challenges": [
+      {
+        "query": "deep research agents evaluation citation accuracy hallucination worse than LLM with search benchmark 2026",
+        "found": "yes",
+        "t": "2026-10-08T20:15:21+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C5",
+    "text": "On difficult ML research replication/engineering benchmarks (PaperBench, MLE-bench), autonomous agents still fall well short of human experts.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "high",
+    "note": "PaperBench: best agent 21.0% vs ML PhDs 41.4% (48h); humans overtake after 24h. MLE-bench: bronze+ in 16.9% of competitions. RE-Bench contradicts only at short horizons (agents 4x humans at 2h) but humans 2x at 32h; resolution: agents win short budgets, humans win long-horizon hard tasks.",
+    "challenges": [
+      {
+        "query": "RE-Bench METR AI agents vs human experts ML research engineering 2 hour 8 hour results",
+        "found": "yes",
+        "t": "2026-10-08T20:15:41+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C6",
+    "text": "Giving the same model an agentic scaffold (iterative tool use / longer horizon) improves results on hard ML research tasks compared to a less agentic scaffold.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "medium",
+    "note": "Same model gains with more agentic scaffolds: PaperBench IterativeAgent roughly doubles o1 (13.2->24.4), MLE-bench AIDE 8.7% vs OpenHands 4.4%/MLAB 0.8%. Contradiction: scaffold effects are model-dependent (Claude 3.5 Sonnet better with BasicAgent than o1, worse with Iterative) and an unscaffolded long-context model matched tuned scaffolds on SWE-bench Verified (38% vs 32%). Also gains are partly extra compute/time, not separable.",
+    "challenges": [
+      {
+        "query": "simple scaffold matches complex agent scaffold benchmark agentless simple baseline outperforms agent framework research tasks",
+        "found": "yes",
+        "t": "2026-10-08T20:16:04+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C7",
+    "text": "Independent evaluations of end-to-end autonomous 'AI scientist' systems find substantial quality failures (e.g., flawed experiments, poor novelty checks) that undercut claims of research-level performance.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "medium",
+    "note": "Independent evaluation (Beel et al.) found 42% of experiments failed from coding errors and poor novelty assessment; Sakana's own v2 result: 1 of 3 workshop papers cleared reviewer threshold, none met their internal main-track bar. Counter-evidence (one workshop acceptance; Beel calls it a leap forward) shows progress but does not refute quality failures. Neither compares against a single well-prompted model.",
+    "challenges": [
+      {
+        "query": "AI Scientist-v2 workshop paper passed peer review ICLR 2025 fully AI-generated accepted score",
+        "found": "yes",
+        "t": "2026-10-08T20:17:52+00:00"
+      }
+    ]
+  }
+]

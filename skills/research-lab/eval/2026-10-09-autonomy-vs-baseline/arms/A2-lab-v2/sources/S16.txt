@@ -1,0 +1,14 @@
+url: https://sakana.ai/ai-scientist-first-publication/
+title: The AI Scientist Generates its First Peer-Reviewed Scientific Publication (Sakana AI)
+type: primary
+year: 2025
+fetched: 2026-10-08T20:17:52+00:00
+via: webfetch-verbatim
+---
+agreed that we would submit 3 AI-generated papers into the workshop for peer-review.
+Of the 3 papers submitted, two papers did not meet the bar for acceptance.
+Rating: 6: Marginally above acceptance threshold
+Rating: 7: Good paper, accept
+the venue in which the work is presented is at the workshop track, rather than at the main conference track.
+none of the 3 papers passed our internal bar
+The AI Scientist occasionally made embarrassing citation errors.

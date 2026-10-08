@@ -1,0 +1,10 @@
+url: https://research.google/blog/towards-a-science-of-scaling-agent-systems-when-and-why-agent-systems-work/
+title: Towards a science of scaling agent systems: When and why agent systems work (Google Research blog; arXiv 2512.08296)
+type: primary
+year: 2025
+fetched: 2026-10-08T20:14:47+00:00
+via: webfetch-verbatim
+---
+Through a large-scale controlled evaluation of 180 agent configurations
+centralized coordination improved performance by 80.9% over a single agent.
+every multi-agent variant we tested degraded performance by 39-70%.

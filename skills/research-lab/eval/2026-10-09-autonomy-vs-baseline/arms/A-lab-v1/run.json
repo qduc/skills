@@ -1,0 +1,20 @@
+{
+  "id": "run",
+  "goal": "What evidence shows that autonomous research agents outperform a single well-prompted model on difficult technical research tasks?",
+  "created": "2026-10-08T19:47:20+00:00",
+  "status": "FINISHED",
+  "stop_reason": "answered",
+  "kb": "/home/claude/lab-kb",
+  "budget": {
+    "search": 20,
+    "fetch": 20,
+    "experiment": 3,
+    "minutes": 45.0
+  },
+  "spent": {
+    "search": 11,
+    "fetch": 13,
+    "experiment": 1
+  },
+  "ended": "2026-10-08T19:57:19+00:00"
+}

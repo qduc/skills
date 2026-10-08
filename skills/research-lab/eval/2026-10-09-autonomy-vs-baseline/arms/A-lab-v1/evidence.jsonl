@@ -1,0 +1,31 @@
+{"id": "E1", "claim": "C1", "stance": "supports", "snapshot": "S1", "quote": "outperformed single-agent Claude Opus 4 by 90.2% on our internal research eval.", "locator": ""}
+{"id": "E2", "claim": "C3", "stance": "supports", "snapshot": "S1", "quote": "We found that token usage by itself explains 80% of the variance,", "locator": ""}
+{"id": "E3", "claim": "C3", "stance": "supports", "snapshot": "S1", "quote": "multi-agent systems use about 15× more tokens than chats.", "locator": ""}
+{"id": "E4", "claim": "C6", "stance": "supports", "snapshot": "S1", "quote": "LLM agents are not yet great at coordinating and delegating to other agents in real time.", "locator": ""}
+{"id": "E5", "claim": "C2", "stance": "supports", "snapshot": "S2", "quote": "Deep Research significantly outperforms all other models, solving around half of the problems.", "locator": ""}
+{"id": "E6", "claim": "C2", "stance": "supports", "snapshot": "S2", "quote": "GPT-4o and GPT-4.5 achieved near-zero accuracy", "locator": ""}
+{"id": "E7", "claim": "C3", "stance": "supports", "snapshot": "S2", "quote": "performance scales smoothly as a function of the amount of test-time compute used.", "locator": ""}
+{"id": "E8", "claim": "C2", "stance": "supports", "snapshot": "S3", "quote": "the model powering deep research scores a new high at 26.6% accuracy.", "locator": ""}
+{"id": "E9", "claim": "C2", "stance": "context", "snapshot": "S3", "quote": "with browsing + python tools", "locator": ""}
+{"id": "E10", "claim": "C4", "stance": "supports", "snapshot": "S4", "quote": "SOTA agents are needlessly complex and costly", "locator": ""}
+{"id": "E11", "claim": "C3", "stance": "supports", "snapshot": "S4", "quote": "there is a narrow focus on accuracy without attention to other metrics", "locator": ""}
+{"id": "E12", "claim": "C4", "stance": "supports", "snapshot": "S5", "quote": "agent architectures for HumanEval do not outperform simple baselines.", "locator": ""}
+{"id": "E13", "claim": "C4", "stance": "supports", "snapshot": "S5", "quote": "the escalation strategy strictly improves accuracy while costing less than half of LDB (GPT-3.5).", "locator": ""}
+{"id": "E14", "claim": "C5", "stance": "supports", "snapshot": "S6", "quote": "achieving 2x the score of the top AI agent when both are given 32 total hours (across different attempts)", "locator": ""}
+{"id": "E15", "claim": "C5", "stance": "contradicts", "snapshot": "S6", "quote": "find that the best AI agents achieve a score 4x higher than human experts", "locator": ""}
+{"id": "E16", "claim": "C6", "stance": "supports", "snapshot": "S7", "quote": "their performance gains on popular benchmarks are often minimal.", "locator": ""}
+{"id": "E17", "claim": "C6", "stance": "supports", "snapshot": "S7", "quote": "This process identifies 14 unique modes, clustered into 3 categories", "locator": ""}
+{"id": "E18", "claim": "C3", "stance": "supports", "snapshot": "S8", "quote": "many reported advantages of multi-agent systems are better explained by unaccounted computation", "locator": ""}
+{"id": "E19", "claim": "C4", "stance": "supports", "snapshot": "S8", "quote": "We find that SAS consistently match or outperform MAS on multi-hop reasoning tasks when reasoning tokens are held constant.", "locator": ""}
+{"id": "E20", "claim": "C1", "stance": "contradicts", "snapshot": "S8", "quote": "We find that SAS consistently match or outperform MAS on multi-hop reasoning tasks when reasoning tokens are held constant.", "locator": ""}
+{"id": "E21", "claim": "C2", "stance": "context", "snapshot": "S9", "quote": "still exhibit large fractions of unsupported statements", "locator": ""}
+{"id": "E22", "claim": "C2", "stance": "context", "snapshot": "S9", "quote": "from 40--80% across systems", "locator": ""}
+{"id": "E23", "claim": "C5", "stance": "supports", "snapshot": "S10", "quote": "models do not yet outperform the human baseline.", "locator": ""}
+{"id": "E24", "claim": "C5", "stance": "context", "snapshot": "S10", "quote": "achieves an average replication score of 21.0%.", "locator": ""}
+{"id": "E25", "claim": "C6", "stance": "supports", "snapshot": "S11", "quote": "to -70.0% on sequential planning", "locator": ""}
+{"id": "E26", "claim": "C6", "stance": "contradicts", "snapshot": "S11", "quote": "Relative performance change compared to single-agent baseline ranges from +80.8% on decomposable financial reasoning", "locator": ""}
+{"id": "E27", "claim": "C1", "stance": "supports", "snapshot": "S11", "quote": "Relative performance change compared to single-agent baseline ranges from +80.8% on decomposable financial reasoning", "locator": ""}
+{"id": "E28", "claim": "C4", "stance": "supports", "snapshot": "S11", "quote": "a coordination yields diminishing returns once single-agent baselines exceed certain performance", "locator": ""}
+{"id": "E29", "claim": "C4", "stance": "supports", "snapshot": "S12", "quote": "the simplistic Agentless is able to achieve both the highest performance (32.00%, 96 correct fixes) and low cost ($0.70)", "locator": ""}
+{"id": "E30", "claim": "C3", "stance": "supports", "snapshot": "S13", "quote": "Under equal inference cost, multi-agent structure adds cost without clear benefit.", "locator": ""}
+{"id": "E31", "claim": "C1", "stance": "contradicts", "snapshot": "S13", "quote": "achieves the highest mean but is not statistically better than the single agent", "locator": ""}

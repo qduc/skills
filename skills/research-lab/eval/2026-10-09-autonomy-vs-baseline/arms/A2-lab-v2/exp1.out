@@ -1,0 +1,10 @@
+PaperBench o1-high Iterative vs Basic: 24.4 vs 13.2 -> ratio 1.85x, abs diff +11.20
+PaperBench o3-mini-high Iterative vs Basic: 8.5 vs 2.6 -> ratio 3.27x, abs diff +5.90
+MLE-bench GPT-4o AIDE vs OpenHands: 8.7 vs 4.4 -> ratio 1.98x, abs diff +4.30
+MLE-bench GPT-4o AIDE vs MLAB: 8.7 vs 0.8 -> ratio 10.87x, abs diff +7.90
+MLE-bench o1-preview pass@8 vs pass@1 (compute, not structure): 34.1 vs 16.9 -> ratio 2.02x, abs diff +17.20
+MLE-bench GPT-4o 100h vs 24h (time): 11.8 vs 8.7 -> ratio 1.36x, abs diff +3.10
+DeepResearch Bench Gemini DR vs best LLM+search (RACE): 48.88 vs 40.67 -> ratio 1.20x, abs diff +8.21
+LCLM no-scaffold Gemini-1.5 vs tuned scaffold (SWE-V): 38.0 vs 32.0 -> ratio 1.19x, abs diff +6.00
+MA-Evolve team vs single (equal cost): 0.769 vs 0.754 -> ratio 1.02x, abs diff +0.02
+PaperBench best agent (o1 Iterative 36h 26.0) as fraction of human 41.4: 0.63

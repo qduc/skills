@@ -1,0 +1,103 @@
+[
+  {
+    "id": "C1",
+    "text": "A multi-agent research system substantially outperforms a single agent using the same frontier model on an internal breadth-heavy research evaluation (Anthropic reports ~90% improvement).",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "medium",
+    "note": "Anthropic primary source reports +90.2% on an internal research eval (not public, not compute-matched: multi-agent uses ~3.75x the tokens of single agent, per exp1). Contradicting evidence (Tran & Kiela 2026; equal-cost preprint 2609.04217) concerns compute-matched settings on other tasks, so it does not refute the reported number but undercuts attributing it to architecture; Kim et al. show +80.8% gains on decomposable tasks, consistent with breadth-heavy research benefiting.",
+    "challenges": [
+      {
+        "query": "single agent matches multi-agent equal token budget compute-matched comparison LLM research agents 2025",
+        "found": "yes",
+        "t": "2026-10-08T19:54:22+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C2",
+    "text": "Agentic deep-research systems score far higher than the same vendor's single non-agentic models on hard public benchmarks such as Humanity's Last Exam and BrowseComp.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "high",
+    "note": "Vendor primary sources: BrowseComp Deep Research 51.5% vs o1 9.9% / GPT-4o w/ browsing 1.9%; HLE 26.6% vs o3-mini-high 13.0%. Caveats: vendor-run, agent has tools the baselines lack, HLE baselines partly on text-only subset; DeepTRACE shows deep research outputs still contain many unsupported statements (context, not refutation).",
+    "challenges": [
+      {
+        "query": "deep research agents benchmark fail citation accuracy evaluation DeepResearch Bench limitations compared to LLM with search",
+        "found": "yes",
+        "t": "2026-10-08T19:54:45+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C3",
+    "text": "Most of the measured advantage of research agents is explained by extra compute/token spend and tool access rather than by agent architecture per se; equal-budget comparisons are rarely reported.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "medium",
+    "note": "Anthropic: token usage alone explains 80% of BrowseComp variance; BrowseComp paper: performance scales smoothly with test-time compute; Tran & Kiela: MAS advantages better explained by unaccounted computation; equal-cost preprint finds no significant MAS benefit. 'Most' is an inference from variance decomposition and a few compute-matched studies, not a direct measurement on frontier deep-research systems; one cited preprint (2609.04217) is unreviewed. Counter-search found no compute-matched study showing architecture gains on hard research tasks.",
+    "challenges": [
+      {
+        "query": "single agent matches multi-agent equal token budget compute-matched comparison LLM research agents 2025",
+        "found": "no",
+        "t": "2026-10-08T19:54:23+00:00"
+      },
+      {
+        "query": "multi-agent outperforms single agent at matched compute budget deep research agent ablation same token cost evidence",
+        "found": "no",
+        "t": "2026-10-08T19:56:37+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C4",
+    "text": "When cost is controlled, simple baselines (single model with retries/sampling) can match or beat complex agent systems on some benchmarks.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "medium",
+    "note": "AI Agents That Matter: SOTA HumanEval agents do not outperform simple baselines, escalation beats LDB at <half cost; Agentless beat open-source SWE agents at $0.70; Tran & Kiela: single agent matches/beats MAS at equal thinking tokens. Evidence is from coding and multi-hop QA, older-generation systems; 'some benchmarks' scope is deliberately narrow. Kim et al. note coordination returns diminish as single-agent baselines strengthen.",
+    "challenges": [
+      {
+        "query": "agent scaffold outperforms best-of-n repeated sampling same cost baseline SWE-bench ablation agentless",
+        "found": "no",
+        "t": "2026-10-08T19:55:50+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C5",
+    "text": "On long-horizon difficult research-engineering tasks, autonomous agents still underperform skilled humans given larger time budgets, limiting claims of autonomous superiority.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "high",
+    "note": "RE-Bench: agents 4x humans at 2h but humans narrowly ahead at 8h and 2x at 32h; PaperBench: best agent 21.0% replication, models do not outperform ML PhD baseline. The contradicting 2h result is resolved by time budget: agents win short horizons, humans win longer ones. Results date from 2024-2025 models and may be outdated by newer agents.",
+    "challenges": [
+      {
+        "query": "PaperBench results agents replicate ICML papers vs human ML PhDs 21% scaffold IterativeAgent",
+        "found": "yes",
+        "t": "2026-10-08T19:55:05+00:00"
+      }
+    ]
+  },
+  {
+    "id": "C6",
+    "text": "Multi-agent LLM systems often show only minimal gains over single-agent baselines and fail in systematic ways.",
+    "key": true,
+    "parent": null,
+    "status": "supported",
+    "confidence": "medium",
+    "note": "MAST: MAS gains on popular benchmarks often minimal; 14 failure modes across 1600+ traces in 7 frameworks; Kim et al.: -70% on sequential planning. Contradicting +80.8% on decomposable financial reasoning (Kim et al.) shows gains are task-dependent, not absent; claim says 'often', which both results are consistent with.",
+    "challenges": [
+      {
+        "query": "\"Towards a science of scaling agent systems\" multi-agent vs single-agent controlled evaluation improvement degradation",
+        "found": "yes",
+        "t": "2026-10-08T19:55:30+00:00"
+      }
+    ]
+  }
+]

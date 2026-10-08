@@ -1,0 +1,11 @@
+url: https://arxiv.org/abs/2505.08120
+title: Putting It All into Context: Simplifying Agents with LCLMs (arXiv 2505.08120)
+type: primary
+year: 2025
+fetched: 2026-10-08T20:16:04+00:00
+via: webfetch-verbatim
+---
+a Gemini-1.5-Pro model without any scaffolding or tools achieves 38% on SWE-Bench-Verified
+comparable with approaches using carefully tuned agent scaffolds (32%)
+falls short of the strongest agentic architectures
+the more capable Gemini-2.5-Pro using the same unscaffolded approach directly attains a 50.8% solve rate.

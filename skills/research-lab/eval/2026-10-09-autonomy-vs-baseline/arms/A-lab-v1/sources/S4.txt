@@ -1,0 +1,9 @@
+url: https://arxiv.org/abs/2407.01502
+title: AI Agents That Matter (Kapoor, Stroebl, Siegel, Nadgir, Narayanan) - abstract
+type: primary
+year: 2024
+fetched: 2026-10-08T19:52:57+00:00
+via: webfetch-verbatim
+---
+there is a narrow focus on accuracy without attention to other metrics
+SOTA agents are needlessly complex and costly

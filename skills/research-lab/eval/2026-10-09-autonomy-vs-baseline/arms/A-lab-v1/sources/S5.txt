@@ -1,0 +1,10 @@
+url: https://arxiv.org/pdf/2407.01502v1
+title: AI Agents That Matter - Section 2.3 (full text)
+type: primary
+year: 2024
+fetched: 2026-10-08T19:53:08+00:00
+via: webfetch-verbatim
+---
+“State-of-the-art” agent architectures for HumanEval do not outperform simple baselines.
+There is no significant accuracy difference between our warming strategy and the best-performing agent architecture.
+Meanwhile, the escalation strategy strictly improves accuracy while costing less than half of LDB (GPT-3.5).

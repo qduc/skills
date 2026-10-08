@@ -1,0 +1,15 @@
+url: https://arxiv.org/abs/2512.08296
+title: Towards a Science of Scaling Agent Systems (arXiv 2512.08296, abstract)
+type: primary
+year: 2025
+fetched: 2026-10-08T20:15:01+00:00
+via: webfetch-verbatim
+---
+standardizing tools, prompts, and compute to isolate architectural effects
+Across 260 configurations spanning six agentic benchmarks
++80.8% on decomposable financial reasoning to -70.0% on sequential planning
+architecture-task alignment determines collaborative success
+a coordination yields diminishing returns once single-agent baselines exceed certain performance
+tool-heavy tasks appear to incur multi-agent overhead
+architectures without centralized verification tend to propagate errors more than those with centralized coordination
+mismatched coordination degrades the performance

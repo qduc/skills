@@ -1,0 +1,10 @@
+url: https://arxiv.org/abs/2410.07095
+title: MLE-bench: Evaluating Machine Learning Agents on Machine Learning Engineering (OpenAI, 2024)
+type: primary
+year: 2024
+fetched: 2026-10-08T20:13:55+00:00
+via: webfetch-verbatim
+---
+the best-performing setup--OpenAI's o1-preview with AIDE scaffolding--
+achieves at least the level of a Kaggle bronze medal in 16.9% of competitions.
+investigate various forms of resource scaling for AI agents

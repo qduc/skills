@@ -1,0 +1,12 @@
+url: https://arxiv.org/abs/2604.02460
+title: Single-Agent LLMs Outperform Multi-Agent Systems on Multi-Hop Reasoning Under Equal Thinking Token Budgets (Tran, Kiela)
+type: primary
+year: 2026
+fetched: 2026-10-08T19:54:22+00:00
+via: webfetch-verbatim
+---
+Single-Agent LLMs Outperform Multi-Agent Systems on Multi-Hop Reasoning Under Equal Thinking Token Budgets (Dat Tran, Douwe Kiela)
+We find that SAS consistently match or outperform MAS on multi-hop reasoning tasks when reasoning tokens are held constant.
+comparing SAS with multiple MAS architectures under matched budgets.
+under a fixed reasoning-token budget and with perfect context utilization
+many reported advantages of multi-agent systems are better explained by unaccounted computation

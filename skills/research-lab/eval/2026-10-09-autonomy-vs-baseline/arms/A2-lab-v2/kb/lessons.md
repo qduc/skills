@@ -1,0 +1,7 @@
+
+## run (2026-10-08)
+
+- Save only what WebFetch returned verbatim as the snapshot. Never rebuild surrounding sentences, even when you are confident of them. Doing that once forced a duplicate snapshot (S1 is unused).
+- Fetch the arXiv /html/ version directly when you need numbers from a results table. Abstracts rarely contain head-to-head numbers (the DeepResearch Bench abstract fetch was wasted).
+- Run the gap-check scan before calling verify. The verifier fails breadth without it.
+- For "X outperforms Y" goals, write a claim specifically about compute or token matching early. It was the decisive lens, and equal-budget studies were easy to find with one targeted search.

@@ -1,0 +1,11 @@
+interface:
+  display_name: Research Lab
+  short_description: Autonomous, budgeted research with verified evidence and reusable findings
+  default_prompt: Use $research-lab to investigate this goal within the stated budget and return judgment-level findings.
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: false

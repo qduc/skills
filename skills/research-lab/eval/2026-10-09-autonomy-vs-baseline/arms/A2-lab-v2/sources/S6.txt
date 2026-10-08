@@ -1,0 +1,11 @@
+url: https://arxiv.org/abs/2504.01848
+title: PaperBench: Evaluating AI's Ability to Replicate AI Research (OpenAI, 2025)
+type: primary
+year: 2025
+fetched: 2026-10-08T20:13:25+00:00
+via: webfetch-verbatim
+---
+PaperBench: Evaluating AI's Ability to Replicate AI Research
+We introduce PaperBench, a benchmark evaluating the ability of AI agents to replicate state-of-the-art AI research.
+achieves an average replication score of 21.0%.
+models do not yet outperform the human baseline.

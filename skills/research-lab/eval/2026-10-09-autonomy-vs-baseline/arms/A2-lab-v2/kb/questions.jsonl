@@ -1,0 +1,4 @@
+{"run": "run", "question": "Is there a compute-matched comparison of a deep-research agent against a single long-context model with the same tools on PhD-level technical research (DeepResearch Bench or similar)?", "t": "2026-10-08T20:18:35+00:00"}
+{"run": "run", "question": "How much of PaperBench's IterativeAgent gain persists when BasicAgent gets the same wall-clock time and token budget?", "t": "2026-10-08T20:18:35+00:00"}
+{"run": "run", "question": "Do 2026 frontier models (with longer effective context) erase the multi-agent advantage on decomposable research tasks, as the capability-saturation finding predicts?", "t": "2026-10-08T20:18:35+00:00"}
+{"run": "run", "question": "Has anyone independently replicated Anthropic's multi-agent vs single-agent result on a public benchmark such as BrowseComp?", "t": "2026-10-08T20:18:35+00:00"}

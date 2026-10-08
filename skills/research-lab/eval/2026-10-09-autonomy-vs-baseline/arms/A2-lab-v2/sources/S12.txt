@@ -1,0 +1,13 @@
+url: https://arxiv.org/abs/2509.04499
+title: DeepTRACE: Auditing Deep Research AI Systems for Tracking Reliability Across Citations and Evidence (arXiv 2509.04499)
+type: primary
+year: 2025
+fetched: 2026-10-08T20:15:21+00:00
+via: webfetch-verbatim
+---
+frequently produce one-sided, highly confident responses on debate queries
+Deep-research configurations reduce overconfidence
+remain highly one-sided on debate queries
+include large fractions of statements unsupported by their own listed sources
+still exhibit large fractions of unsupported statements
+citation accuracy ranging from 40--80% across systems

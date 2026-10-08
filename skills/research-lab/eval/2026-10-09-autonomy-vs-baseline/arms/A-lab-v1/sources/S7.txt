@@ -1,0 +1,11 @@
+url: https://arxiv.org/abs/2503.13657
+title: Why Do Multi-Agent LLM Systems Fail? (Cemri et al.) - abstract
+type: primary
+year: 2025
+fetched: 2026-10-08T19:53:55+00:00
+via: webfetch-verbatim
+---
+Despite enthusiasm for Multi-Agent LLM Systems (MAS), their performance gains on popular benchmarks are often minimal.
+We introduce MAST-Data, a comprehensive dataset of 1600+ annotated traces collected across 7 popular MAS frameworks.
+This process identifies 14 unique modes, clustered into 3 categories
+We develop MAST through rigorous analysis of 150 traces

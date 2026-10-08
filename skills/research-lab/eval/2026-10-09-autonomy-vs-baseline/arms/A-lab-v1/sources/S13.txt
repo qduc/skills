@@ -1,0 +1,13 @@
+url: https://arxiv.org/abs/2609.04217
+title: At Equal Inference Cost, Multi-Agent Structure Does Not Beat a Single Frozen Agent - abstract fragments (preprint)
+type: primary
+year: 2026
+fetched: 2026-10-08T19:56:36+00:00
+via: webfetch-verbatim
+---
+At Equal Inference Cost, Multi-Agent Structure Does Not Beat a Single Frozen Agent (Dylan, Brennan, Murphy, O'Sullivan, Kelly, Walsh)
+fix the total number of language-model calls and ask whether evolving a multi-agent team still beats evolving a single agent under the same budget.
+achieves the highest mean but is not statistically better than the single agent
+on WebShop evolution is null while the team trends worse.
+the realized value comes entirely from the executor
+Under equal inference cost, multi-agent structure adds cost without clear benefit.

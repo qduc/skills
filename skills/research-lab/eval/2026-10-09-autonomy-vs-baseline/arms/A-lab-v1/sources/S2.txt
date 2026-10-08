@@ -1,0 +1,21 @@
+url: https://arxiv.org/abs/2504.12516
+title: BrowseComp: A Simple Yet Challenging Benchmark for Browsing Agents (Wei et al., OpenAI)
+type: primary
+year: 2025
+fetched: 2026-10-08T19:52:14+00:00
+via: webfetch-verbatim
+---
+Table 3: Model | Accuracy (%) | Calibration Error (%)
+GPT-40 | 0.6 | 69
+GPT-40 w/ browsing | 1.9 | 82
+GPT-4.5 | 0.9 | 68
+OpenAI o1 | 9.9 | 65
+Deep Research | 51.5 | 91
+GPT-4o and GPT-4.5 achieved near-zero accuracy
+Enabling browsing for GPT-40 led to a modest improvement in accuracy (from 0.6% to 1.9%), but performance remained low.
+OpenAI o1, which has no browsing capability but stronger reasoning ability, achieves noticeably higher accuracy
+Deep Research significantly outperforms all other models, solving around half of the problems.
+additional test-time compute should improve performance on BrowseComp
+performance scales smoothly as a function of the amount of test-time compute used.
+trainers solved 29.2% of problems
+When trainers gave up, they (per the rules) only did so after attempting the problem for around two hours.

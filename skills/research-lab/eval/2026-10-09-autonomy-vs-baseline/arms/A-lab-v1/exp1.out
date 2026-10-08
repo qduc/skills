@@ -1,0 +1,4 @@
+BrowseComp DR/o1 = 5.2x, abs gap = 41.6 pts
+BrowseComp DR/GPT-4o+browse = 27.1x
+HLE DR/o3-mini-high = 2.05x, abs gap = 13.6 pts
+Anthropic: multi-agent ~15x tokens of chat vs agent ~4x -> multi-agent/single-agent token ratio = 3.75x; reported gain 90.2% (1.90x)

@@ -1,0 +1,12 @@
+url: https://arxiv.org/abs/2512.08296
+title: Towards a Science of Scaling Agent Systems (Kim et al.) - abstract fragments
+type: primary
+year: 2025
+fetched: 2026-10-08T19:55:30+00:00
+via: webfetch-verbatim
+---
+Relative performance change compared to single-agent baseline ranges from +80.8% on decomposable financial reasoning
+to -70.0% on sequential planning
+tool-heavy tasks appear to incur multi-agent overhead
+mismatched coordination degrades the performance
+a coordination yields diminishing returns once single-agent baselines exceed certain performance
