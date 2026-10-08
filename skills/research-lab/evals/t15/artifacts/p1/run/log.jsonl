@@ -1,0 +1,58 @@
+{"data": {"ledger_head": "ad244032003ba2e53ec8af558d3826444c5ebb6df335224d64bf0397c7d7956d", "limits": {"cycles": 8, "minutes": 60.0, "reserve_minutes": 10.0, "stall_cycles": 2, "web": 40}, "run_id": "run-20261009T024426", "store": "/workspace/lab-runs/t15/p1-store/knowledge.jsonl"}, "event": "run_initialized", "phase": "observe", "ts": "2026-10-09T02:44:26+07:00"}
+{"data": {"query_terms": ["agents", "autonomous", "difficult", "evidence", "model", "outperform", "research", "shows", "single", "tasks", "technical", "well-prompted"], "store": "/workspace/lab-runs/t15/p1-store/knowledge.jsonl", "store_entries": 0, "surfaced": []}, "event": "knowledge_recalled", "phase": "observe", "ts": "2026-10-09T02:44:26+07:00"}
+{"data": {"ledger_head": "ca80ac13f6071bfac63d948107bcbd17b8a0208b5e21b9674dce6a5cc044a570", "n": 1, "note": "C1-C5 decompose and first search for agent vs single-model evidence", "used": {"cycle": 1, "web": 0}, "what": "cycle"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:44:36+07:00"}
+{"data": {"id": "C1"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:44:36+07:00"}
+{"data": {"id": "C2"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:44:36+07:00"}
+{"data": {"id": "C3"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:44:36+07:00"}
+{"data": {"id": "C4"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:44:36+07:00"}
+{"data": {"id": "C5"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:44:36+07:00"}
+{"data": {"order": ["C1", "C2", "C3", "C4", "C5"], "why": "C1 establishes positive evidence; C2 is the key refutation; C3/C5 scope to research; C4 challenges reliability"}, "event": "claims_ranked", "phase": "decide", "ts": "2026-10-09T02:44:37+07:00"}
+{"data": {"ledger_head": "f00b74884ca20fc0296f0ef0c99cbb1e423e946310ec9825428415f4dade073b", "n": 1, "note": "search: autonomous research agents vs single LLM benchmarks", "used": {"cycle": 1, "web": 1}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:01+07:00"}
+{"data": {"ledger_head": "66ef4b06568a27a3b1f12de6ba98286cf58141221c79a57642b71c677ac53603", "n": 1, "note": "fetch arxiv ResearchClawBench abs 2606.07591", "used": {"cycle": 1, "web": 2}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:15+07:00"}
+{"data": {"ledger_head": "8fe3caa52347a49954ecbfdfaa4b318fac8736f22db2c6c2f6b6e46bf9078b79", "n": 1, "note": "fetch arxiv Single-Agent vs MAS 2604.02460", "used": {"cycle": 1, "web": 3}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:15+07:00"}
+{"data": {"ledger_head": "abc538393fee6f47b2ed447fcfece3f84585a3ddd8d6db26b6893cb45de478c9", "n": 1, "note": "search: AI Scientist Agent Laboratory PaperQA vs single LLM baseline", "used": {"cycle": 1, "web": 4}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:15+07:00"}
+{"data": {"id": "S1"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:45:34+07:00"}
+{"data": {"id": "S2"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:45:34+07:00"}
+{"data": {"ledger_head": "67ec0c0c7fd0a7014e27da0b91581649a17c8c3c13e3c0f7d2cf530ed7f8f6f1", "n": 1, "note": "fetch PaperQA2 arxiv html 2409.13740", "used": {"cycle": 1, "web": 5}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:34+07:00"}
+{"data": {"ledger_head": "6011e2966c605bbf9d832bd643d623481f9d9db294bacd01873a0a17f83ed145", "n": 1, "note": "fetch Arbor abs 2606.11926", "used": {"cycle": 1, "web": 6}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:34+07:00"}
+{"data": {"ledger_head": "72f68a2451c3a65b5bb436c7e197d199136a9f72be0f33729999dc25b023af6d", "n": 1, "note": "search Anthropic multi-agent research system evidence", "used": {"cycle": 1, "web": 7}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:34+07:00"}
+{"data": {"id": "S3"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:45:58+07:00"}
+{"data": {"id": "S4"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:45:58+07:00"}
+{"data": {"ledger_head": "9c4304b92cbd164ce1e2f4ce336f197bae80f99a751eb76ae4a4e30a158e0908", "n": 1, "note": "fetch Anthropic multi-agent research system", "used": {"cycle": 1, "web": 8}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:58+07:00"}
+{"data": {"ledger_head": "b698cdd737de163b390c50f86573f20ca6f283e3581c448ce0132453027ca9ac", "n": 1, "note": "fetch STORM multi-agent html 2605.20563", "used": {"cycle": 1, "web": 9}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:58+07:00"}
+{"data": {"ledger_head": "21226cf349240c67c7c4fb0e184a755480ef83a9db950aa0b9e6bf4c12f7f284", "n": 1, "note": "search ScienceAgentBench agent vs LLM baseline", "used": {"cycle": 1, "web": 10}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:45:58+07:00"}
+{"data": {"id": "S5"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:46:22+07:00"}
+{"data": {"id": "S6"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:46:22+07:00"}
+{"data": {"id": "F1"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:46:22+07:00"}
+{"data": {"id": "F2"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:46:22+07:00"}
+{"data": {"id": "F3"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:46:22+07:00"}
+{"data": {"id": "F4"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:46:22+07:00"}
+{"data": {"id": "F5"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:46:22+07:00"}
+{"data": {"id": "F6"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:46:22+07:00"}
+{"data": {"id": "C1"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:46:23+07:00"}
+{"data": {"findings": ["F1", "F2", "F3", "F4", "F5", "F6"], "next": "challenge pass + ScienceAgentBench"}, "event": "cycle1_summary", "phase": "verify", "ts": "2026-10-09T02:46:23+07:00"}
+{"data": {"claims": {"open": 4, "resolved": 1}, "decision": "continue", "elapsed_min": 1.95, "limits": {"cycles": 8, "minutes": 60.0, "reserve_minutes": 10.0, "stall_cycles": 2, "web": 40}, "reasons": [], "used": {"cycle": 1, "web": 10}}, "event": "stop_check", "phase": "repeat", "ts": "2026-10-09T02:46:23+07:00"}
+{"data": {"ledger_head": "0fc8b06bd2a673ced1af6801c224bd734b245a606ea00611a37f53757915e2cf", "n": 1, "note": "fetch ScienceAgentBench arxiv html 2410.05080", "used": {"cycle": 1, "web": 11}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:46:23+07:00"}
+{"data": {"ledger_head": "eb22c2d25b155ad98c1f17980275a3497bb405e57e3abb482d73904000346194", "n": 1, "note": "search counter-evidence agents fail vs single model research", "used": {"cycle": 1, "web": 12}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:46:23+07:00"}
+{"data": {"ledger_head": "dbd7c8d790b01949013dcce81af6ea82e0fd81f6ce85ecfbc255a37e6a0da88b", "n": 1, "note": "C2 C4 C5 challenge: ScienceAgentBench + Nature MAS diminishing returns", "used": {"cycle": 2, "web": 12}, "what": "cycle"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:46:43+07:00"}
+{"data": {"ledger_head": "9f43514868716dadbcbe4093c1032b4376ca6fa3e667413e4d9cf9081cb06ebd", "n": 1, "note": "fetch Nature Machine Intelligence capable LMs outgrow collaboration abstract", "used": {"cycle": 2, "web": 13}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:46:43+07:00"}
+{"data": {"id": "S7"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "S8"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "F7"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "F8"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "F9"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "F10"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "C2"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "C3"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "C4"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "C5"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"claim": "C1", "why": "Cannot locally reproduce frontier agent vs LLM research benchmarks within budget"}, "event": "experiment_not_feasible", "phase": "decide", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"finding": "F10", "mode": "sequential_one_context", "personas": ["P1", "P3", "P4"]}, "event": "adversarial_challenge", "phase": "verify", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "K-adcde292", "kind": "finding", "store": "/workspace/lab-runs/t15/p1-store/knowledge.jsonl"}, "event": "knowledge_written", "phase": "learn", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "K-1b720548", "kind": "finding", "store": "/workspace/lab-runs/t15/p1-store/knowledge.jsonl"}, "event": "knowledge_written", "phase": "learn", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "K-3bf7bfbd", "kind": "lesson", "store": "/workspace/lab-runs/t15/p1-store/knowledge.jsonl"}, "event": "knowledge_written", "phase": "learn", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "K-f32993ff", "kind": "question", "store": "/workspace/lab-runs/t15/p1-store/knowledge.jsonl"}, "event": "knowledge_written", "phase": "learn", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"id": "K-5566baec", "kind": "question", "store": "/workspace/lab-runs/t15/p1-store/knowledge.jsonl"}, "event": "knowledge_written", "phase": "learn", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"claims": {"open": 0, "resolved": 5}, "decision": "stop", "elapsed_min": 3.08, "limits": {"cycles": 8, "minutes": 60.0, "reserve_minutes": 10.0, "stall_cycles": 2, "web": 40}, "reasons": ["no open claims left (5 recorded)"], "used": {"cycle": 2, "web": 13}}, "event": "stop_check", "phase": "repeat", "ts": "2026-10-09T02:47:30+07:00"}
+{"data": {"errors": [], "ok": true}, "event": "validation", "phase": "verify", "ts": "2026-10-09T02:48:16+07:00"}
+{"data": {"errors": [], "ok": true}, "event": "validation", "phase": "verify", "ts": "2026-10-09T02:49:39+07:00"}

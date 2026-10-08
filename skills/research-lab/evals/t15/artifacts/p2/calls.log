@@ -1,0 +1,26 @@
+2026-10-09T02:44:18+07:00
+---
+2026-10-09T02:44:24+07:00 WebSearch autonomous research agents vs single LLM benchmark performance
+2026-10-09T02:44:34+07:00 WebSearch OpenAI Deep Research vs ChatGPT single model benchmark GPQA
+2026-10-09T02:44:34+07:00 WebSearch ResearchClawBench agent vs native LLM comparison
+2026-10-09T02:44:34+07:00 WebSearch agent scaffolding vs single prompt hard research tasks BrowseComp HLE
+2026-10-09T02:44:47+07:00 WebFetch https://openai.com/index/introducing-deep-research/
+2026-10-09T02:44:47+07:00 WebFetch https://openai.com/index/browsecomp/
+2026-10-09T02:44:47+07:00 WebFetch https://arxiv.org/html/2606.07591v4
+2026-10-09T02:45:04+07:00 curl https://openai.com/index/introducing-deep-research/
+2026-10-09T02:45:08+07:00 WebFetch https://cdn.openai.com/deep-research-faq.pdf
+2026-10-09T02:45:08+07:00 WebSearch OpenAI introducing deep research site:openai.com humanity last exam 26.6
+2026-10-09T02:45:08+07:00 WebFetch https://arxiv.org/pdf/2504.12516
+2026-10-09T02:45:15+07:00 WebFetch https://github.com/huggingface/blog/blob/main/open-deep-research.md
+2026-10-09T02:45:22+07:00 WebFetch https://cdn.openai.com/API/docs/deep_research_blog.pdf
+2026-10-09T02:45:22+07:00 WebFetch https://raw.githubusercontent.com/huggingface/blog/main/open-deep-research.md
+2026-10-09T02:45:37+07:00 WebSearch agent vs single LLM same model ablation ReAct GAIA counterexample cost tokens
+2026-10-09T02:45:37+07:00 WebSearch PaperBench AI Scientist agent performance vs baseline LLM
+2026-10-09T02:45:37+07:00 WebSearch minimal agent harness outperforms complex scaffolds research AARRI
+2026-10-09T02:45:47+07:00 WebFetch https://arxiv.org/html/2604.02460
+2026-10-09T02:45:47+07:00 WebFetch https://arxiv.org/html/2504.01848v2
+2026-10-09T02:45:47+07:00 WebFetch https://arxiv.org/html/2606.07462v1
+2026-10-09T02:45:47+07:00 WebFetch https://arxiv.org/pdf/2606.08529v1.pdf
+2026-10-09T02:46:39+07:00 WebFetch https://www.anthropic.com/engineering/multi-agent-research-system
+2026-10-09T02:47:51+07:00 WebFetch https://arxiv.org/html/2504.12516 (actual URL opened; earlier log listed pdf)
+2026-10-09T02:47:51+07:00 WebFetch https://arxiv.org/html/2606.08529 (actual URL opened; earlier log listed pdf)

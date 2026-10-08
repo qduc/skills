@@ -1,0 +1,26 @@
+T15 blinding key. Conductor-only. Do not show to the scorer before blind/scores.md exists.
+Protocol: skills/research-lab/evals/t15/protocol.md at freeze 54d86025aa213040592cd082b5b07146451e0dd6
+
+Coin flip
+  command: python3 -c "import secrets; print(secrets.randbelow(2))"
+  output: 0
+  time: 2026-10-09T02:50:23+07:00 (ICT)
+  rule: 0 = Arm A -> X, Arm B -> Y; 1 = Arm A -> Y, Arm B -> X
+  mapping: Arm A (p1) -> X; Arm B (p2) -> Y
+
+Leak scan (protocol regex, grep -n -i -E, run on p1/answer.md and p2/answer.md)
+  p1 (Arm A) hits: 15 -> L8:budget, L10:budget, L14:baseline, L18:budget, L18:autonomy, L19:baseline, L22:budget, L23:baseline, L24:baseline, L24:baseline, L37:Budget, L44:budget, L55:s42256, L56:baseline, L56:baseline
+  p2 (Arm B) hits: 9 -> L4:budget, L14:budget, L18:baseline, L20:budget, L22:budget, L25:budget, L27:baseline, L61:Budget, L65:baseline
+  Judgment: every regex hit is subject-matter vocabulary in both answers ("token budget", "resource budget",
+  "single-agent baseline", "human baseline", quoted "autonomy"), or part of a cited URL (s42256 in the Nature
+  article URL). None reveals the workflow; redacting them would also damage citations. Regex redactions: 0.
+
+Redactions (total 1)
+  1. Arm A (p1/answer.md) line 19: "P1/P3/P4" -> "[redacted]".
+     Found by manual read, NOT by the protocol regex (deviation: redaction outside the regex scan).
+     Reason: these are the adversarial-review persona ids. protocol.md at the freeze SHA, which the scorer may
+     read, names them as Arm A's challenge pass, so the token identifies the arm.
+     Residual (not redacted, token-minimal rule): the surrounding sentence still says "Challenge review of this
+     synthesis (sequential [redacted] in one context, not independent reviewers)".
+  Arm B (p2/answer.md): no redactions.
+No other edits. blind/X.md and blind/Y.md mtimes both set to 2026-10-09T02:51:00+07:00 so file times do not reveal order.

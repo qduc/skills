@@ -1,0 +1,8 @@
+EvoScientist v0.1.1 (multi-agent, GPT-5.4): 18.8 vs ResearchHarness GPT-5.4 15.3 -> delta +3.5
+Codex CLI (single agent, GPT-5.4): 18.4 vs ResearchHarness GPT-5.4 15.3 -> delta +3.1
+OpenClaw (GPT-5.4): 16.6 vs ResearchHarness GPT-5.4 15.3 -> delta +1.3
+ResearchClaw (GPT-5.4): 16.3 vs ResearchHarness GPT-5.4 15.3 -> delta +1.0
+EvoScientist v0.0.4 (multi-agent, GPT-5.4): 15.5 vs ResearchHarness GPT-5.4 15.3 -> delta +0.2
+ARIS Codex (adversarial multi-agent, GPT-5.4): 13.6 vs ResearchHarness GPT-5.4 15.3 -> delta -1.7
+Nanobot (GPT-5.4): 12.8 vs ResearchHarness GPT-5.4 15.3 -> delta -2.5
+Claude Code (Claude-Opus-4.6): 21.5 vs ResearchHarness Claude-Opus-4.6 19.9 -> delta +1.6
