@@ -1,0 +1,47 @@
+{
+  "browsecomp": {
+    "deep_research_percent": 51.5,
+    "gpt4o_browsing_percent": 1.9,
+    "absolute_difference_percentage_points": 49.6,
+    "ratio": 27.10526315789474,
+    "interpretation": "Different models/training and inference settings; arithmetic is not a causal estimate."
+  },
+  "autoresearchbench": {
+    "deep_research_correct": 11,
+    "sample_n": 50,
+    "accuracy_percent": 22.0,
+    "wilson95_percent": [
+      12.753786224302289,
+      35.24181568945956
+    ],
+    "interpretation": "Sampling interval only; excludes ground-truth uncertainty, tool mismatch and benchmark selection effects."
+  },
+  "musique_table2": [
+    {
+      "model": "Gemini-2.5-Flash",
+      "n": 1175,
+      "mas_only": 72,
+      "sas_only": 124,
+      "both_correct": 265,
+      "both_wrong": 714,
+      "sas_accuracy_percent": 33.1063829787234,
+      "mas_accuracy_percent": 28.680851063829788,
+      "sas_minus_mas_percentage_points": 4.425531914893617,
+      "exact_two_sided_mcnemar_p": 0.0002499205508094473,
+      "interpretation": "Post-hoc paired aggregate audit; not independent replication or global significance proof. Requested cap matched, realized reasoning and total costs differ."
+    },
+    {
+      "model": "Qwen3-30B-A3B",
+      "n": 1175,
+      "mas_only": 60,
+      "sas_only": 96,
+      "both_correct": 209,
+      "both_wrong": 810,
+      "sas_accuracy_percent": 25.95744680851064,
+      "mas_accuracy_percent": 22.893617021276597,
+      "sas_minus_mas_percentage_points": 3.0638297872340425,
+      "exact_two_sided_mcnemar_p": 0.0049129646209700815,
+      "interpretation": "Post-hoc paired aggregate audit; not independent replication or global significance proof. Requested cap matched, realized reasoning and total costs differ."
+    }
+  ]
+}

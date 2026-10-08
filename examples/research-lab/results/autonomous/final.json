@@ -1,0 +1,690 @@
+{
+  "question": "What evidence shows that autonomous research agents outperform a single well-prompted model on difficult technical research tasks?",
+  "budget": {
+    "steps": 12,
+    "web_calls": 8,
+    "queries": 12,
+    "pages": 12,
+    "experiments": 2,
+    "seconds": 600,
+    "micro_usd": 0,
+    "cycles": 2
+  },
+  "used": {
+    "steps": 4,
+    "web_calls": 5,
+    "queries": 5,
+    "pages": 12,
+    "experiments": 1,
+    "micro_usd": 0
+  },
+  "started_at": "2026-10-08T19:35:06.879079+00:00",
+  "started_epoch": 1791488106.87909,
+  "status": "completed",
+  "stage": "report",
+  "cycle": 1,
+  "pending": null,
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+      "title": "Anthropic: How we built our multi-agent research system (2025-06-13)",
+      "kind": "primary",
+      "note": "Internal research evaluation reports 90.2% improvement for an Opus 4 lead with Sonnet 4 workers versus single-agent Opus 4. Breadth-first research benefits most. Report also attributes substantial variance to token usage, tool calls and model choice; multi-agent token use is roughly 15 times chat interactions. Absolute benchmark scores and a budget-matched ablation are not supplied.",
+      "locator": "Why multi-agent systems are effective; prompt engineering and evaluations",
+      "reservation": 3,
+      "note_sha256": "65fdb6f26299af00614624d8e1d8e1af5977797a3c9195b45fa540ffcb046537",
+      "accessed_at": "2026-10-08T19:36:06.966807+00:00"
+    },
+    {
+      "id": "s2",
+      "url": "https://openai.com/index/browsecomp/",
+      "title": "OpenAI: BrowseComp (2025 launch evaluation)",
+      "kind": "primary",
+      "note": "Original 1,266-question difficult fact-finding benchmark reports deep research at 51.5%, GPT-4o with browsing 1.9%, and o1 without browsing 9.9%. Deep research was specifically trained for these task types. Increased inference effort and repeated-sample aggregation improve scores. These are different systems, with tool, training and compute confounds.",
+      "locator": "Performance of OpenAI models, table; Test-time compute scaling; pass-rate distribution",
+      "reservation": 3,
+      "note_sha256": "426ca8618fd5389da9e68075f70a6fbc11adb8867b49507865a7dab6d859616a",
+      "accessed_at": "2026-10-08T19:36:06.966807+00:00"
+    },
+    {
+      "id": "s3",
+      "url": "https://arxiv.org/html/2604.02460v1",
+      "title": "Tran and Kiela: Single-Agent LLMs Outperform Multi-Agent Systems on Multi-Hop Reasoning Under Equal Thinking Token Budgets (2026-04-02 v1)",
+      "kind": "primary",
+      "note": "Controlled comparison across Qwen3, R1-distill and Gemini families reports single agents matching or outperforming several multi-agent architectures under matched thinking-token caps. Error table gives paired outcomes for 1,175 MuSiQue 4-hop cases. Budgets exclude prompts and final answers, realized tokens differ, Gemini accounting is approximate, and tools/vision are excluded. Prompt appendix exposes single-agent and longer-thinking variants.",
+      "locator": "Abstract; Appendix B Table 2; Appendix C limitations; Appendix D prompts",
+      "reservation": 4,
+      "note_sha256": "e9cf3738be5a9a7f59cd6a01bf84ae4be08ed2885fd684c7bf2c7a6befc58033",
+      "accessed_at": "2026-10-08T19:36:26.500810+00:00"
+    },
+    {
+      "id": "s4",
+      "url": "https://arxiv.org/html/2603.29632v1",
+      "title": "Shen et al.: An Empirical Study of Multi-Agent Collaboration for Automated Research (2026-03-31 v1)",
+      "kind": "primary",
+      "note": "Automated neural-network optimization compares single, parallel-subagent and sequential-team designs at 300/600-second wall-clock budgets with shared memory and isolated worktrees. Subagents show early search advantages; teams make broader architectural edits but introduce crashes and coordination costs. Multiple model roles are used. Figures carry validation-loss trajectories; inspected text does not supply sufficient repeated-run uncertainty or token-normalized results for a causal claim.",
+      "locator": "Sections 3.1-3.3; Section 4 Figures 2-3 and Table 1",
+      "reservation": 5,
+      "note_sha256": "d2931cb77f506ab6163cc022dddb62fdcd760b9ab77c71093bcdd7dbb4f7d4ce",
+      "accessed_at": "2026-10-08T19:36:49.826577+00:00"
+    },
+    {
+      "id": "s5",
+      "url": "https://arxiv.org/html/2604.25256v1",
+      "title": "Xiong et al.: AutoResearchBench (2026-04-28 v1)",
+      "kind": "primary",
+      "note": "Scientific literature benchmark contains 600 deep and 400 wide queries with strict constraint and set metrics. Full-model evaluations use a shared ReAct/DeepXiv harness; top results are 9.39% deep accuracy and 9.31% wide IoU. Costlier end-to-end systems use only 50 random queries: GPT Deep Research gets 11/50 deep but 4.06% wide IoU. Retrieval tools and sample sizes differ, so these rows are not controlled orchestration comparisons.",
+      "locator": "Sections 2.3-2.4, 3.1; Section 3.2 Table 2",
+      "reservation": 4,
+      "note_sha256": "63da188eb488c97e9eab385c754427d97922c01642769a4f36ec73c3dca749f9",
+      "accessed_at": "2026-10-08T19:36:26.500810+00:00"
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "text": "Primary evaluations report substantial system-level gains on difficult information search: Anthropic reports 90.2% relative improvement on an internal eval; BrowseComp launch deep research achieves 51.5% versus 1.9% for GPT-4o with browsing. Automated ML work also reports topology-dependent optimization gains.",
+      "status": "supported",
+      "sources": [
+        "s1",
+        "s2",
+        "s4"
+      ],
+      "uncertainty": "This establishes reported system differences, not a universal effect over difficult technical research or a matched well-prompted baseline. Anthropic gives no absolute score; BrowseComp is targeted fact-finding rather than open-ended science."
+    },
+    {
+      "id": "c2",
+      "text": "The inspected positive results do not isolate autonomy from model, specialized training, tool access, context capacity and inference expenditure. Evidence that autonomous orchestration itself beats an equally equipped, well-prompted single model is unresolved.",
+      "status": "uncertain",
+      "sources": [
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5"
+      ],
+      "uncertainty": "A single autonomous agent is already a model in a tool loop; multi-agent comparison is a separate question. Wall-clock matching is not token or dollar matching. Search is bounded and a stronger controlled study may exist."
+    },
+    {
+      "id": "c3",
+      "text": "Counterevidence limits general superiority: single agents match or beat multi-agent systems in matched-token text-only multi-hop tests, and dedicated scientific literature discovery remains difficult for both research products and strong models.",
+      "status": "supported",
+      "sources": [
+        "s3",
+        "s5"
+      ],
+      "uncertainty": "Text-only supplied-context reasoning does not directly falsify benefits in web exploration. AutoResearchBench uses stringent metrics and differing end-to-end tools and samples; low scores are task-specific reliability evidence."
+    }
+  ],
+  "contradictions": [
+    "Large headline gains coexist with matched-cap single-agent wins because tasks, tools, model identities and compute differ; neither result transfers universally.",
+    "AutoResearchBench abstract top-model 9.39% is not a ceiling for all systems: the separate 50-query GPT Deep Research sample yields 22%, with tool/sample mismatch.",
+    "Automated ML study describes strict time budgets but does not establish equal inference expense or strong prompt-tuned baseline; qualitative deeper edits need demonstrated final-score superiority and repeated runs."
+  ],
+  "lessons": [],
+  "plan": {
+    "claims": [
+      {
+        "id": "c1",
+        "text": "Primary benchmarks demonstrate agentic-system gains over a strong single-model baseline on difficult research tasks."
+      },
+      {
+        "id": "c2",
+        "text": "Observed gains remain attributable to autonomous orchestration after controlling model, tools, inference budget, prompting and evaluation."
+      },
+      {
+        "id": "c3",
+        "text": "Independent counterevidence and reliability limitations constrain general superiority claims."
+      }
+    ],
+    "strategy": "Inspect original benchmark papers and technical reports for direct paired baselines, task difficulty, absolute effects, tools, model identity and compute. Search for budget-matched evaluations and negative results. Distinguish tool access and extended inference from autonomy; check provenance and task contamination. Recompute reported arithmetic locally and mark causal attribution uncertain if controls are absent."
+  },
+  "reviews": [
+    {
+      "claim": "c1",
+      "verdict": "supports",
+      "reason": "Sources substantiate reported system-level gains, while the finding explicitly narrows scope. Anthropic relative gain cannot become percentage points without absolute scores; BrowseComp is different-model fact-finding. Automated ML figures supply qualitative gains but not extractable effect sizes, error bars or a broad benchmark. No evidence licenses generic superiority on difficult technical research.",
+      "sources": [
+        "s1",
+        "s2",
+        "s4"
+      ]
+    },
+    {
+      "claim": "c2",
+      "verdict": "uncertain",
+      "reason": "Positive sources change model, training, inference or parallel context. Anthropic token variance explanation is observational and not causal attribution. ML study matches wall-clock but different roles and unreported total tokens leave confounding; its single baseline is autonomous too. The matched-cap reasoning paper controls more variables but omits total-token accounting and tools. Thus isolation remains unresolved, not disproven.",
+      "sources": [
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5"
+      ]
+    },
+    {
+      "claim": "c3",
+      "verdict": "supports",
+      "reason": "Inspecting methods restricts the negative result to supplied-context, text-only multi-hop tasks. Paired Table 2 arithmetic gives single-agent margins 4.43 and 3.06 points for Gemini and Qwen. These aggregate tests are exploratory and not a new replication. AutoResearchBench full-model low results are not the end-to-end ceiling: GPT Deep Research is 11/50=22% deep, with approximate Wilson interval 12.75%-35.24%, and only 4.06% wide IoU. No direct same-sample, same-tool architecture claim follows.",
+      "sources": [
+        "s3",
+        "s5"
+      ]
+    }
+  ],
+  "challenge_followups": [
+    "Run preregistered paired tasks with same frozen model, search tools and corpus, strong tuned single-agent prompt, and separate equal-token, equal-cost and equal-latency comparisons.",
+    "Audit retrieval constraint compliance, factual accuracy, citations and final-output regressions with blinded human scoring; report confidence intervals across repeated seeds."
+  ],
+  "report": {
+    "conclusion": "There is credible evidence that purpose-built autonomous research systems can outperform simpler model configurations on difficult information search. It is weaker evidence that autonomous orchestration itself outperforms an equally capable, well-prompted model with the same tools and inference resources. Anthropic reports a 90.2% internal relative gain; BrowseComp reports deep research 51.5% versus GPT-4o browsing 1.9%, a 49.6-point system-level difference. Both comparisons leave substantial confounds. A primary automated-ML study reports topology-dependent search gains under fixed time but lacks an equal-token demonstration. Conversely, a matched-thinking-cap study finds single agents competitive or stronger on text-only multi-hop tasks; our reproducible audit of its paired table yields 4.43/3.06-point single-agent margins. AutoResearchBench shows that demanding literature discovery remains unreliable, with end-to-end GPT Deep Research at 22% on a 50-query deep sample and 4.06% wide IoU. Choose systems by task-specific measured benefit, not by an autonomy label.",
+    "judgment": "A human must decide whether broader retrieval, lower latency or quality improvements justify extra compute and complexity. For high-value parallel information discovery, trial the agent against a strong equally equipped model baseline. For tightly coupled supplied-context reasoning, start with the simpler system and demand measured benefit before adding agents.",
+    "uncertainties": [
+      "Bounded five-primary-source review is not exhaustive; papers are inspected v1 preprints and vendor studies are not independent replications.",
+      "The target phrase single well-prompted model is underspecified: no-tool one-shot, persistent single agent and multi-agent architecture are different controls.",
+      "Internal evaluation scores and raw paired runs are unavailable; confidence intervals for headline relative improvement cannot be verified.",
+      "Local analysis verifies arithmetic from source aggregates, not scientific discovery or autonomous research capability experimentally."
+    ],
+    "followups": [
+      "Benchmark representative technical tasks with frozen model/tool access and tuned prompts; preregister equal cost and equal time analyses and blind scoring.",
+      "Measure constraint satisfaction, source entailment and revisions separately from answer fluency and retrieval breadth.",
+      "Obtain raw repeated-run logs and evaluate failure severity as well as mean quality."
+    ],
+    "lessons": [
+      "Headline agent gains often confound orchestration with more compute or model training; require explicit control matrices.",
+      "Benchmark abstracts may summarize only one evaluation setting; inspect full tables before asserting a ceiling.",
+      "More agents can introduce drift, invalid edits and final-answer extraction losses; add late constraint verification and retain single-agent fallback.",
+      "Repeated page opens exhausted the conservative page budget before web-call budget; request targeted methods/results together and leave slack for figure inspection.",
+      "Live protocol changes can invalidate existing ledger observations; version schemas and provide backward-compatible migration.",
+      "HTML source open failed once; record partial failures explicitly and avoid treating discovery snippets as inspected evidence."
+    ]
+  },
+  "finished_at": "2026-10-08T19:39:00.587764+00:00",
+  "elapsed_seconds": 233.709,
+  "events": [
+    {
+      "id": 1,
+      "at": "2026-10-08T19:35:06.879176+00:00",
+      "phase": "observe",
+      "data": {
+        "goal": "What evidence shows that autonomous research agents outperform a single well-prompted model on difficult technical research tasks?",
+        "budget": {
+          "steps": 12,
+          "web_calls": 8,
+          "queries": 12,
+          "pages": 12,
+          "experiments": 2,
+          "seconds": 600,
+          "micro_usd": 0,
+          "cycles": 2
+        }
+      }
+    },
+    {
+      "id": 2,
+      "at": "2026-10-08T19:35:06.953006+00:00",
+      "phase": "decide",
+      "data": {
+        "id": 1,
+        "stage": "plan"
+      }
+    },
+    {
+      "id": 3,
+      "at": "2026-10-08T19:35:19.467564+00:00",
+      "phase": "verify",
+      "data": {
+        "request": 1,
+        "stage": "plan",
+        "response": {
+          "claims": [
+            {
+              "id": "c1",
+              "text": "Primary benchmarks demonstrate agentic-system gains over a strong single-model baseline on difficult research tasks."
+            },
+            {
+              "id": "c2",
+              "text": "Observed gains remain attributable to autonomous orchestration after controlling model, tools, inference budget, prompting and evaluation."
+            },
+            {
+              "id": "c3",
+              "text": "Independent counterevidence and reliability limitations constrain general superiority claims."
+            }
+          ],
+          "strategy": "Inspect original benchmark papers and technical reports for direct paired baselines, task difficulty, absolute effects, tools, model identity and compute. Search for budget-matched evaluations and negative results. Distinguish tool access and extended inference from autonomy; check provenance and task contamination. Recompute reported arithmetic locally and mark causal attribution uncertain if controls are absent."
+        },
+        "next": "research",
+        "status": "running"
+      }
+    },
+    {
+      "id": 4,
+      "at": "2026-10-08T19:35:19.524268+00:00",
+      "phase": "decide",
+      "data": {
+        "id": 2,
+        "stage": "research"
+      }
+    },
+    {
+      "id": 5,
+      "at": "2026-10-08T19:35:19.568979+00:00",
+      "phase": "act",
+      "data": {
+        "reservation": 1,
+        "kind": "web",
+        "usage": {
+          "web_calls": 1,
+          "queries": 3,
+          "pages": 0,
+          "experiments": 0
+        }
+      }
+    },
+    {
+      "id": 6,
+      "at": "2026-10-08T19:35:30.163161+00:00",
+      "phase": "observe",
+      "data": {
+        "reservation": 1,
+        "result": {
+          "ok": true,
+          "description": "Search discovery completed for agent research benchmarks, compute-matched counterevidence and BrowseComp; no original pages inspected.",
+          "opened_urls": []
+        }
+      }
+    },
+    {
+      "id": 7,
+      "at": "2026-10-08T19:35:35.548682+00:00",
+      "phase": "act",
+      "data": {
+        "reservation": 2,
+        "kind": "web",
+        "usage": {
+          "web_calls": 1,
+          "queries": 2,
+          "pages": 3,
+          "experiments": 0
+        }
+      }
+    },
+    {
+      "id": 8,
+      "at": "2026-10-08T19:35:53.418533+00:00",
+      "phase": "observe",
+      "data": {
+        "reservation": 2,
+        "result": {
+          "ok": true,
+          "description": "Opened BrowseComp original and equal-thinking-token paper; newer equal-inference-cost HTML failed with Internal Error. Search located Anthropic and automated ML comparison originals.",
+          "opened_urls": [
+            "https://openai.com/index/browsecomp/",
+            "https://arxiv.org/html/2604.02460v1"
+          ],
+          "failed_urls": [
+            "https://arxiv.org/html/2609.04217v1"
+          ]
+        }
+      }
+    },
+    {
+      "id": 9,
+      "at": "2026-10-08T19:35:53.469232+00:00",
+      "phase": "act",
+      "data": {
+        "reservation": 3,
+        "kind": "web",
+        "usage": {
+          "web_calls": 1,
+          "queries": 0,
+          "pages": 5,
+          "experiments": 0
+        }
+      }
+    },
+    {
+      "id": 10,
+      "at": "2026-10-08T19:36:06.966807+00:00",
+      "phase": "observe",
+      "data": {
+        "reservation": 3,
+        "result": {
+          "ok": true,
+          "description": "Inspected primary Anthropic engineering report, controlled ML-optimization comparison, scientific literature-discovery benchmark, and additional original methods/results from equal-token study and BrowseComp.",
+          "opened_urls": [
+            "https://www.anthropic.com/engineering/multi-agent-research-system",
+            "https://arxiv.org/html/2603.29632v1",
+            "https://arxiv.org/html/2604.25256v1",
+            "https://arxiv.org/html/2604.02460v1",
+            "https://openai.com/index/browsecomp/"
+          ]
+        }
+      }
+    },
+    {
+      "id": 11,
+      "at": "2026-10-08T19:36:13.917018+00:00",
+      "phase": "act",
+      "data": {
+        "reservation": 4,
+        "kind": "web",
+        "usage": {
+          "web_calls": 1,
+          "queries": 0,
+          "pages": 3,
+          "experiments": 0
+        }
+      }
+    },
+    {
+      "id": 12,
+      "at": "2026-10-08T19:36:26.500810+00:00",
+      "phase": "observe",
+      "data": {
+        "reservation": 4,
+        "result": {
+          "ok": true,
+          "description": "Inspected methods, results and limits in automated research, literature-discovery and token-matched reasoning papers.",
+          "opened_urls": [
+            "https://arxiv.org/html/2603.29632v1",
+            "https://arxiv.org/html/2604.25256v1",
+            "https://arxiv.org/html/2604.02460v1"
+          ]
+        }
+      }
+    },
+    {
+      "id": 13,
+      "at": "2026-10-08T19:36:39.065400+00:00",
+      "phase": "act",
+      "data": {
+        "reservation": 5,
+        "kind": "web",
+        "usage": {
+          "web_calls": 1,
+          "queries": 0,
+          "pages": 1,
+          "experiments": 0
+        }
+      }
+    },
+    {
+      "id": 14,
+      "at": "2026-10-08T19:36:49.826624+00:00",
+      "phase": "observe",
+      "data": {
+        "reservation": 5,
+        "result": {
+          "ok": true,
+          "description": "Inspected automated ML comparison results table, fixed-wall-clock experiments and failure discussion, enabling absolute-loss arithmetic and causal-confound review.",
+          "opened_urls": [
+            "https://arxiv.org/html/2603.29632v1"
+          ],
+          "observed_at": "2026-10-08T19:36:49.826577+00:00"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "at": "2026-10-08T19:37:38.632468+00:00",
+      "phase": "act",
+      "data": {
+        "reservation": 6,
+        "kind": "experiment",
+        "usage": {
+          "web_calls": 0,
+          "queries": 0,
+          "pages": 0,
+          "experiments": 1
+        }
+      }
+    },
+    {
+      "id": 16,
+      "at": "2026-10-08T19:38:07.467047+00:00",
+      "phase": "observe",
+      "data": {
+        "reservation": 6,
+        "result": {
+          "ok": true,
+          "description": "Local Python aggregate audit reproduced BrowseComp 49.6-point difference (confounded), AutoResearchBench 11/50=22% Wilson interval, and MuSiQue paired-count single-agent advantages for two models using exact McNemar sums; saved analysis.py and analysis-results.json. This is arithmetic verification, not an independent agent benchmark replication.",
+          "opened_urls": [],
+          "method": "Deterministic arithmetic on inspected source tables; Wilson binomial interval, exact two-sided discordant-pair binomial McNemar test. No model or network execution.",
+          "observed_at": "2026-10-08T19:38:07.466672+00:00"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "at": "2026-10-08T19:39:00.298745+00:00",
+      "phase": "verify",
+      "data": {
+        "request": 2,
+        "stage": "research",
+        "response": {
+          "sources": [
+            {
+              "id": "s1",
+              "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+              "title": "Anthropic: How we built our multi-agent research system (2025-06-13)",
+              "kind": "primary",
+              "note": "Internal research evaluation reports 90.2% improvement for an Opus 4 lead with Sonnet 4 workers versus single-agent Opus 4. Breadth-first research benefits most. Report also attributes substantial variance to token usage, tool calls and model choice; multi-agent token use is roughly 15 times chat interactions. Absolute benchmark scores and a budget-matched ablation are not supplied.",
+              "locator": "Why multi-agent systems are effective; prompt engineering and evaluations",
+              "reservation": 3,
+              "note_sha256": "65fdb6f26299af00614624d8e1d8e1af5977797a3c9195b45fa540ffcb046537",
+              "accessed_at": "2026-10-08T19:36:06.966807+00:00"
+            },
+            {
+              "id": "s2",
+              "url": "https://openai.com/index/browsecomp/",
+              "title": "OpenAI: BrowseComp (2025 launch evaluation)",
+              "kind": "primary",
+              "note": "Original 1,266-question difficult fact-finding benchmark reports deep research at 51.5%, GPT-4o with browsing 1.9%, and o1 without browsing 9.9%. Deep research was specifically trained for these task types. Increased inference effort and repeated-sample aggregation improve scores. These are different systems, with tool, training and compute confounds.",
+              "locator": "Performance of OpenAI models, table; Test-time compute scaling; pass-rate distribution",
+              "reservation": 3,
+              "note_sha256": "426ca8618fd5389da9e68075f70a6fbc11adb8867b49507865a7dab6d859616a",
+              "accessed_at": "2026-10-08T19:36:06.966807+00:00"
+            },
+            {
+              "id": "s3",
+              "url": "https://arxiv.org/html/2604.02460v1",
+              "title": "Tran and Kiela: Single-Agent LLMs Outperform Multi-Agent Systems on Multi-Hop Reasoning Under Equal Thinking Token Budgets (2026-04-02 v1)",
+              "kind": "primary",
+              "note": "Controlled comparison across Qwen3, R1-distill and Gemini families reports single agents matching or outperforming several multi-agent architectures under matched thinking-token caps. Error table gives paired outcomes for 1,175 MuSiQue 4-hop cases. Budgets exclude prompts and final answers, realized tokens differ, Gemini accounting is approximate, and tools/vision are excluded. Prompt appendix exposes single-agent and longer-thinking variants.",
+              "locator": "Abstract; Appendix B Table 2; Appendix C limitations; Appendix D prompts",
+              "reservation": 4,
+              "note_sha256": "e9cf3738be5a9a7f59cd6a01bf84ae4be08ed2885fd684c7bf2c7a6befc58033",
+              "accessed_at": "2026-10-08T19:36:26.500810+00:00"
+            },
+            {
+              "id": "s4",
+              "url": "https://arxiv.org/html/2603.29632v1",
+              "title": "Shen et al.: An Empirical Study of Multi-Agent Collaboration for Automated Research (2026-03-31 v1)",
+              "kind": "primary",
+              "note": "Automated neural-network optimization compares single, parallel-subagent and sequential-team designs at 300/600-second wall-clock budgets with shared memory and isolated worktrees. Subagents show early search advantages; teams make broader architectural edits but introduce crashes and coordination costs. Multiple model roles are used. Figures carry validation-loss trajectories; inspected text does not supply sufficient repeated-run uncertainty or token-normalized results for a causal claim.",
+              "locator": "Sections 3.1-3.3; Section 4 Figures 2-3 and Table 1",
+              "reservation": 5,
+              "note_sha256": "d2931cb77f506ab6163cc022dddb62fdcd760b9ab77c71093bcdd7dbb4f7d4ce",
+              "accessed_at": "2026-10-08T19:36:49.826577+00:00"
+            },
+            {
+              "id": "s5",
+              "url": "https://arxiv.org/html/2604.25256v1",
+              "title": "Xiong et al.: AutoResearchBench (2026-04-28 v1)",
+              "kind": "primary",
+              "note": "Scientific literature benchmark contains 600 deep and 400 wide queries with strict constraint and set metrics. Full-model evaluations use a shared ReAct/DeepXiv harness; top results are 9.39% deep accuracy and 9.31% wide IoU. Costlier end-to-end systems use only 50 random queries: GPT Deep Research gets 11/50 deep but 4.06% wide IoU. Retrieval tools and sample sizes differ, so these rows are not controlled orchestration comparisons.",
+              "locator": "Sections 2.3-2.4, 3.1; Section 3.2 Table 2",
+              "reservation": 4,
+              "note_sha256": "63da188eb488c97e9eab385c754427d97922c01642769a4f36ec73c3dca749f9",
+              "accessed_at": "2026-10-08T19:36:26.500810+00:00"
+            }
+          ],
+          "claims": [
+            {
+              "id": "c1",
+              "text": "Primary evaluations report substantial system-level gains on difficult information search: Anthropic reports 90.2% relative improvement on an internal eval; BrowseComp launch deep research achieves 51.5% versus 1.9% for GPT-4o with browsing. Automated ML work also reports topology-dependent optimization gains.",
+              "status": "supported",
+              "sources": [
+                "s1",
+                "s2",
+                "s4"
+              ],
+              "uncertainty": "This establishes reported system differences, not a universal effect over difficult technical research or a matched well-prompted baseline. Anthropic gives no absolute score; BrowseComp is targeted fact-finding rather than open-ended science."
+            },
+            {
+              "id": "c2",
+              "text": "The inspected positive results do not isolate autonomy from model, specialized training, tool access, context capacity and inference expenditure. Evidence that autonomous orchestration itself beats an equally equipped, well-prompted single model is unresolved.",
+              "status": "uncertain",
+              "sources": [
+                "s1",
+                "s2",
+                "s3",
+                "s4",
+                "s5"
+              ],
+              "uncertainty": "A single autonomous agent is already a model in a tool loop; multi-agent comparison is a separate question. Wall-clock matching is not token or dollar matching. Search is bounded and a stronger controlled study may exist."
+            },
+            {
+              "id": "c3",
+              "text": "Counterevidence limits general superiority: single agents match or beat multi-agent systems in matched-token text-only multi-hop tests, and dedicated scientific literature discovery remains difficult for both research products and strong models.",
+              "status": "supported",
+              "sources": [
+                "s3",
+                "s5"
+              ],
+              "uncertainty": "Text-only supplied-context reasoning does not directly falsify benefits in web exploration. AutoResearchBench uses stringent metrics and differing end-to-end tools and samples; low scores are task-specific reliability evidence."
+            }
+          ]
+        },
+        "next": "challenge",
+        "status": "running"
+      }
+    },
+    {
+      "id": 18,
+      "at": "2026-10-08T19:39:00.355713+00:00",
+      "phase": "decide",
+      "data": {
+        "id": 3,
+        "stage": "challenge"
+      }
+    },
+    {
+      "id": 19,
+      "at": "2026-10-08T19:39:00.451220+00:00",
+      "phase": "verify",
+      "data": {
+        "request": 3,
+        "stage": "challenge",
+        "response": {
+          "reviews": [
+            {
+              "claim": "c1",
+              "verdict": "supports",
+              "reason": "Sources substantiate reported system-level gains, while the finding explicitly narrows scope. Anthropic relative gain cannot become percentage points without absolute scores; BrowseComp is different-model fact-finding. Automated ML figures supply qualitative gains but not extractable effect sizes, error bars or a broad benchmark. No evidence licenses generic superiority on difficult technical research.",
+              "sources": [
+                "s1",
+                "s2",
+                "s4"
+              ]
+            },
+            {
+              "claim": "c2",
+              "verdict": "uncertain",
+              "reason": "Positive sources change model, training, inference or parallel context. Anthropic token variance explanation is observational and not causal attribution. ML study matches wall-clock but different roles and unreported total tokens leave confounding; its single baseline is autonomous too. The matched-cap reasoning paper controls more variables but omits total-token accounting and tools. Thus isolation remains unresolved, not disproven.",
+              "sources": [
+                "s1",
+                "s2",
+                "s3",
+                "s4",
+                "s5"
+              ]
+            },
+            {
+              "claim": "c3",
+              "verdict": "supports",
+              "reason": "Inspecting methods restricts the negative result to supplied-context, text-only multi-hop tasks. Paired Table 2 arithmetic gives single-agent margins 4.43 and 3.06 points for Gemini and Qwen. These aggregate tests are exploratory and not a new replication. AutoResearchBench full-model low results are not the end-to-end ceiling: GPT Deep Research is 11/50=22% deep, with approximate Wilson interval 12.75%-35.24%, and only 4.06% wide IoU. No direct same-sample, same-tool architecture claim follows.",
+              "sources": [
+                "s3",
+                "s5"
+              ]
+            }
+          ],
+          "contradictions": [
+            "Large headline gains coexist with matched-cap single-agent wins because tasks, tools, model identities and compute differ; neither result transfers universally.",
+            "AutoResearchBench abstract top-model 9.39% is not a ceiling for all systems: the separate 50-query GPT Deep Research sample yields 22%, with tool/sample mismatch.",
+            "Automated ML study describes strict time budgets but does not establish equal inference expense or strong prompt-tuned baseline; qualitative deeper edits need demonstrated final-score superiority and repeated runs."
+          ],
+          "followups": [
+            "Run preregistered paired tasks with same frozen model, search tools and corpus, strong tuned single-agent prompt, and separate equal-token, equal-cost and equal-latency comparisons.",
+            "Audit retrieval constraint compliance, factual accuracy, citations and final-output regressions with blinded human scoring; report confidence intervals across repeated seeds."
+          ],
+          "needs_more": false
+        },
+        "next": "report",
+        "status": "running"
+      }
+    },
+    {
+      "id": 20,
+      "at": "2026-10-08T19:39:00.496732+00:00",
+      "phase": "decide",
+      "data": {
+        "id": 4,
+        "stage": "report"
+      }
+    },
+    {
+      "id": 21,
+      "at": "2026-10-08T19:39:00.587978+00:00",
+      "phase": "learn",
+      "data": {
+        "retained": 2,
+        "improvements": [
+          "Headline agent gains often confound orchestration with more compute or model training; require explicit control matrices.",
+          "Benchmark abstracts may summarize only one evaluation setting; inspect full tables before asserting a ceiling.",
+          "More agents can introduce drift, invalid edits and final-answer extraction losses; add late constraint verification and retain single-agent fallback.",
+          "Repeated page opens exhausted the conservative page budget before web-call budget; request targeted methods/results together and leave slack for figure inspection.",
+          "Live protocol changes can invalidate existing ledger observations; version schemas and provide backward-compatible migration.",
+          "HTML source open failed once; record partial failures explicitly and avoid treating discovery snippets as inspected evidence."
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "at": "2026-10-08T19:39:00.588000+00:00",
+      "phase": "verify",
+      "data": {
+        "request": 4,
+        "stage": "report",
+        "response": {
+          "conclusion": "There is credible evidence that purpose-built autonomous research systems can outperform simpler model configurations on difficult information search. It is weaker evidence that autonomous orchestration itself outperforms an equally capable, well-prompted model with the same tools and inference resources. Anthropic reports a 90.2% internal relative gain; BrowseComp reports deep research 51.5% versus GPT-4o browsing 1.9%, a 49.6-point system-level difference. Both comparisons leave substantial confounds. A primary automated-ML study reports topology-dependent search gains under fixed time but lacks an equal-token demonstration. Conversely, a matched-thinking-cap study finds single agents competitive or stronger on text-only multi-hop tasks; our reproducible audit of its paired table yields 4.43/3.06-point single-agent margins. AutoResearchBench shows that demanding literature discovery remains unreliable, with end-to-end GPT Deep Research at 22% on a 50-query deep sample and 4.06% wide IoU. Choose systems by task-specific measured benefit, not by an autonomy label.",
+          "judgment": "A human must decide whether broader retrieval, lower latency or quality improvements justify extra compute and complexity. For high-value parallel information discovery, trial the agent against a strong equally equipped model baseline. For tightly coupled supplied-context reasoning, start with the simpler system and demand measured benefit before adding agents.",
+          "uncertainties": [
+            "Bounded five-primary-source review is not exhaustive; papers are inspected v1 preprints and vendor studies are not independent replications.",
+            "The target phrase single well-prompted model is underspecified: no-tool one-shot, persistent single agent and multi-agent architecture are different controls.",
+            "Internal evaluation scores and raw paired runs are unavailable; confidence intervals for headline relative improvement cannot be verified.",
+            "Local analysis verifies arithmetic from source aggregates, not scientific discovery or autonomous research capability experimentally."
+          ],
+          "followups": [
+            "Benchmark representative technical tasks with frozen model/tool access and tuned prompts; preregister equal cost and equal time analyses and blind scoring.",
+            "Measure constraint satisfaction, source entailment and revisions separately from answer fluency and retrieval breadth.",
+            "Obtain raw repeated-run logs and evaluate failure severity as well as mean quality."
+          ],
+          "lessons": [
+            "Headline agent gains often confound orchestration with more compute or model training; require explicit control matrices.",
+            "Benchmark abstracts may summarize only one evaluation setting; inspect full tables before asserting a ceiling.",
+            "More agents can introduce drift, invalid edits and final-answer extraction losses; add late constraint verification and retain single-agent fallback.",
+            "Repeated page opens exhausted the conservative page budget before web-call budget; request targeted methods/results together and leave slack for figure inspection.",
+            "Live protocol changes can invalidate existing ledger observations; version schemas and provide backward-compatible migration.",
+            "HTML source open failed once; record partial failures explicitly and avoid treating discovery snippets as inspected evidence."
+          ]
+        },
+        "next": "report",
+        "status": "completed"
+      }
+    }
+  ]
+}

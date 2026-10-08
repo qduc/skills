@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "frozen_before_reading_arm_outputs": true,
+  "unit": "one paired question; exploratory, no significance claim",
+  "factual_correctness": "Adjudicate each submitted claim against opened originals: supported in stated scope, contradicted, or not verifiable. Report numerator and denominator; uncertainty is not an error. Audit conclusion overreach separately.",
+  "source_quality": "Count inspected primary/secondary sources and independent evidence lineages. Judge methods disclosure, relevant comparator, and resource matching. Do not equate source count with quality.",
+  "contradiction_detection": {
+    "maximum": 3,
+    "criteria": ["Identifies contrary empirical findings", "Explains material differences of task/comparator/compute rather than treating all numbers as comparable", "Preserves unresolved disagreement and specifies evidence needed to resolve it"]
+  },
+  "useful_findings": {
+    "maximum": 6,
+    "criteria": ["Identifies direct positive comparison relevant to technical research", "Identifies empirical counterevidence", "Distinguishes autonomy/tool access from multi-agent architecture", "Addresses compute and comparator confounds", "Provides evidence-calibrated operational recommendation", "Proposes an actionable discriminating follow-up"]
+  },
+  "human_intervention": "User instructions needed after initial goal; keep engineering setup and automated verification separate.",
+  "cost": "Record measured billable USD only if exposed. Never replace missing token/subscription cost with zero. Record paid API calls and tool usage separately. Quality per dollar is unavailable without cost data.",
+  "elapsed_time": "Per-arm start to final artifact, including retrieval and reasoning, excluding prototype engineering and posthoc evaluation.",
+  "limits": ["One question is not a benchmark", "Live search corpora differ", "Reasoning tokens and exact sampling parameters unavailable", "Same inherited model family, no paid model calls", "A host agent can bypass an advisory ledger; enforce at the trusted tool gateway in production"]
+}

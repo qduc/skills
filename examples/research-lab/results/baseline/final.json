@@ -1,0 +1,172 @@
+{
+  "question": "What evidence shows that autonomous research agents outperform a single well-prompted model on difficult technical research tasks?",
+  "started_at": "2026-10-08T19:30:38Z",
+  "web_calls": 8,
+  "search_queries": 6,
+  "opened_pages": 12,
+  "count_note": "web_calls counts search-service invocations; search_queries counts submitted queries; opened_pages counts all open operations including repeat line reads and one failed HTML open (7 distinct successful pages, 1 failed URL).",
+  "sources": [
+    {
+      "id": "S1",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+      "title": "How we built our multi-agent research system",
+      "kind": "vendor engineering report, primary",
+      "support": "Inspected lines 29\u201335: Opus 4 lead with Sonnet 4 workers reportedly improved 90.2% over single Opus 4 on an internal research evaluation; token use explains much performance variation. Chats, single agents and teams consume approximately 1:4:15 tokens.",
+      "limitations": "Internal evaluation lacks public sample-level outcomes, uncertainty and equal-budget controls. Breadth-first web research differs from experimental science."
+    },
+    {
+      "id": "S2",
+      "url": "https://arxiv.org/html/2605.28655v1",
+      "title": "AutoScientists: Self-Organizing Agent Teams for Long-Running Scientific Experimentation",
+      "kind": "research preprint, primary",
+      "support": "Inspected results, limitations and ablations: 24 BioML tasks, mean leaderboard percentile 74.40 versus Autoresearch 66.07; matched model, interface and experimental hardware. Component ablations improve all four listed tasks. Authors explicitly acknowledge additional LLM tokens.",
+      "limitations": "Experimental compute is matched, total inference cost is not. Aggregate standard errors are 6.20 and 7.38; they do not establish paired significance. Comparison against other published agents uses modified hardware."
+    },
+    {
+      "id": "S3",
+      "url": "https://arxiv.org/html/2610.07763v1",
+      "title": "ST-Bench: A Spatial-Temporal Benchmark for Multi-Agent System Generation on Scientific Research Tasks",
+      "kind": "research preprint, primary",
+      "support": "Inspected setup and results: 100 Earth science tasks, 492 held-out queries; same GPT-5 backbone. Composite score 32.0 for strongest workflow versus 11.0 for single agent. Most improvement is reaching numerical output; conditional metric quality is comparable. Inference time is about 4.5 times baseline.",
+      "limitations": "Comparator explicitly described as GPT-5 one-turn. Workflow optimization and larger inference budget confound architecture. Token accounting incomplete; numerical sanity is not comprehensive scientific validation."
+    },
+    {
+      "id": "S4",
+      "url": "https://arxiv.org/html/2512.08296v3",
+      "title": "Towards a Science of Scaling Agent Systems",
+      "kind": "research preprint v3, primary",
+      "support": "Inspected v3 methods, conclusion and uncertainty tables: 260 configurations across six benchmarks, matched reasoning budgets and tools. Reported gains span +80.8% on Finance Agent to \u221270.0% on PlanCraft; diminishing coordination returns near 45% single-agent success.",
+      "limitations": "Threshold is empirical within tested domains. Technical benchmark extensions use only 20 instances each with wide intervals. Version-dependent: original abstract reports 180 configurations; v3 reports 260."
+    },
+    {
+      "id": "S5",
+      "url": "https://arxiv.org/html/2604.02460v1",
+      "title": "Single-Agent LLMs Outperform Multi-Agent Systems on Multi-Hop Reasoning Under Equal Thinking Token Budgets",
+      "kind": "research preprint, primary",
+      "support": "Inspected Table 1: at 2,000 requested thinking tokens, averaged SAS accuracy is .421 versus .389 sequential and .403 debate. At 100 tokens, averages favor several teams. Authors diagnose imperfect Gemini budget accounting.",
+      "limitations": "World-knowledge question answering, not end-to-end scientific research. Requested and actual tokens can differ. Individual model/dataset cells include exceptions, so title is too broad if read literally."
+    },
+    {
+      "id": "S6",
+      "url": "https://arxiv.org/abs/2606.07591",
+      "title": "ResearchClawBench: A Benchmark for End-to-End Autonomous Scientific Research",
+      "kind": "research preprint abstract v5, primary",
+      "support": "Inspected abstract: seven research agents and seventeen native LLMs using ResearchHarness; strongest reported agent 21.5 versus strongest harness LLM 20.7. Main failures include protocol and evidence mismatch.",
+      "limitations": "Only abstract was inspectable; full HTML failed. Different system/model maxima cannot identify causal benefit, and 0.8 points has no inspected significance estimate."
+    },
+    {
+      "id": "S7",
+      "url": "https://arxiv.org/html/2603.29632v1",
+      "title": "An Empirical Study of Multi-Agent Collaboration for Automated Research",
+      "kind": "research preprint, primary",
+      "support": "Inspected experimental setup: nanochat-style optimization with GLM workers, RTX 3090 and 300/600-second training constraints. Parallel subagents improve early; teams diversify architectural changes but incur crashes and deliberation overhead.",
+      "limitations": "Narrow optimization task, mixed model roles and no inspected statistical uncertainty. Matching training time does not ensure equal LLM budgets."
+    }
+  ],
+  "claims": [
+    {
+      "id": "C1",
+      "text": "There is positive task-specific evidence for agent teams, especially computational experimentation and broad research, but no inspected evidence establishes universal superiority over an optimized single model with equal total resources.",
+      "status": "supported synthesis",
+      "sources": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "uncertainty": "Moderate confidence in conditional benefits; low confidence in general superiority."
+    },
+    {
+      "id": "C2",
+      "text": "AutoScientists offers the most directly relevant inspected comparison: +8.33 leaderboard-percentile points on 24 biomedical ML tasks against a single research agent with matched experimental compute.",
+      "status": "verified as author-reported result",
+      "sources": [
+        "S2"
+      ],
+      "uncertainty": "Independent reproduction and equal-inference comparison remain unverified."
+    },
+    {
+      "id": "C3",
+      "text": "ST-Bench shows higher composite performance but mainly more completed analyses; comparison to one-turn GPT-5 does not settle the well-prompted iterative single-agent challenge.",
+      "status": "verified result and methodological inference",
+      "sources": [
+        "S3"
+      ],
+      "uncertainty": "Higher score need not imply deeper scientific insight."
+    },
+    {
+      "id": "C4",
+      "text": "Anthropic's 90.2% improvement is a relative internal-evaluation report, not a 90.2-percentage-point gain or an equal-cost causal estimate.",
+      "status": "verified attribution with limited evidence",
+      "sources": [
+        "S1"
+      ],
+      "uncertainty": "Absolute scores and sampling uncertainty unavailable."
+    },
+    {
+      "id": "C5",
+      "text": "Compute-controlled comparisons show teams can help decomposable tasks and hurt sequential tasks; stronger individual agents frequently erase coordination benefits.",
+      "status": "supported within evaluated benchmarks",
+      "sources": [
+        "S4",
+        "S5"
+      ],
+      "uncertainty": "Transfer to novel technical research is uncertain."
+    },
+    {
+      "id": "C6",
+      "text": "Current end-to-end research scores are low; agent branding alone supplies little evidence of superiority.",
+      "status": "supported with weak comparative inference",
+      "sources": [
+        "S6"
+      ],
+      "uncertainty": "Abstract-only inspection and unmatched maxima."
+    }
+  ],
+  "contradictions": [
+    {
+      "sources": [
+        "S1",
+        "S4",
+        "S5"
+      ],
+      "issue": "Large gains coexist with equal-budget regressions.",
+      "resolution": "Different tasks, comparator strength and compute accounting explain much of the apparent conflict; do not pool percentages."
+    },
+    {
+      "sources": [
+        "S3"
+      ],
+      "issue": "Nearly threefold composite gain coexists with similar conditional scientific metric quality.",
+      "resolution": "Coverage drives most gain; distinguish completion from quality."
+    },
+    {
+      "sources": [
+        "S5"
+      ],
+      "issue": "Title suggests general single-agent dominance, but table includes team wins at small budgets.",
+      "resolution": "Report budgets and exceptions; avoid converting a trend into a universal claim."
+    },
+    {
+      "sources": [
+        "S4"
+      ],
+      "issue": "Search abstract has 180 configurations but inspected v3 has 260.",
+      "resolution": "Use version-specific full-text results."
+    }
+  ],
+  "conclusion": "The strongest defensible answer is conditional: autonomous agent teams can improve exploration and experiment selection on difficult, decomposable technical tasks. Evidence is weaker that architecture itself beats a carefully prompted, tool-equipped, iterative single model when inference cost, experiments, tools and time are matched. Treat broad superiority claims as unproven.",
+  "followups": [
+    "Run paired, repeated trials on held-out technical research tasks using the same model, sources, tools and starting artifacts.",
+    "Compare a tuned single agent, a single agent with self-critique and memory, independent sampling with selection, and coordinated teams; this separates workflow, search and coordination benefits.",
+    "Report two resource regimes: equal total dollars/tokens/experimental compute and equal wall-clock time with parallelism allowed.",
+    "Blind expert grading of correctness, novelty, reproducibility, evidence-to-claim alignment and intervention burden; retain runnable artifacts and failed trajectories.",
+    "Publish paired confidence intervals, prompt-tuning budgets, contamination controls and task-level failures; reproduce the strongest scientific study independently."
+  ],
+  "interventions": 0,
+  "cost_usd": null,
+  "cost_note": "No paid API invoked; subscription token costs unavailable",
+  "finished_at": "2026-10-08T19:34:01Z",
+  "elapsed_seconds": 203.0
+}

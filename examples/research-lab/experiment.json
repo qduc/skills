@@ -1,0 +1,4 @@
+{
+  "question": "What evidence shows that autonomous research agents outperform a single well-prompted model on difficult technical research tasks?",
+  "budget": {"steps": 12, "web_calls": 8, "queries": 12, "pages": 12, "experiments": 2, "seconds": 600, "micro_usd": 0, "cycles": 2}
+}

@@ -1,0 +1,17 @@
+{
+  "kind": "real-completed-run-knowledge-retrieval",
+  "retrieved_count": 2,
+  "retrieved_claim_ids": [
+    "c3",
+    "c1"
+  ],
+  "evidence_urls": [
+    "https://arxiv.org/html/2603.29632v1",
+    "https://arxiv.org/html/2604.02460v1",
+    "https://arxiv.org/html/2604.25256v1",
+    "https://openai.com/index/browsecomp/",
+    "https://www.anthropic.com/engineering/multi-agent-research-system"
+  ],
+  "new_claims_not_asserted": true,
+  "note": "Knowledge retrieved as dated hints; not a second completed research experiment."
+}

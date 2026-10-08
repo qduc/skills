@@ -1,0 +1,418 @@
+{
+  "rubric_version": 1,
+  "judge": {
+    "independent_from_research_arms": true,
+    "blinded": false,
+    "kind": "model judge, inherited model family",
+    "paired_questions": 1,
+    "search_calls": 6,
+    "open_operations": 12,
+    "date_cutoff": "2026-10-08UTC",
+    "limits": [
+      "Exploratory n=1; no significance or general performance claim.",
+      "Live search corpora and retrieval paths differ.",
+      "Reasoning tokens, exact sampling and billable cost unavailable.",
+      "All source verdicts concern author-reported evidence, not independent replication.",
+      "Coarse checklist ties are not proof of equal coverage."
+    ]
+  },
+  "evidence": [
+    {
+      "id": "E1",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system",
+      "locator": "Benefits, lines29-35",
+      "type": "vendor original",
+      "caveat": "Internal relative gain; token and context confounds.",
+      "source_ref": "turn18view0"
+    },
+    {
+      "id": "E2",
+      "url": "https://arxiv.org/html/2605.28655v1",
+      "locator": "Sections4.1-4.2, lines158-167; Limitations line372",
+      "type": "research preprint original",
+      "caveat": "Same backend/hardware; reported percentile difference8.33; extra inference.",
+      "source_ref": "turn18view1"
+    },
+    {
+      "id": "E3",
+      "url": "https://arxiv.org/html/2610.07763v1",
+      "locator": "Sections4.2-4.5, lines223-243; abstract submission6Oct2026",
+      "type": "research preprint original",
+      "caveat": "One-turn comparator; coverage gains; added time.",
+      "source_ref": "turn18view2"
+    },
+    {
+      "id": "E4",
+      "url": "https://arxiv.org/html/2512.08296v3",
+      "locator": "Sections4-5, lines382-408,511-525; Data Availability634",
+      "type": "research preprint original",
+      "caveat": "Matched requested reasoning budgets/tools; task heterogeneity; small technical subsets.",
+      "source_ref": "turn18view3"
+    },
+    {
+      "id": "E5",
+      "url": "https://arxiv.org/html/2604.02460v1",
+      "locator": "Methods206-245; Table1; Table2 lines372-385; AppendixG",
+      "type": "research preprint original",
+      "caveat": "Supplied-context scope; budget exceptions and accounting issues; paired source counts.",
+      "source_ref": "turn19view0"
+    },
+    {
+      "id": "E6",
+      "url": "https://arxiv.org/abs/2606.07591",
+      "locator": "v5 abstract lines8-16",
+      "type": "research preprint abstract original",
+      "caveat": "Unmatched maxima; no inspected full methods.",
+      "source_ref": "turn19view4"
+    },
+    {
+      "id": "E7",
+      "url": "https://arxiv.org/html/2603.29632v1",
+      "locator": "Section4 lines231-239; Figures2-3",
+      "type": "research preprint original",
+      "caveat": "Narrow neural optimization; mixed model roles; training-time control.",
+      "source_ref": "turn19view1"
+    },
+    {
+      "id": "E8",
+      "url": "https://openai.com/index/browsecomp/",
+      "locator": "Performance table lines75-88; test-time scaling",
+      "type": "vendor benchmark original",
+      "caveat": "Different trained models; search task, not experimental science.",
+      "source_ref": "turn19view3"
+    },
+    {
+      "id": "E9",
+      "url": "https://arxiv.org/html/2604.25256v1",
+      "locator": "Sections2.3-3.2; Table2 lines197-203",
+      "type": "research preprint original",
+      "caveat": "Strict retrieval constraints; end-to-end sample/tool mismatch.",
+      "source_ref": "turn19view2"
+    }
+  ],
+  "arms": {
+    "baseline": {
+      "claims": [
+        {
+          "id": "C1",
+          "verdict": "supported",
+          "evidence": [
+            "E1",
+            "E2",
+            "E3",
+            "E4",
+            "E5"
+          ],
+          "reason": "Conditional synthesis; absence assertion is limited to inspected evidence.",
+          "claim_type": "bounded synthesis"
+        },
+        {
+          "id": "C2",
+          "verdict": "supported",
+          "evidence": [
+            "E2"
+          ],
+          "reason": "Reported result and difference verified; strongest relevance is judge assessment.",
+          "claim_type": "source-reported statistic"
+        },
+        {
+          "id": "C3",
+          "verdict": "supported",
+          "evidence": [
+            "E3"
+          ],
+          "reason": "Result and comparator interpretation agree with original.",
+          "claim_type": "reported result plus method inference"
+        },
+        {
+          "id": "C4",
+          "verdict": "supported",
+          "evidence": [
+            "E1"
+          ],
+          "reason": "Relative attribution verified; no causal equal-cost assertion.",
+          "claim_type": "source-reported statistic"
+        },
+        {
+          "id": "C5",
+          "verdict": "supported",
+          "evidence": [
+            "E4",
+            "E5"
+          ],
+          "reason": "Within evaluated domains; retains transfer uncertainty.",
+          "claim_type": "bounded synthesis"
+        },
+        {
+          "id": "C6",
+          "verdict": "supported",
+          "evidence": [
+            "E6"
+          ],
+          "reason": "Low source-reported scores; cautious branding inference, not controlled advantage.",
+          "claim_type": "bounded synthesis"
+        }
+      ],
+      "factual_correctness": {
+        "supported": 6,
+        "contradicted": 0,
+        "unverifiable": 0,
+        "denominator": 6,
+        "unit": "final.json top-level submitted claims; differing granularity prevents ranking by fraction"
+      },
+      "conclusion_overreach": "No material overreach in final scoped conclusions. Neither claims universal or equal-total-resource superiority.",
+      "source_quality": {
+        "inspected_primary": 7,
+        "secondary": 0,
+        "nominal_empirical_lineages": 7,
+        "evidence": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6",
+          "E7"
+        ],
+        "independence_caveat": "Separate original studies, not independent replications of one effect; source counts do not rank quality.",
+        "methods_depth": "baseline: six full originals plus one abstract"
+      },
+      "contradiction_detection": {
+        "score": 3,
+        "maximum": 3,
+        "criteria": [
+          {
+            "criterion": "Identifies contrary empirical findings",
+            "met": true,
+            "reason": "Empirical team regressions included."
+          },
+          {
+            "criterion": "Explains material differences of task/comparator/compute",
+            "met": true,
+            "reason": "Task and resource differences explicitly explained."
+          },
+          {
+            "criterion": "Preserves unresolved disagreement and evidence needed",
+            "met": true,
+            "reason": "Equal-resource superiority left unresolved; controlled follow-up specified."
+          }
+        ]
+      },
+      "useful_findings": {
+        "score": 6,
+        "maximum": 6,
+        "criteria": [
+          {
+            "criterion": "Identifies direct positive comparison relevant to technical research",
+            "met": true,
+            "reason": "E2 supplies the clearest direct experimental comparison."
+          },
+          {
+            "criterion": "Identifies empirical counterevidence",
+            "met": true,
+            "reason": "E4 and E5 counter general superiority."
+          },
+          {
+            "criterion": "Distinguishes autonomy/tool access from multi-agent architecture",
+            "met": true,
+            "reason": "Defines tool-equipped iterative single comparator and separates coordination."
+          },
+          {
+            "criterion": "Addresses compute and comparator confounds",
+            "met": true,
+            "reason": "Discusses inference versus experimental compute, one-turn and weak maxima."
+          },
+          {
+            "criterion": "Provides evidence-calibrated operational recommendation",
+            "met": true,
+            "reason": "Treats general superiority as unproven; conditional deployment inference."
+          },
+          {
+            "criterion": "Proposes an actionable discriminating follow-up",
+            "met": true,
+            "reason": "Paired repeated tasks, strong controls, resource regimes and blinded grading."
+          }
+        ]
+      },
+      "metrics": {
+        "elapsed_seconds": 203,
+        "web_calls": 8,
+        "queries": 6,
+        "open_operations": 12,
+        "distinct_successful_source_urls": 7,
+        "failed_open_operations": 1,
+        "local_aggregate_audits": 0,
+        "human_interventions": 0,
+        "automated_engineering_interventions": 0,
+        "paid_api_calls": 0,
+        "cost_usd": null,
+        "model_tokens": null,
+        "quality_per_dollar": null,
+        "audit_note": "Elapsed matches submitted timestamps; opens include repeats/failure. Source counts and reservation totals consistent with artifacts; paidAPI0 does not mean cost0. Autonomous zero microUSD tracks explicit paid actions only. Engineering repair is separate from human intervention."
+      }
+    },
+    "autonomous": {
+      "claims": [
+        {
+          "id": "c1",
+          "verdict": "supported",
+          "evidence": [
+            "E1",
+            "E7",
+            "E8"
+          ],
+          "reason": "System-level attribution, explicitly narrowed task/comparator scope.",
+          "claim_type": "source-reported results"
+        },
+        {
+          "id": "c2",
+          "verdict": "supported",
+          "evidence": [
+            "E1",
+            "E5",
+            "E7",
+            "E8",
+            "E9"
+          ],
+          "reason": "Unresolved isolation is a defensible bounded conclusion; original uncertain label is appropriate.",
+          "claim_type": "bounded synthesis"
+        },
+        {
+          "id": "c3",
+          "verdict": "supported",
+          "evidence": [
+            "E5",
+            "E9"
+          ],
+          "reason": "Counterevidence and reliability conclusions retain task limits.",
+          "claim_type": "bounded synthesis"
+        }
+      ],
+      "factual_correctness": {
+        "supported": 3,
+        "contradicted": 0,
+        "unverifiable": 0,
+        "denominator": 3,
+        "unit": "final.json top-level submitted claims; differing granularity prevents ranking by fraction"
+      },
+      "conclusion_overreach": "No material overreach in final scoped conclusions. Neither claims universal or equal-total-resource superiority.",
+      "source_quality": {
+        "inspected_primary": 5,
+        "secondary": 0,
+        "nominal_empirical_lineages": 5,
+        "evidence": [
+          "E1",
+          "E5",
+          "E7",
+          "E8",
+          "E9"
+        ],
+        "independence_caveat": "Separate original studies, not independent replications of one effect; source counts do not rank quality.",
+        "methods_depth": "five full originals"
+      },
+      "contradiction_detection": {
+        "score": 3,
+        "maximum": 3,
+        "criteria": [
+          {
+            "criterion": "Identifies contrary empirical findings",
+            "met": true,
+            "reason": "Empirical team regressions included."
+          },
+          {
+            "criterion": "Explains material differences of task/comparator/compute",
+            "met": true,
+            "reason": "Task and resource differences explicitly explained."
+          },
+          {
+            "criterion": "Preserves unresolved disagreement and evidence needed",
+            "met": true,
+            "reason": "Equal-resource superiority left unresolved; controlled follow-up specified."
+          }
+        ]
+      },
+      "useful_findings": {
+        "score": 6,
+        "maximum": 6,
+        "criteria": [
+          {
+            "criterion": "Identifies direct positive comparison relevant to technical research",
+            "met": true,
+            "reason": "E7 provides technical optimization comparison, although narrow/qualitative."
+          },
+          {
+            "criterion": "Identifies empirical counterevidence",
+            "met": true,
+            "reason": "E5 supplies contrary findings; E9 supplies reliability limits."
+          },
+          {
+            "criterion": "Distinguishes autonomy/tool access from multi-agent architecture",
+            "met": true,
+            "reason": "Explicit single autonomous agent versus multi-agent distinction."
+          },
+          {
+            "criterion": "Addresses compute and comparator confounds",
+            "met": true,
+            "reason": "Separates model/training/tool/time/token differences."
+          },
+          {
+            "criterion": "Provides evidence-calibrated operational recommendation",
+            "met": true,
+            "reason": "Recommends task-specific trials and simpler tightly coupled reasoning baseline."
+          },
+          {
+            "criterion": "Proposes an actionable discriminating follow-up",
+            "met": true,
+            "reason": "Frozen controls, preregistered resource analyses, blind scoring and failure logs."
+          }
+        ]
+      },
+      "metrics": {
+        "elapsed_seconds": 233.709,
+        "web_calls": 5,
+        "queries": 5,
+        "open_operations": 12,
+        "distinct_successful_source_urls": 5,
+        "failed_open_operations": 1,
+        "local_aggregate_audits": 1,
+        "human_interventions": 0,
+        "automated_engineering_interventions": 1,
+        "paid_api_calls": 0,
+        "cost_usd": null,
+        "model_tokens": null,
+        "quality_per_dollar": null,
+        "audit_note": "Elapsed matches submitted timestamps; opens include repeats/failure. Source counts and reservation totals consistent with artifacts; paidAPI0 does not mean cost0. Autonomous zero microUSD tracks explicit paid actions only. Engineering repair is separate from human intervention."
+      }
+    }
+  },
+  "omissions": {
+    "autonomous_relative_to_baseline": [
+      "E2 is materially more directly relevant than information-search headlines and remains a useful positive comparison despite inference confounding.",
+      "E4 adds controlled task-dependent positive and negative results beyond text-only reasoning.",
+      "E3 adds completion-versus-conditional-quality distinction; E6 adds end-to-end science reliability."
+    ],
+    "baseline_relative_to_autonomous": [
+      "E9 adds directly relevant scientific-literature constraint/retrieval reliability and small-sample caveat.",
+      "E8 adds a well-documented hard-search system comparison, with large explicit training/model confounds.",
+      "Autonomous supplies reproducible aggregate audit; this verifies arithmetic, not new science."
+    ]
+  },
+  "overall": "No observed quality advantage for autonomous protocol. Both produce sound cautious conclusions. Baseline has broader directly relevant technical-science coverage; autonomous adds auditability and literature-search reliability. This single pair cannot estimate architecture effects.",
+  "primary_classification_audit": "All cited URLs are originals: primary attribution is justified. Vendor status and abstract-only E6 lower evidential depth; primary never means independent replication. Neither failed URL nor discovery snippet is counted as a source. Bibliographic references inside originals are not separately credited as inspected primary evidence.",
+  "chronology": "ST-Bench abstract reports6Oct2026 submission, before cutoff; scaling v3 dated8Apr2026; ResearchClaw v5 revised3Jul2026. No discovered future-date exclusion.",
+  "arithmetic_audit": {
+    "verdict": "supported",
+    "evidence": [
+      "E5",
+      "E8",
+      "E9"
+    ],
+    "results": [
+      "51.5-1.9=49.6 percentage points",
+      "11/50=22%; Wilson95 interval12.7538%-35.2418%",
+      "Table2 source buckets sum1175 each; margins52/1175 and36/1175=4.4255/3.0638 points",
+      "Exact paired two-sided binomial calculations reproduce p0.000249921 and0.00491296"
+    ],
+    "limits": "Conditional on published buckets; not raw-run verification, replication, causal inference or global significance. Requested/realized budgets differ; aggregate-table alignment is not independently reconciled; no global multiplicity adjustment."
+  }
+}

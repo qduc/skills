@@ -1,0 +1,27 @@
+{
+  "status": "completed",
+  "web_calls": 5,
+  "queries": 5,
+  "page_opens": 12,
+  "experiments": 1,
+  "steps": 4,
+  "elapsed_seconds": 233.709,
+  "human_interventions": 0,
+  "model": "inherited; same as parent; no override",
+  "cost_usd": null,
+  "paid_api_calls": 0,
+  "sources_inspected": 5,
+  "unique_successful_source_urls": 5,
+  "failed_page_opens": 1,
+  "automated_engineering_interventions": 1,
+  "engine_defect": "Live observed_at requirement raised KeyError on legacy reservations; parent repaired compatibility using original observation events.",
+  "recovery_delay_seconds_lower_bound": 81.666277,
+  "recovery_delay_measurement": "From reservation 6 immediately following failed research submit to successful retry; independent arithmetic/challenge/report work continued during recovery.",
+  "numerical_analysis": "Aggregate arithmetic audit only; no independently replicated agent experiment.",
+  "raw_retrieval_directory": "/workspace/scratch/fc47d9dd5414/autonomous-raw",
+  "artifact_checks": {
+    "all_planned_claims_reviewed": true,
+    "source_notes_at_most_150_words": true,
+    "all_reservations_observed": true
+  }
+}
