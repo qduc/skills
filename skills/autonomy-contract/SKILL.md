@@ -132,9 +132,10 @@ a soft warning.
    `check`. Exit the loop when `check` returns 10.
 5. Write `brief.md` for the human. Run `validate`, then `audit`.
 
-The brief leads with conclusions that need judgment. Link material claims to
-source ids. State contradictions and unresolved uncertainty in the open. Do
-not paste the transcript.
+The brief leads with conclusions that need judgment. Cite material claims
+with numbered references whose URLs are recorded sources (`validate` checks
+this). State contradictions and unresolved uncertainty in the open. Do not
+paste the transcript or narrate the process.
 
 ## Relationship to existing skills
 
