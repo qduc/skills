@@ -92,7 +92,10 @@ confidence, do one challenge pass:
 2. Apply adversarial-review P1, P3, and P4 to your own findings: unstated
    assumptions, findings that contradict each other, and parts of the goal
    no claim covers. These run sequentially in one context, so they are not
-   independent reviews; say so in the brief.
+   independent reviews. Record that in the run log
+   (`$LAB log RUN verify challenge_pass --data '{...}'`), not in the brief. The
+   brief may state only the limitation ("findings were not independently
+   reviewed"), without naming stages, personas, or the process.
 3. Record what you found. Contradictions get their own finding with both
    sources cited. Do not average them away.
 
