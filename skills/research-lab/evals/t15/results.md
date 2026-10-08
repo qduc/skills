@@ -11,17 +11,21 @@ Protocol: [protocol.md](protocol.md), frozen at `54d86025aa213040592cd082b5b0714
 2026-10-09, starting 02:44 ICT. The arms ran concurrently. Raw records are in [artifacts/](artifacts/README.md).
 
 **Evaluated version.** Both arms, the scorer, and every number here used the skills as frozen at `54d86025`. The
-fixes below landed on this branch **after** the evaluation. They do not change any artifact, score, or label.
+fixes below landed on this branch **after** the evaluation. They change no score or label. They also change no
+artifact content, except for the dated correction notes appended to the artifact copies of `measurements.md` and
+`dispatch.log`.
 
 | Commit | Post-evaluation fix |
 | --- | --- |
 | `2b92359` | autonomy-contract/SKILL.md names the ledger fields (`kind`, `what`, `n`) and points to `audit`'s `used` totals. |
 | `de68843` | `lab.py charge` rejects `--n < 1`, and `audit` flags any charge with `n < 1` (PR review N1). |
 | `de68843` | The docs now say the unkeyed hash chain makes accidental edits evident. A deliberate rewrite is caught only by an outside count (`--observed-*`) (N2). |
-| `de68843` | `unresolved` no longer counts as progress for the stall rule, which now needs a claim newly `supported` or `contradicted`. The "no open claims" stop reports resolved and unresolved counts separately, and `check` shows open, resolved, and unresolved (N3). Under this rule, A's stop reason would read "no open claims left (4 resolved, 1 unresolved)". |
+| `de68843` | `unresolved` no longer counts as progress for the stall rule, which now needs a claim newly `supported` or `contradicted`. The "no open claims" stop reports resolved and unresolved counts separately, and `check` shows open, resolved, and unresolved (N3). Under this rule, A's stop reason would read "no open claims left (4 resolved, 1 unresolved)". The "no open claims" stop itself is unchanged: marking every claim `unresolved` still ends the run, now visibly (see Limitations). |
+| `de68843` | Ledger field renamed: cycle charges now record `decided_claims` (supported or contradicted) instead of `resolved_claims` (`lab.py:240`). The stall rule falls back to `resolved_claims` for ledgers written before the rename, including both T15 runs. |
 | `38fb8e2` | research-lab/SKILL.md no longer tells the agent to describe the challenge pass in the brief. That instruction caused the blinding tell (N5). |
 | `5dd22aa` | `examples/smoke/smoke.sh` writes its outputs to a temp dir. The 29 generated files are no longer committed (N9). |
-| this commit | Disclosures and corrections in this file, plus dated correction notes appended to the artifact copies of `measurements.md` and `dispatch.log` (N4, N6, N7, N8, N10). |
+| `7f78085` | `audit` reports a charge whose `n` is not a positive integer (string, bool, None, float, or less than 1) as AUDIT FAIL with exit 5 instead of crashing. `smoke.sh` removes its download dir on any exit and refuses a non-empty `SMOKE_OUT`. The experiment scripts remove their temp git repos (re-check R4, R5). |
+| `b4a6404` and this commit | Disclosures and corrections in this file, plus dated correction notes appended to the artifact copies of `measurements.md` and `dispatch.log` (N4, N6, N7, N8, N10). |
 
 Question (both arms): *What evidence shows that autonomous research agents outperform a single well-prompted model
 on difficult technical research tasks?*
@@ -219,7 +223,11 @@ During the experiment:
   not verified.
 - Budget enforcement is cooperative, with a post-run audit. It is not a sandbox. At the freeze, `charge --n` also
   accepted refunds (n < 1), and marking claims `unresolved` could end a run or defeat the stall stop. Neither
-  happened in these runs (all charges have n = 1). Both were fixed after evaluation.
+  happened in these runs: all charges have n = 1, and A ended with 4 claims supported and 1 unresolved. After
+  evaluation, refunds were blocked and `unresolved` stopped counting as stall progress.
+- **Still open:** marking every claim `unresolved` still ends a run through the "no open claims" stop. The reason
+  now shows it, for example "no open claims left (0 resolved, 2 unresolved)", but the behavior is unchanged by
+  design. A reader or auditor has to treat a stop with zero resolved claims as a failed run.
 - The transcript-based numbers are attested by one party with a conflict of interest (deviations 7–8) and cannot be
   reproduced from this repo.
 - The reuse run has no control. It shows read-back and use of stored knowledge, not a quality gain.
@@ -231,6 +239,9 @@ During the experiment:
 1. **Blinding:** fix the source, which is the skill. research-lab/SKILL.md no longer puts the challenge-pass
    description in the brief (`38fb8e2`). Next time, also check every skill an arm loads for instructions to describe
    the process in the output. Prefer whole-sentence scrubbing to token redaction, and avoid visible `[redacted]` markers.
+   Even the limitation the skill now allows ("findings were not independently reviewed") is a weak tell, because a
+   single pass would not mention a review. The protocol's redaction step should remove review and process sentences
+   from both arms' answers before blinding, not just tokens.
 2. **Multiple runs per arm** (and more than one question) so that a gap can be told apart from run-to-run variance.
 3. **A second, independent scorer**, with agreement reported.
 4. Count web calls from the harness or transcript by default, and drop self-kept tallies like `calls.log`. Commit the
