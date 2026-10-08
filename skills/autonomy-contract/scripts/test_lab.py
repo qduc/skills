@@ -1,6 +1,7 @@
 """Behavioral tests for lab.py, run through its real command line."""
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -91,6 +92,40 @@ class LabTest(unittest.TestCase):
         ledger = self.run_dir / "ledger.jsonl"
         ledger.write_text(ledger.read_text().replace('"n": 1', '"n": 0'))
         self.assertIn("hash chain", self.lab("audit", self.run_dir, ok=(5,)).stdout)
+
+    def test_charge_rejects_nonpositive_n_and_audit_flags_it(self):
+        self.init()
+        for n in (0, -2):
+            self.assertIn("at least 1", self.lab("charge", self.run_dir, "web", "--n", n, ok=(2,)).stderr)
+        self.assertEqual(len((self.run_dir / "ledger.jsonl").read_text().splitlines()), 1)
+        self.lab("charge", self.run_dir, "web")
+        # A refund left in a ledger by an older lab.py: re-chain it so only the n check can catch it.
+        ledger = self.run_dir / "ledger.jsonl"
+        entries = [json.loads(l) for l in ledger.read_text().splitlines()]
+        entries.append(dict(entries[-1], n=-2, seq=len(entries)))
+        prev, lines = hashlib.sha256((self.run_dir / "budget.json").read_bytes()).hexdigest(), []
+        for entry in entries:
+            lines.append(json.dumps(dict(entry, prev=prev), ensure_ascii=False, sort_keys=True))
+            prev = hashlib.sha256(lines[-1].encode()).hexdigest()
+        ledger.write_text("\n".join(lines) + "\n")
+        with (self.run_dir / "log.jsonl").open("a") as log:
+            log.write(json.dumps({"phase": "act", "event": "budget_charged", "ts": "t",
+                                  "data": {"ledger_head": prev}}) + "\n")
+        self.assertIn("has n=-2", self.lab("audit", self.run_dir, ok=(5,)).stdout)
+
+    def test_unresolved_is_not_progress(self):
+        self.init("--max-stall", 1, cycles=5)
+        for cid in ("C1", "C2", "C3"):
+            self.add("claim", {"id": cid, "text": "t", "status": "open"})
+        self.lab("charge", self.run_dir, "cycle")
+        self.add("claim", {"id": "C1", "text": "t", "status": "unresolved"})
+        self.assertIn("stalled", self.lab("check", self.run_dir, ok=(10,)).stderr)
+        self.add("claim", {"id": "C2", "text": "t", "status": "supported"})
+        status = json.loads(self.lab("check", self.run_dir).stdout)
+        self.assertEqual(status["claims"], {"open": 1, "resolved": 1, "unresolved": 1})
+        self.add("claim", {"id": "C3", "text": "t", "status": "unresolved"})
+        self.assertIn("no open claims left (1 resolved, 2 unresolved)",
+                      self.lab("check", self.run_dir, ok=(10,)).stderr)
 
     def test_knowledge_round_trip_between_runs(self):
         self.init()

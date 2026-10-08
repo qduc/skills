@@ -36,6 +36,7 @@ CONTRACT = "autonomy-contract/1"
 PHASES = {"observe", "decide", "act", "verify", "learn", "repeat"}
 CLAIM_STATUS = {"open", "supported", "contradicted", "unresolved"}
 RESOLVED = CLAIM_STATUS - {"open"}
+DECIDED = {"supported", "contradicted"}  # progress for the stall rule; "unresolved" is not
 CONFIDENCE = {"high", "medium", "low"}
 URL = re.compile(r"^(https?://\S+|file:\S+)$")
 URL_IN_TEXT = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
@@ -102,8 +103,8 @@ class Run:
     def records(self, kind: str) -> dict[str, dict]:
         return latest(read_jsonl(self.file(f"{kind}s.jsonl")))
 
-    def resolved_count(self) -> int:
-        return sum(1 for c in self.records("claim").values() if c.get("status") in RESOLVED)
+    def decided_count(self) -> int:
+        return sum(1 for c in self.records("claim").values() if c.get("status") in DECIDED)
 
     def log(self, phase: str, event: str, data: dict | None = None) -> None:
         append_jsonl(self.file("log.jsonl"), {"ts": now().isoformat(timespec="seconds"),
@@ -222,6 +223,8 @@ def cmd_init(args) -> int:
 
 
 def cmd_charge(args) -> int:
+    if args.n < 1:
+        raise Fail(2, f"ERROR --n must be at least 1 (got {args.n}); charges cannot refund budget")
     run = Run(args.run)
     entries = run.ledger()
     used = run.used(entries)
@@ -234,7 +237,7 @@ def cmd_charge(args) -> int:
         reason = f"{args.what} limit reached: {used[args.what]} used + {args.n} requested > {limit}"
     record = {"what": args.what, "n": args.n, "note": args.note, "elapsed_min": elapsed}
     if args.what == "cycle":
-        record["resolved_claims"] = run.resolved_count()
+        record["decided_claims"] = run.decided_count()
     if reason:
         record.update(kind="refused", reason=reason)
         head = run.append_ledger(entries, record)
@@ -336,7 +339,8 @@ def stop_status(run: Run) -> dict:
     elapsed = run.elapsed_min()
     claims = run.records("claim")
     open_claims = [c for c, r in claims.items() if r["status"] == "open"]
-    resolved = len(claims) - len(open_claims)
+    unresolved = sum(1 for r in claims.values() if r["status"] == "unresolved")
+    resolved = len(claims) - len(open_claims) - unresolved  # supported or contradicted
     reasons = []
     if used["cycle"] >= run.limits["cycles"]:
         reasons.append(f"cycle budget spent ({used['cycle']}/{run.limits['cycles']})")
@@ -346,14 +350,16 @@ def stop_status(run: Run) -> dict:
         reasons.append(f"time spent ({elapsed}/{run.limits['minutes']} min, "
                        f"{run.limits['reserve_minutes']} reserved to finish)")
     if claims and not open_claims:
-        reasons.append(f"no open claims left ({len(claims)} recorded)")
+        reasons.append(f"no open claims left ({resolved} resolved, {unresolved} unresolved)")
     cycles = [e for e in entries if e["kind"] == "charge" and e["what"] == "cycle"]
     stall = run.limits["stall_cycles"]
-    if stall and len(cycles) >= stall and resolved <= cycles[-stall]["resolved_claims"]:
-        reasons.append(f"stalled: no claim resolved in the last {stall} cycles")
+    # Ledgers written before "decided_claims" stored "resolved_claims" (which counted "unresolved").
+    if stall and len(cycles) >= stall and resolved <= cycles[-stall].get(
+            "decided_claims", cycles[-stall].get("resolved_claims", 0)):
+        reasons.append(f"stalled: no claim newly supported or contradicted in the last {stall} cycles")
     return {"decision": "stop" if reasons else "continue", "reasons": reasons, "used": used,
             "limits": run.limits, "elapsed_min": elapsed,
-            "claims": {"open": len(open_claims), "resolved": resolved}}
+            "claims": {"open": len(open_claims), "resolved": resolved, "unresolved": unresolved}}
 
 
 def cmd_check(args) -> int:
@@ -436,6 +442,8 @@ def cmd_audit(args) -> int:
     for entry in entries[1:]:
         if entry["kind"] != "charge":
             continue
+        if not isinstance(entry["n"], int) or entry["n"] < 1:
+            problems.append(f"charge seq {entry['seq']} has n={entry['n']} (must be a positive integer)")
         used[entry["what"]] += entry["n"]
         limit = run.limits["cycles" if entry["what"] == "cycle" else "web"]
         if used[entry["what"]] > limit:
@@ -480,12 +488,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--max-cycles", type=int, required=True)
     p.add_argument("--max-web", type=int, required=True, help="web search/fetch calls")
     p.add_argument("--max-minutes", type=float, required=True, help="wall clock from init")
-    p.add_argument("--max-stall", type=int, default=2, help="stop after N cycles that resolve no claim (0=off)")
+    p.add_argument("--max-stall", type=int, default=2, help="stop after N cycles that newly support or contradict no claim (0=off)")
     p.add_argument("--reserve-minutes", type=float, default=0, help="stop this early to leave time to finish")
     p = sub.add_parser("charge", help="charge the budget before a cycle or a web call; exit 3 if refused")
     p.add_argument("run")
     p.add_argument("what", choices=["cycle", "web"])
-    p.add_argument("--n", type=int, default=1)
+    p.add_argument("--n", type=int, default=1, help="units to charge (at least 1)")
     p.add_argument("--note", default="")
     p = sub.add_parser("log", help="append a structured event")
     p.add_argument("run")

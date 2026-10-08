@@ -54,9 +54,9 @@ Another domain would add only an application skill. The run directory, ledger, s
 
 ## Failed approaches and defects found while building
 
-- **The hash chain alone missed an edit to the last ledger entry.** The tamper test failed. Fix: every charge logs the new chain head in `log.jsonl`, and `audit` compares it. This makes edits evident, not impossible.
+- **The hash chain alone missed an edit to the last ledger entry.** The tamper test failed. Fix: every charge logs the new chain head in `log.jsonl`, and `audit` compares it. The chain and heads are unkeyed, so this makes accidental edits evident; a deliberate rewrite that re-chains the ledger and log is caught only by an outside count (`--observed-*`).
 - **Stored knowledge had duplicate sources and unresolvable `file:` URLs.** Seen when run 2 of the first smoke pass recalled run 1's entry. Fix: de-duplicate, and rewrite relative `file:` URLs to be relative to the store.
-- **The stop message said "all 3 claims resolved" when one claim was `unresolved`.** Misleading. Reworded to "no open claims left".
+- **The stop message said "all 3 claims resolved" when one claim was `unresolved`.** Misleading. Reworded to "no open claims left". After the T15 review it reports resolved and unresolved counts separately, and `unresolved` no longer counts as progress for the stall rule.
 - **The first smoke pass was interactive, and its transcript no longer matched the code after the fixes above.** Replaced with `examples/smoke/smoke.sh`, which replays the same decisions against real fetches and fails on any exit-code mismatch.
 - **OpenAI's Harness Engineering page could not be fetched** (403 via the fetch tool, and a JS challenge via curl). Its lessons come from search excerpts and are labeled that way.
 

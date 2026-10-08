@@ -84,15 +84,17 @@ Concrete, checkable limits, frozen at `init`:
 | `max_cycles` | How many DECIDE→ACT→VERIFY cycles the run may start |
 | `max_web` | How many web search or fetch calls the run may make |
 | `max_minutes` | Wall clock from `init` |
-| `max_stall` | Stop after this many consecutive cycles that resolve no claim (default 2; `0` disables) |
+| `max_stall` | Stop after this many consecutive cycles that newly support or contradict no claim (default 2; `0` disables) |
 | `reserve_minutes` | Stop this early so there is time to write the brief (default 0) |
 
 `charge` refuses with exit 3 once any limit is hit, and appends a `refused`
-ledger entry. The ledger is hash-chained back to `budget.json`, and every
+ledger entry. `--n` must be at least 1; `audit` flags any charge with `n < 1`. The ledger is hash-chained back to `budget.json`, and every
 charge also logs the new chain head in `log.jsonl`. `audit` re-checks the
 chain and the head, and compares ledger totals with counts observed outside
-the run (for example, tool calls counted from the transcript). The chain makes
-edits evident; it does not make them impossible.
+the run (for example, tool calls counted from the transcript). The chain and
+heads are unkeyed: they make accidental edits evident, but a deliberate rewrite
+(re-chaining the ledger and log) is caught only by an outside count
+(`--observed-web`, `--observed-cycles`).
 Ledger lines carry `kind` (`init`, `charge`, `refused`); charge and refused lines also carry `what` (`cycle` or `web`) and `n`. Read totals from `audit`'s `used` instead of counting lines by hand.
 
 ### Stop rule
@@ -100,8 +102,12 @@ Ledger lines carry `kind` (`init`, `charge`, `refused`); charge and refused line
 `check` returns stop when any of these hold:
 
 1. The cycle, web, or (minutes − reserve) budget is spent.
-2. Every recorded claim has a non-`open` status.
-3. The last `max_stall` cycles resolved no additional claim.
+2. No recorded claim is `open`. The reason reports resolved (`supported` or
+   `contradicted`) and `unresolved` counts separately.
+3. The last `max_stall` cycles moved no additional claim to `supported` or
+   `contradicted`. Marking a claim `unresolved` is not progress.
+
+`check` prints the claims summary as `open`, `resolved`, and `unresolved`.
 
 ### Citations
 
