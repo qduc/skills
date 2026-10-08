@@ -1,0 +1,6 @@
+{"id": "C1", "status": "open", "text": "Linked worktrees run the same hooks as the main worktree by default (one shared hooks directory).", "ts": "2026-10-09T02:40:43+07:00", "why": "decides whether installing a hook once covers every worktree"}
+{"id": "C2", "status": "open", "text": "Refutation candidate: each linked worktree has its own hooks directory under its private GIT_DIR.", "ts": "2026-10-09T02:40:43+07:00", "why": "if true, hooks must be installed per worktree"}
+{"id": "C1", "status": "supported", "text": "Linked worktrees run the same hooks as the main worktree by default (one shared hooks directory).", "ts": "2026-10-09T02:40:44+07:00"}
+{"id": "C2", "status": "contradicted", "text": "Refutation candidate: each linked worktree has its own hooks directory under its private GIT_DIR.", "ts": "2026-10-09T02:40:44+07:00"}
+{"id": "C3", "status": "open", "text": "One worktree can use different hooks via extensions.worktreeConfig plus a per-worktree core.hooksPath.", "ts": "2026-10-09T02:40:44+07:00", "why": "raised by the P4 scope challenge"}
+{"id": "C3", "status": "unresolved", "text": "One worktree can use different hooks via extensions.worktreeConfig plus a per-worktree core.hooksPath.", "ts": "2026-10-09T02:40:45+07:00"}

@@ -44,6 +44,7 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 
 - **adversarial-review** — Looks at one change or document, such as a pull request, spec, design, or plan, and reports concrete defects and gaps that the evidence supports.
 - **[agentic-loop](skills/agentic-loop/SKILL.md)** — Pursues delegated outcomes through planning, action, observation, verification, and adaptation, loading methodology only when needed.
+- **[autonomy-contract](skills/autonomy-contract/SKILL.md)** — Runs a bounded Observe→Decide→Act→Verify→Learn→Repeat loop over plain files, with a checkable budget, a stop rule, citation validation, and a durable knowledge store.
 - **[browser-qa](skills/browser-qa/SKILL.md)** — Verifies scoped user journeys and rendered behavior in a real browser, with reproducible evidence and explicit coverage limits.
 - **bug-retro** — After a bug is fixed, turns that single fix into a lasting improvement for the whole class of bug.
 - **[code-review](skills/code-review/SKILL.md)** — Inspects code changes for evidence-backed correctness, security, and compatibility risks.
@@ -61,6 +62,7 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **[profiling](skills/profiling/SKILL.md)** — Measures representative workloads, locates limiting mechanisms, and verifies optimizations with comparable evidence.
 - **proportionality-review** — Judges whether a proposal or design is more complex than the problem needs.
 - **[research](skills/research/SKILL.md)** — Sources, compares, and synthesizes evidence into traceable answers to bounded questions.
+- **[research-lab](skills/research-lab/SKILL.md)** — Investigates a research goal unattended under a budget through the autonomy contract, and returns a short conclusions brief plus reusable knowledge.
 - **simplicity-architect** — Proposes software designs built on strong invariants and a small complexity budget, keeping edge cases from growing into extra defensive machinery.
 - **skill-creator** — Creates and revises agent skills, and measures how well they perform, including tests and how accurately a description gets the skill selected.
 - **slop-audit** — Surveys a whole repository for piled-up problems in design, correctness, tests, duplication, security, dependencies, and overbuilding, then ranks what to repair.

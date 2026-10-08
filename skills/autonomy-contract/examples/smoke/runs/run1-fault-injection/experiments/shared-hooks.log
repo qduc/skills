@@ -1,0 +1,4 @@
+git version: git version 2.47.3
+linked --git-dir:        <tmp>/main/.git/worktrees/linked
+linked --git-path hooks: <tmp>/main/.git/hooks
+HOOK pre-commit fired in <tmp>/linked

@@ -1,0 +1,2 @@
+{"kind": "init", "limits": {"cycles": 2, "minutes": 15.0, "reserve_minutes": 0, "stall_cycles": 2, "web": 1}, "prev": "8fa4351ce8b36e2cc8f13e8e87c132d514045c0696d726ae81be4676aa930192", "seq": 0, "ts": "2026-10-09T02:40:45+07:00"}
+{"elapsed_min": 0.02, "kind": "charge", "n": 1, "note": "C1+C2: experiment first (lesson K-e548fdd3), sources reused from K-cbab5308", "prev": "b6c35c2d80a9c25c5da88271ce3ebbe4bb26829809ca1d8288a772920825055b", "resolved_claims": 0, "seq": 1, "ts": "2026-10-09T02:40:46+07:00", "what": "cycle"}

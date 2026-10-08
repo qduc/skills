@@ -1,0 +1,15 @@
+{"data": {"ledger_head": "b6c35c2d80a9c25c5da88271ce3ebbe4bb26829809ca1d8288a772920825055b", "limits": {"cycles": 2, "minutes": 15.0, "reserve_minutes": 0, "stall_cycles": 2, "web": 1}, "run_id": "run2-20261009T024045", "store": "/workspace/qduc-skills/skills/autonomy-contract/examples/smoke/store/knowledge.jsonl"}, "event": "run_initialized", "phase": "observe", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"query_terms": ["different", "hooks", "repository", "worktree", "worktrees"], "store": "/workspace/qduc-skills/skills/autonomy-contract/examples/smoke/store/knowledge.jsonl", "store_entries": 3, "surfaced": ["K-e548fdd3", "K-ef044426", "K-cbab5308"]}, "event": "knowledge_recalled", "phase": "observe", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"ids": ["K-ef044426", "K-cbab5308", "K-e548fdd3"], "why": "K-ef044426 gives the default (shared hooks); K-cbab5308 is this goal, left open by run1 with sources; K-e548fdd3 says run the experiment before spending web calls"}, "event": "knowledge_used", "phase": "observe", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"id": "C1"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"id": "C2"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"ledger_head": "2ac5cdc10e9b3b2e825b1a43811f726d5408e5f94f4d58cea208a142c91f6195", "n": 1, "note": "C1+C2: experiment first (lesson K-e548fdd3), sources reused from K-cbab5308", "used": {"cycle": 1, "web": 0}, "what": "cycle"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:40:46+07:00"}
+{"data": {"id": "S1"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:40:46+07:00"}
+{"data": {"id": "S2"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:40:46+07:00"}
+{"data": {"id": "F1"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:40:46+07:00"}
+{"data": {"id": "F2"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:40:46+07:00"}
+{"data": {"id": "C1"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:46+07:00"}
+{"data": {"id": "C2"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:46+07:00"}
+{"data": {"claims": {"open": 0, "resolved": 2}, "decision": "stop", "elapsed_min": 0.02, "limits": {"cycles": 2, "minutes": 15.0, "reserve_minutes": 0, "stall_cycles": 2, "web": 1}, "reasons": ["no open claims left (2 recorded)"], "used": {"cycle": 1, "web": 0}}, "event": "stop_check", "phase": "repeat", "ts": "2026-10-09T02:40:46+07:00"}
+{"data": {"id": "K-5c765b13", "kind": "finding", "store": "/workspace/qduc-skills/skills/autonomy-contract/examples/smoke/store/knowledge.jsonl"}, "event": "knowledge_written", "phase": "learn", "ts": "2026-10-09T02:40:46+07:00"}
+{"data": {"errors": [], "ok": true}, "event": "validation", "phase": "verify", "ts": "2026-10-09T02:40:46+07:00"}

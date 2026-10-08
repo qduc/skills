@@ -1,0 +1,32 @@
+{"data": {"ledger_head": "1f24198fce430c4ae2ae3fcecbd37fe2edefcfa5262e67456689caa8a920f639", "limits": {"cycles": 2, "minutes": 20.0, "reserve_minutes": 0, "stall_cycles": 2, "web": 3}, "run_id": "run1-20261009T024043", "store": "/workspace/qduc-skills/skills/autonomy-contract/examples/smoke/store/knowledge.jsonl"}, "event": "run_initialized", "phase": "observe", "ts": "2026-10-09T02:40:43+07:00"}
+{"data": {"query_terms": ["hooks", "share", "worktree", "worktrees"], "store": "/workspace/qduc-skills/skills/autonomy-contract/examples/smoke/store/knowledge.jsonl", "store_entries": 0, "surfaced": []}, "event": "knowledge_recalled", "phase": "observe", "ts": "2026-10-09T02:40:43+07:00"}
+{"data": {"id": "C1"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:43+07:00"}
+{"data": {"id": "C2"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:43+07:00"}
+{"data": {"method": "primary docs (git-scm.com), then a local experiment", "order": ["C1", "C2"]}, "event": "plan", "phase": "decide", "ts": "2026-10-09T02:40:43+07:00"}
+{"data": {"ledger_head": "23aac7473faf6d2c3dda4035b8b9377474bd6a9fbb45ea17e2215806e90f7fa2", "n": 1, "note": "C1+C2: read githooks and git-worktree docs, then experiment", "used": {"cycle": 1, "web": 0}, "what": "cycle"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:40:43+07:00"}
+{"data": {"ledger_head": "3e595a6632fec9c96c4a9bb2f9ee9aeaae5a2f7fe784573a1c454bba0a962fde", "n": 1, "note": "fetch https://git-scm.com/docs/githooks", "used": {"cycle": 1, "web": 1}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:40:43+07:00"}
+{"data": {"id": "S1"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"claims": ["C1", "C2"], "note": "githooks says GIT_DIR/hooks; linked worktrees have a private GIT_DIR"}, "event": "tension", "phase": "verify", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"ledger_head": "d9b1f53749b1be525cd6bc9eb9aab0583973bb0446709da198b48abe6a7a875d", "n": 1, "note": "fetch https://git-scm.com/docs/git-worktree", "used": {"cycle": 1, "web": 2}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"id": "S2"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"id": "S3"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"claims": ["C1", "C2"], "why": "docs do not say where hooks/ resolves; a local repo settles it with no web budget"}, "event": "experiment", "phase": "decide", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"id": "S4"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"id": "F1"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"id": "F2"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"id": "C1"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"id": "C2"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"P1_assumption": "assumed core.hooksPath unset", "P3_consistency": "S1 vs S4 recorded as F2", "P4_scope": "can one worktree opt out? added C3"}, "event": "challenge", "phase": "verify", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"id": "C3"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"claims": {"open": 1, "resolved": 2}, "decision": "continue", "elapsed_min": 0.03, "limits": {"cycles": 2, "minutes": 20.0, "reserve_minutes": 0, "stall_cycles": 2, "web": 3}, "reasons": [], "used": {"cycle": 1, "web": 2}}, "event": "stop_check", "phase": "repeat", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"ledger_head": "2009f1945787ba497cf926aa439129b3027b31c8bda48da7b1e95a0e5638a0e1", "n": 1, "note": "C3: counter-evidence and opt-out check in git-config docs", "used": {"cycle": 2, "web": 2}, "what": "cycle"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"ledger_head": "f7f625dcec3912832a539dba09f7c06e6c56f4303eef0591a2a86bca59d4fb2e", "n": 1, "note": "fetch https://git-scm.com/docs/git-config", "used": {"cycle": 2, "web": 3}, "what": "web"}, "event": "budget_charged", "phase": "act", "ts": "2026-10-09T02:40:44+07:00"}
+{"data": {"id": "S5"}, "event": "source_recorded", "phase": "act", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"id": "F3"}, "event": "finding_recorded", "phase": "verify", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"id": "C3"}, "event": "claim_recorded", "phase": "decide", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"ledger_head": "a6999ed4a444cbbad36b179e2d8a14647fa7ba3c9fd72e694dd021f34a9aa5d0", "note": "would fetch a forum thread as extra counter-evidence", "reason": "web limit reached: 3 used + 1 requested > 3", "what": "web"}, "event": "budget_refused", "phase": "act", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"claims": {"open": 0, "resolved": 3}, "decision": "stop", "elapsed_min": 0.04, "limits": {"cycles": 2, "minutes": 20.0, "reserve_minutes": 0, "stall_cycles": 2, "web": 3}, "reasons": ["cycle budget spent (2/2)", "web budget spent (3/3)", "no open claims left (3 recorded)"], "used": {"cycle": 2, "web": 3}}, "event": "stop_check", "phase": "repeat", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"id": "K-ef044426", "kind": "finding", "store": "/workspace/qduc-skills/skills/autonomy-contract/examples/smoke/store/knowledge.jsonl"}, "event": "knowledge_written", "phase": "learn", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"id": "K-cbab5308", "kind": "question", "store": "/workspace/qduc-skills/skills/autonomy-contract/examples/smoke/store/knowledge.jsonl"}, "event": "knowledge_written", "phase": "learn", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"id": "K-e548fdd3", "kind": "lesson", "store": "/workspace/qduc-skills/skills/autonomy-contract/examples/smoke/store/knowledge.jsonl"}, "event": "knowledge_written", "phase": "learn", "ts": "2026-10-09T02:40:45+07:00"}
+{"data": {"errors": [], "ok": true}, "event": "validation", "phase": "verify", "ts": "2026-10-09T02:40:45+07:00"}

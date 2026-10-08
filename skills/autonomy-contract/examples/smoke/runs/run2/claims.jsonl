@@ -1,0 +1,4 @@
+{"id": "C1", "status": "open", "text": "With extensions.worktreeConfig enabled, git config --worktree core.hooksPath makes one linked worktree use a different hooks directory.", "ts": "2026-10-09T02:40:45+07:00"}
+{"id": "C2", "status": "open", "text": "Refutation candidate: setting core.hooksPath from one worktree also changes the hooks of the other worktrees.", "ts": "2026-10-09T02:40:45+07:00"}
+{"id": "C1", "status": "supported", "text": "With extensions.worktreeConfig enabled, git config --worktree core.hooksPath makes one linked worktree use a different hooks directory.", "ts": "2026-10-09T02:40:46+07:00"}
+{"id": "C2", "status": "contradicted", "text": "Refutation candidate: setting core.hooksPath from one worktree also changes the hooks of the other worktrees.", "ts": "2026-10-09T02:40:46+07:00"}
