@@ -3,10 +3,25 @@
 **Headline: INCONCLUSIVE.** Arm A (autonomy contract) scored 15/16 and Arm B (single well-prompted pass) scored 14/16.
 Under the frozen decision rule a difference of at least 2 points is needed, so a 1-point gap does not count.
 A used 0.65× B's web calls and took 1.21× B's time. This is directional at best: one question, one run per arm,
-one scorer, an unpinned model, and a blinding check that partly failed.
+one scorer, an unpinned model, and a blinding check that partly failed. Dollar and token cost was not measured, so
+"quality per dollar" is proxied only by web calls and minutes. One agent (coder) built the system, ran the experiment,
+and produced the transcript counts, which is a conflict of interest (deviation 7).
 
 Protocol: [protocol.md](protocol.md), frozen at `54d86025aa213040592cd082b5b07146451e0dd6`. The run happened on
 2026-10-09, starting 02:44 ICT. The arms ran concurrently. Raw records are in [artifacts/](artifacts/README.md).
+
+**Evaluated version.** Both arms, the scorer, and every number here used the skills as frozen at `54d86025`. The
+fixes below landed on this branch **after** the evaluation. They do not change any artifact, score, or label.
+
+| Commit | Post-evaluation fix |
+| --- | --- |
+| `2b92359` | autonomy-contract/SKILL.md names the ledger fields (`kind`, `what`, `n`) and points to `audit`'s `used` totals. |
+| `de68843` | `lab.py charge` rejects `--n < 1`, and `audit` flags any charge with `n < 1` (PR review N1). |
+| `de68843` | The docs now say the unkeyed hash chain makes accidental edits evident. A deliberate rewrite is caught only by an outside count (`--observed-*`) (N2). |
+| `de68843` | `unresolved` no longer counts as progress for the stall rule, which now needs a claim newly `supported` or `contradicted`. The "no open claims" stop reports resolved and unresolved counts separately, and `check` shows open, resolved, and unresolved (N3). Under this rule, A's stop reason would read "no open claims left (4 resolved, 1 unresolved)". |
+| `38fb8e2` | research-lab/SKILL.md no longer tells the agent to describe the challenge pass in the brief. That instruction caused the blinding tell (N5). |
+| `5dd22aa` | `examples/smoke/smoke.sh` writes its outputs to a temp dir. The 29 generated files are no longer committed (N9). |
+| this commit | Disclosures and corrections in this file, plus dated correction notes appended to the artifact copies of `measurements.md` and `dispatch.log` (N4, N6, N7, N8, N10). |
 
 Question (both arms): *What evidence shows that autonomous research agents outperform a single well-prompted model
 on difficult technical research tasks?*
@@ -30,30 +45,52 @@ PlanCraft and SWE-bench but **+80.8% on Finance Agent**. They also compare multi
 agent, not with a "single well-prompted model". Sol's six pairs per answer were 4 drawn at random (seed from the freeze
 SHA) plus the 2 most decisive. Full table: [artifacts/blind/scores.md](artifacts/blind/scores.md).
 
+### Citation precision (found in the PR review, not scored)
+
+Sol re-checked all 23 recorded excerpts (Arm A and the reuse run) against the live pages, and the content of every
+one is real. Two excerpts are not exact quotes:
+
+- **Arm A, S7** (ScienceAgentBench, `arxiv.org/html/2410.05080v2`) quotes "…than using OpenHands while costing 17
+  times less…". The page says "OpenHands **CodeAct**", so the excerpt is not verbatim. The same wording appears in A's
+  reference [7]. The reuse run's S15 quotes it correctly.
+- **Reuse run, S11–S13** (AutoScientists) cite `arxiv.org/abs/2605.28655` but quote full-text passages that appear
+  only on `arxiv.org/html/2605.28655`.
+
+The run artifacts are left unedited.
+
 ### Decision rule (frozen)
 
 - Q_A − Q_B = 1, which is less than 2, so the label cannot be "Autonomy helped". Q_B − Q_A = −1, so it cannot be "Autonomy did worse".
   The label is **Inconclusive**.
 - The other conditions for "helped" did hold. A is never more than 1 point below B on any criterion, and A's citation
   integrity of 0.92 is at least B's 1.00 minus 0.10. Only the margin failed.
-- Neither arm has a budget violation, contamination hit, or rescue intervention.
+- Neither arm has a budget violation, contamination hit, or rescue intervention. The contamination and
+  intervention results are attested from transcripts, not reproducible from this repo (see below).
 
 ## Measured (not scored)
 
 Counts come from each arm's transcript, which the dispatcher read
 ([measurements.md addendum](artifacts/measurements.md)). They replace the log-based counts in the body of that file.
 
+> **Attested, not reproducible.** The web and other tool-call counts, the contamination results, the intervention
+> counts, and "every web call preceded by a charge" come only from the dispatcher (coder) reading the Grok Bot
+> transcripts of Arm A (`sand-subagent-2958ea10-2768-7253-0783-bb4cac341fe7`) and Arm B
+> (`sand-subagent-d0150782-be41-b2bf-f787-e866e74607c1`). Those transcripts and the per-call lists are **not** in
+> this repo, and neither the measuring worker nor the reviewer could read them. The repo holds one cross-check: A's
+> ledger has 13 web charges (5 searches and 8 fetches by their notes), consistent with A's 8 recorded sources and 8
+> references. Nothing in the repo checks B's 20.
+
 | Measure | Arm A | Arm B |
 | --- | --- | --- |
-| Web calls | **13** (5 WebSearch, 8 WebFetch, 0 curl) | **20** (8 WebSearch, 11 WebFetch, 1 curl) |
-| Other tool calls | 17 (6 Read, 11 Shell, which includes all `lab.py` calls) | 15 (2 Read, 13 non-web Shell) |
+| Web calls (attested) | **13** (5 WebSearch, 8 WebFetch, 0 curl) | **20** (8 WebSearch, 11 WebFetch, 1 curl) |
+| Other tool calls (attested) | 17 (6 Read, 11 Shell, which includes all `lab.py` calls) | 15 (2 Read, 13 non-web Shell) |
 | Total tool calls | 30 | 35 |
 | Elapsed: dispatch window start (02:44:03) → `answer.md` mtime | **4.60 min** | **3.81 min** |
 | Elapsed: dispatch window start → final message | ~4.92 min | ~4.27 min |
-| Human interventions | 0 | 0 |
+| Human interventions (attested) | 0 | 0 |
 | Stop reason | Stop rule: "no open claims left (5 recorded)" after 2 of 8 cycles, 3.08 min after `init`, 13 of 40 web calls | No loop. A single pass ended by its own judgment; last web call at 02:46:39 |
 | Budget (40 web, 60 min; A also 8 cycles) | Within | Within |
-| Contamination (transcript grep) | Clean: read only the allowed skill files and its own dirs | Clean: read only `research/SKILL.md` and its own dir |
+| Contamination (transcript grep, attested) | Clean: read only the allowed skill files and its own dirs | Clean: read only `research/SKILL.md` and its own dir |
 | Tokens and money | Not measurable with our tools | Not measurable with our tools |
 | Model | Not visible in the transcript | Not visible in the transcript |
 | Q per web call | 1.15 | 0.70 |
@@ -62,8 +99,8 @@ Counts come from each arm's transcript, which the dispatcher read
 - Both arms ran as the same subagent type: a fresh-context knowledgeWork worker dispatched the same way.
 - The protocol's "better but costlier" check (more than 1.5× B's web calls or time) does not apply. A's ratios are 0.65× and 1.21×.
 - Arm A process checks: `validate` gave `VALID {"claim": 5, "source": 8, "finding": 10}`. `audit --observed-web 13`
-  gave AUDIT OK, and the 13 comes from the transcript, independent of A's ledger. Every web call in the transcript is
-  preceded by a matching `charge web`. `knowledge_recalled` was logged at the start (the store was empty), and 5
+  gave AUDIT OK. The 13 comes from the transcript, independent of A's ledger. Per the dispatcher's transcript read
+  (attested, see above), every web call is preceded by a matching `charge web`. `knowledge_recalled` was logged at the start (the store was empty), and 5
   knowledge entries were written (2 findings, 1 lesson, 2 questions). The challenge pass was logged as P1/P3/P4 run
   sequentially in one context. An experiment step was logged as not feasible.
 
@@ -114,7 +151,20 @@ used. It does not show that reuse improves quality.
    confidence. The tells were the leftover stage description "Challenge review of this synthesis (sequential
    [redacted] in one context, not independent reviewers)" and the visible redaction itself. A's
    "not feasible here" line was a weaker tell. Without that sentence Sol would say "can't tell". Scores were written
-   before the question, but Sol may have inferred the arm while scoring.
+   before the question, but Sol may have inferred the arm while scoring. The root cause was in the skill, not the
+   prompt. research-lab/SKILL.md at the freeze told the agent to state the sequential challenge "in the brief".
+   arm-a-prompt.md said not to mention process, and A followed the skill. This was fixed after evaluation (`38fb8e2`).
+7. **Conductor role and conflict of interest (implementer).** protocol.md "Setup and run (conductor)" assigns setup
+   and dispatch to a conductor, and `key.txt` is headed "Conductor-only". In fact one agent, **coder**, did all of
+   it: it built the system under test (the autonomy contract and research-lab), dispatched both arms, held the key,
+   made the redaction, and produced the only transcript-based counts, contamination results, and intervention counts.
+   No independent party checked those. The implementer acting as conductor and measurer is a conflict of interest.
+8. **Conflict of interest (scorer).** Sol was both the blind scorer of T15 and the reviewer of the PR that reports
+   T15, which includes Sol's own scores and blinding guess. Sol disclosed this in the review and did not recuse.
+9. **Measurement modified the live Arm A run.** The measuring worker ran `lab.py validate` on the live
+   `p1/run` directory. That appended one `validation` event at 02:49:39 to `log.jsonl`, after A's own at
+   02:48:16. A pre-measurement snapshot exists outside the repo (`/workspace/lab-runs/t15/p1-run-snapshot-pre-measurement.tar`,
+   sha256 `079cd0d7…a1ed`). The ledger was not touched, and audit results are unaffected.
 
 ## Tradeoffs
 
@@ -127,7 +177,10 @@ used. It does not show that reuse improves quality.
 - **Enforcement is cooperative.** `lab.py` refuses charges once a limit is hit, but only if the agent calls it.
   Nothing stops an agent from fetching without charging. The protection is a post-run `audit` that checks the
   hash-chained ledger against counts taken from the transcript. Here that matched (13 = 13). Without a transcript,
-  the audit can only check the ledger against itself.
+  the audit can only check the ledger against itself. The chain is unkeyed, so a deliberate rewrite that re-chains the
+  ledger passes everything except an outside count.
+- **Cost is proxied.** Dollar and token cost was not measured. "Quality per dollar" is proxied only by web calls
+  (Q per web call 1.15 vs 0.70) and minutes (Q per minute 3.26 vs 3.67), and those two point in opposite directions.
 
 ## Failed approaches
 
@@ -153,7 +206,8 @@ During the experiment:
   `audit`'s `used` totals.
 - **Log-based measurement without transcripts** produced a wrong web count for B (22 instead of 20) and could not
   check contamination. Transcript access was required.
-- **Re-verifying with `validate` changes the run.** It appends a `validation` event to `log.jsonl`. Re-check on a copy.
+- **Re-verifying with `validate` changes the run.** It appends a `validation` event to `log.jsonl`. The measuring
+  worker ran it on the live Arm A run (deviation 9). Re-check on a copy.
 
 ## Limitations
 
@@ -163,17 +217,23 @@ During the experiment:
 - Tokens and money were not measured, so "cheaper" here means web calls and wall-clock time only.
 - The model is unpinned and not visible. Both arms used the same worker type, but sameness of the model is assumed,
   not verified.
-- Budget enforcement is cooperative, with a post-run audit. It is not a sandbox.
+- Budget enforcement is cooperative, with a post-run audit. It is not a sandbox. At the freeze, `charge --n` also
+  accepted refunds (n < 1), and marking claims `unresolved` could end a run or defeat the stall stop. Neither
+  happened in these runs (all charges have n = 1). Both were fixed after evaluation.
+- The transcript-based numbers are attested by one party with a conflict of interest (deviations 7–8) and cannot be
+  reproduced from this repo.
 - The reuse run has no control. It shows read-back and use of stored knowledge, not a quality gain.
 - Both arms finished in under 5 minutes against a 60-minute budget. This question did not stress the cycle loop or
   the stop rule's stall and time branches.
 
 ## Next steps
 
-1. **Blinding:** forbid stage and process descriptions in arm prompts, or scrub whole sentences that describe stages
-   (not just tokens), before scoring. Avoid visible `[redacted]` markers.
+1. **Blinding:** fix the source, which is the skill. research-lab/SKILL.md no longer puts the challenge-pass
+   description in the brief (`38fb8e2`). Next time, also check every skill an arm loads for instructions to describe
+   the process in the output. Prefer whole-sentence scrubbing to token redaction, and avoid visible `[redacted]` markers.
 2. **Multiple runs per arm** (and more than one question) so that a gap can be told apart from run-to-run variance.
 3. **A second, independent scorer**, with agreement reported.
-4. Count web calls from the harness or transcript by default, and drop self-kept tallies like `calls.log`.
+4. Count web calls from the harness or transcript by default, and drop self-kept tallies like `calls.log`. Commit the
+   extracted per-call list, so the counts are checkable, and have someone other than the implementer conduct and measure.
 5. Consider making the research-lab challenge pass a gate that runs before `check` can stop the run, so a challenge
    can still trigger more research (the reuse-run quirk).

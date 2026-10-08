@@ -121,6 +121,10 @@ dispatcher's conversation, which contains the protocol, rubric, and prompts. Dis
 
 The protocol's optional follow-up run that reuses Arm A's store has **not** been done.
 
+> **Correction (2026-10-09 03:09 ICT, added to this repo copy after evaluation):** the line above was true when this
+> file was written (~02:51 ICT). The reuse run was dispatched later, at 02:51:49 ICT (`dispatch.log`), and has been
+> done. See `p1-reuse/run/` and the "Reuse run" section of `../results.md`.
+
 ## Addendum: transcript-based counts (coder, 2026-10-09 ~02:55 ICT)
 
 The executor could not read transcripts; the dispatcher (coder) can. Counts below come from ReadTranscript of each arm, full transcript paged to the start, classified by tool name per tool_use.

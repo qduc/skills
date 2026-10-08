@@ -21,6 +21,10 @@ They keep the original layout, so relative paths in the runs still resolve. For 
 | `p1-store/knowledge.pre-reuse.jsonl` | Arm A's knowledge store after Arm A, before the reuse run (5 entries) |
 | `p1-store/knowledge.jsonl` | The same store after the reuse run (12 entries) |
 
+**Corrections after evaluation:** `measurements.md` has a dated note under "Reuse run", and `dispatch.log` has an
+appended `CORRECTION` line about the scorer-brief line range. Nothing else in these copies was changed. The arms'
+answers, `blind/X.md`, `blind/Y.md`, and `blind/scores.md` are byte-identical to the originals.
+
 **Not copied:**
 
 - `p2/openai-deep-research.html`: a Cloudflare/JS challenge page that Arm B's curl got instead of the article.
