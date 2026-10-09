@@ -84,6 +84,8 @@ by silently bypassing a required gate.
 contradiction. **UNCERTAIN** means evidence is absent, stale, incomplete, or
 conflicting. Both FAIL and UNCERTAIN return to adaptation or a specific blocker.
 
+When progress stalls, assumptions narrow the search prematurely, or the outcome is high-impact, use [independent-challenge.md](references/independent-challenge.md) to challenge the search direction separately from checking the solution. A fresh challenger is optional; independently observable evidence is not.
+
 Use [verification.md](references/verification.md) to select proportionate checks
 and handle evidence invalidated by later changes. Do not accept plausible
 output, a clean command exit, irrelevant passing tests, or another agent's
