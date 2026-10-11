@@ -136,6 +136,18 @@
         "Asks for an implementation selection and recommends the user's recent implementation choice with its effort level.",
         "May proceed with read-only preparation and task-state bookkeeping, such as worktrees and briefs, while the selection is pending."
       ]
+    },
+    {
+      "id": 11,
+      "name": "control-no-delegation",
+      "kind": "control",
+      "prompt": "Tabletop exercise: the user asks the coordinator to fix a one-word typo in a README. No workers are needed. Describe the next coordinator actions.",
+      "expected_output": "Works directly without dispatching workers, still records/verifies the change, and reports 'worked directly, no delegation'; no invented sub-tasks (null/control case).",
+      "files": [],
+      "expectations": [
+        "Does not dispatch workers for a trivial task.",
+        "Reports the change with evidence and no invented findings."
+      ]
     }
   ]
 }
