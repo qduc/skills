@@ -1,8 +1,5 @@
 # Skills
 
-This collection is maintained as `skills/qduc-skills/` in the agents repository.
-Edit it here; the former standalone `qduc/skills` publishing workflow is retired.
-
 These are agent skills: procedures an agent can follow for a particular kind of work.
 
 There is no installer. A skill is a directory under `skills/<name>/` with a `SKILL.md` file. Read that file. The `name` and `description` in the frontmatter say when the skill applies. The rest of the file is the procedure. A skill may also keep notes, scripts, or other files next to `SKILL.md`. Use those only when the procedure tells you to.
