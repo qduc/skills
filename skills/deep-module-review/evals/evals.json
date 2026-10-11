@@ -1,0 +1,18 @@
+{
+ "skill_name": "deep-module-review",
+ "note": "Author-drafted placeholder evals to satisfy lint; replace with the independent eval set before adoption.",
+ "evals": [
+  {
+   "id": 1,
+   "prompt": "Review a module exposing execute(action, payload) that hides charging and emails.",
+   "expected_output": "Verdict Deep-looking but misleading; risks cite file:line; hidden side effects flagged.",
+   "kind": "task"
+  },
+  {
+   "id": 2,
+   "prompt": "Review a small, cohesive hashing module with one well-named function and documented errors.",
+   "expected_output": "Verdict Good deep module; no material risks; boundary unchanged.",
+   "kind": "control"
+  }
+ ]
+}

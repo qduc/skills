@@ -1,0 +1,18 @@
+{
+ "skill_name": "invariant-reviewer",
+ "note": "Author-drafted placeholder evals to satisfy lint; replace with the independent eval set before adoption.",
+ "evals": [
+  {
+   "id": 1,
+   "prompt": "Review a cache-then-DB write path where the cache is updated before the DB commit.",
+   "expected_output": "Reachable trigger (commit fails after cache set), impact, owner, disposition; labels demonstrated vs needs verification.",
+   "kind": "task"
+  },
+  {
+   "id": 2,
+   "prompt": "Review an immutable value object with validated constructor and no I/O.",
+   "expected_output": "Null result: no concrete defect survived investigation; no invented findings.",
+   "kind": "control"
+  }
+ ]
+}

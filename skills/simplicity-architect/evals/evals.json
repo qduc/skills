@@ -1,0 +1,18 @@
+{
+ "skill_name": "simplicity-architect",
+ "note": "Author-drafted placeholder evals to satisfy lint; replace with the independent eval set before adoption.",
+ "evals": [
+  {
+   "id": 1,
+   "prompt": "Design a job-retry scheduler where a reviewer flagged duplicate execution after crash; respond to the concern.",
+   "expected_output": "Gives invariant with owner and evidence, disposition for the concern, no defensive machinery without a reachable failure.",
+   "kind": "task"
+  },
+  {
+   "id": 2,
+   "prompt": "Design a pure function that formats a date string; no reviewer concerns.",
+   "expected_output": "Small design; 'Concerns: none raised'; no added states.",
+   "kind": "control"
+  }
+ ]
+}

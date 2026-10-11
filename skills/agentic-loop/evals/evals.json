@@ -1,0 +1,18 @@
+{
+ "skill_name": "agentic-loop",
+ "note": "Author-drafted placeholder evals to satisfy lint; replace with the independent eval set before adoption.",
+ "evals": [
+  {
+   "id": 1,
+   "prompt": "Delegated: make the failing CI job pass without weakening tests.",
+   "expected_output": "Writes falsifiable done predicate, loops with evidence, returns VERIFIED/BLOCKED handoff with per-criterion evidence.",
+   "kind": "task"
+  },
+  {
+   "id": 2,
+   "prompt": "Delegated: confirm the README already documents the install command (it does).",
+   "expected_output": "VERIFIED with Important changes: none and evidence; no unnecessary work.",
+   "kind": "control"
+  }
+ ]
+}

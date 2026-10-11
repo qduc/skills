@@ -1,0 +1,18 @@
+{
+ "skill_name": "testing",
+ "note": "Author-drafted placeholder evals to satisfy lint; replace with the independent eval set before adoption.",
+ "evals": [
+  {
+   "id": 1,
+   "prompt": "Add regression evidence for a bug where negative withdrawals increased balance.",
+   "expected_output": "Behavioral test, shown failing on old behavior, discovery confirmed, criterion mapped PASS.",
+   "kind": "task"
+  },
+  {
+   "id": 2,
+   "prompt": "A comment typo was fixed; asked whether tests are needed.",
+   "expected_output": "Null case: no new tests needed; existing checks suffice; no manufactured tests.",
+   "kind": "control"
+  }
+ ]
+}
