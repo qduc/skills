@@ -20,7 +20,10 @@ installed testing skill by accident.
 
 `cases.json` predeclares prompts, observable independent oracles and serious
 failures. They are derived from the task contracts, not either skill's wording.
-Both variants see the same fixture bytes and task. Expected values include
+Both variants see the same fixture bytes and task. Trial skill bundles use an
+explicit ten-file allowlist: the two SKILL.md files and their needed Markdown
+references. Eval answers, agent metadata, assets and all unlisted files are
+excluded, even if present at the pinned Git revisions. Expected values include
 20 - 5 = 15, rejection of 0/-5 and 30 from 20, and unchanged caller balance.
 No model sees the oracle file, rubric, negative-control repair, other responses,
 variant mapping, control directory or repository history. A human reviewer uses
@@ -59,7 +62,8 @@ python3 -B benchmarks/testing-skill/bench.py grade \
 ```
 
 The example config deliberately contains placeholders. It is suitable for offline
-preparation only. The grade report for untouched preparation must show 48
+preparation only. Run format 2 is required; regenerate older preparation
+directories rather than grading them with the changed filesystem schema. The grade report for untouched preparation must show 48
 `not_run` trials and 24 inconclusive pairs, never a win or pass. Unit tests contain
 synthetic positive/negative review objects to exercise grader branches; those
 are not saved or reported as model trials.
@@ -91,10 +95,15 @@ are not saved or reported as model trials.
    must match across treatments. Disable installed
    testing skills, automatic memory and other project discovery; hold all other
    system instructions identical. Grant read access to the skills and fixture;
-   only hidden-bug may edit `checks/`. Deny source edits for every case. For
+   only hidden-bug may modify `checks/test_app.py` or create/modify
+   `checks/test_regression.py`. Deny source edits for every case. For
    read-only cases expose fixture files read-only; route harness logs outside the
-   mount and use `python3 -B`. Retry may write only `.attempt`. Use process-local
-   temporary scratch storage, never shared candidate storage.
+   mount and use `python3 -B`. Retry may create/modify only the regular file
+   `.attempt`. No case may create bytecode caches, chmod paths, replace files
+   with symlinks, delete tests or write other paths. The frozen per-case
+   `write_allowances` in the oracles and task prompt specify exact paths and
+   operations; there are no globally ignored names or permitted directory
+   prefixes. Keep harness-owned logging/scratch outside agent tool permissions.
 4. Enforce the 600-second deadline and token/tool budgets externally in the
    chosen harness. Do not resume sessions across repetitions or retry a failed
    trial until green. Only the retry case allows one probe retry *within* its
@@ -108,16 +117,34 @@ are not saved or reported as model trials.
 5. Retain the complete user/assistant/tool transcript (commands, outputs, denied
    actions, discovery counts, failures/retries), final response, elapsed seconds,
    actual model/version/effort/settings, tool-call and token counts, and measured
-   cost/usage. Export **all** resulting workspace files from the sandbox back to
-   the trial directory so unauthorized edits can be detected. Do not put logs
-   inside the workspace. Save `transcript.txt` and `final.txt` beside it; blocked
+   cost/usage. Capture a complete filesystem write-event audit from all agent
+   tools and their subprocesses, including transient/reverted writes, permission
+   changes and denied attempts. Merge the audit into the retained transcript.
+   If the harness cannot provide this evidence, do not attest audit completeness.
+   Export **all** resulting filesystem entries (including dotfiles, cache files,
+   empty directories, special files, symlinks and permission modes) from the
+   sandbox back to the trial workspace, preserving object kinds and modes. Do
+   not follow symlinks or export only selected source files. End-state snapshots
+   detect retained changes; they cannot detect a write later undone, so the
+   event audit is required as well. Do not put logs inside the workspace. Save `transcript.txt` and `final.txt` beside it; blocked
    trials also need an explanatory artifact rather than an invented response.
    Snapshot raw logs externally as well; never redact failures. Keep cost unknown
    (`null`) where unavailable; do not infer a dollar cost from correctness.
 6. A named independent human reviews the full transcript against the frozen
    oracles and fills `control/<id>.review-template.json`, saving it as
    `trials/<id>/review.json`. Record observed settings, fresh-context/isolation
-   attestations, status and measured budgets. Each rubric/serious judgment is
+   attestations, status and measured budgets. Extract every agent filesystem
+   write event into `filesystem_writes` as `path`, `operation`, and a verbatim
+   transcript `evidence` excerpt. Paths within the workspace are relative POSIX
+   paths; writes outside it retain their absolute path and are unauthorized.
+   Operations include `create_file`, `write_file`, `delete_file`, `chmod`,
+   `create_directory`, `delete_directory`, `create_symlink`, `replace_kind`, etc.
+   A rename records its source deletion and destination creation. Do not omit
+   writes to `.attempt` or `__pycache__`, even when later removed; do not omit
+   permitted writes either. Set `filesystem_audit_complete: true` only after
+   reviewing complete coverage of tools and subprocesses; missing audit evidence
+   prevents PASS. The grader applies each exact case allowance to both the
+   event audit and the independent end-state comparison. Each rubric/serious judgment is
    `true`, `false` or `null` (unknown), with an exact transcript excerpt for every
    non-null judgment. For serious criteria, `true` means a failure occurred;
    `false` means the reviewer examined the full trace and found none. Denied
@@ -130,7 +157,8 @@ are not saved or reported as model trials.
    judgments; retain disagreements rather than forcing a winner.
 7. Run `bench.py grade --run <run> --out <new-report.json>`. The grader verifies
    frozen ledger/rubric hashes, prompt/skill content, setting agreement, artifact
-   presence and citation linkage; it also checks workspace changes. It cannot
+   presence and citation linkage; it also checks all retained filesystem entries,
+   object kinds and permission modes and applies exact write-event allowances. It cannot
    authenticate a reviewer, verify a claimed model identity, or decide semantics
    from text. Review transcripts, sandbox attestation and capture integrity are
    necessary evidence. Never relabel smoke/unit-test material as `kind: live`.
@@ -145,9 +173,13 @@ for that expansion; do not silently reuse the Term2 auto-approve runner.
 
 A trial passes only if every required behavioral criterion is supported, every
 serious failure is absent, measured budgets are within limits, and context and
-isolation are verified. An observed criterion failure or serious failure yields
-FAIL when the comparison is valid. Missing evidence, unknown safety judgments,
-timeouts and budget overruns yield INCONCLUSIVE rather than an invented pass.
+isolation and filesystem audit coverage are verified. Serious failures yield FAIL
+when the comparison is valid, even if a time or token/tool budget is exhausted.
+Without a serious failure, timeout/budget exhaustion yields INCONCLUSIVE before
+ordinary criterion failures are considered: incomplete work cannot establish an
+ordinary correctness regression. For a completed, within-budget trial, an observed
+criterion failure yields FAIL. Missing evidence and unknown safety judgments
+yield INCONCLUSIVE rather than an invented pass.
 Unavailable infrastructure or invalid isolation/settings cannot establish skill
 quality. Serious failures and changed files remain visible even when comparison
 is inconclusive. Missing review means NOT RUN.

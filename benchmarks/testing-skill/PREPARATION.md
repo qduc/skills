@@ -45,30 +45,72 @@ creator were used. No repository instructions required additional gates.
 Environment: Python 3.12.14, Linux, Python standard library, existing Git.
 
 - `python3 -B -m unittest discover -s benchmarks/testing-skill -p 'test_*.py' -v`:
-  **8 tests passed**. Covers fixture assertions/negative controls, pair identity,
+  **13 tests passed**. Covers fixture assertions/negative controls, pair identity,
   independent storage, complete skill/reference injection, deterministic ledger,
   overwrite refusal, setting/content drift, frozen oracles, unknown/missing
   evidence, serious failures, unauthorized edits, placeholder configs, invalid
-  numeric measurements, ties and wins using explicitly synthetic reviews.
-- `python3 -B benchmarks/testing-skill/bench.py preflight --out /tmp/testing-final-preflight.json`:
+  numeric measurements, ties and wins using explicitly synthetic reviews. Added
+  regressions verify the exact ten-file skill allowlist excludes tracked eval
+  answers and agent/asset metadata; write checks cover dotfiles, bytecode caches,
+  empty directories, symlinks, permission changes, deletion, special files, exact
+  per-case regular-file allowances and reverted writes in the event audit.
+  Timeout and every measured budget override ordinary criterion failures while
+  preserving independently observed serious failures.
+- `python3 -B benchmarks/testing-skill/bench.py preflight --out /tmp/testing-pr9-fixes-preflight.json`:
   all eight expected fixture outcomes confirmed, including real failure at the
   removed guard, exit-0 zero discovery, and first-fail/second-pass retry. Raw
   smoke observations retained in `evidence/preflight.json`. Its pack hash binds
   source/config/docs/tests, excluding this preparation report and evidence
   subdirectory to avoid a recursive evidence hash.
-- Prepared `/tmp/testing-pilot-reviewed` with the example config and default
+- Prepared `/tmp/testing-pr9-fixes-pilot` with the example config and default
   3 repetitions: **48 workspaces**, exact old/new skill injection, prompt and
   fixture hashes, shuffled paired order, frozen oracles and review templates.
-- Graded untouched preparation to `/tmp/testing-reviewed-not-run.json`:
+- Graded untouched preparation to `/tmp/testing-pr9-fixes-not-run.json`:
   **48 NOT RUN; 24 inconclusive pairs; 0 wins; 0 ties**. No model output exists.
 - `git diff --check`: passed before publication. Reviewed all added handwritten
-  files; fixed missing common agentic-loop references and validation edge cases.
+  files; fixed missing common agentic-loop references and validation edge cases
+  in the original preparation, then applied the approved offline review fixes
+  below. No new methodology skill was needed; the previously loaded testing,
+  implementation and code-review skills were reused.
   No candidate skill file or unrelated repository file changed.
 
 The temporary preparation directories are reproducible examples, not portable
 real trial results. The checked-in preflight is deterministic smoke evidence;
 variable elapsed times and temporary paths in raw observations are not quality
 measurements. No paid API call or model inference was performed.
+
+## Approved offline follow-up on support PR #9
+
+Starting support revision: `1255736657097f868c5880f9e4f28e9d1b6eac9c`.
+The parent authorized these three fixes; the existing branch/PR was reused.
+
+1. Trial bundles now contain only a reviewed explicit ten-file allowlist of
+   SKILL.md and needed transitive Markdown references. All 48 regenerated bundles
+   were checked for exact file membership; no eval answers, assets or agent
+   metadata are exposed. Both pinned Git trees still contain the excluded eval
+   answer sources, which the regression test checks before testing exclusion.
+2. No global `.attempt`/`__pycache__` exclusions or broad `checks/` write permission
+   remain. Snapshot checks cover every retained filesystem entry and its kind,
+   contents/target and permission mode. Only retry may create/modify the regular
+   file `.attempt`; only hidden-bug may modify `checks/test_app.py` or
+   create/modify `checks/test_regression.py`. All other paths/operations are
+   denied, including directory/symlink substitutions at an allowed filename.
+   Because snapshots cannot see reverted writes, review now requires a complete
+   tool/subprocess write-event audit; absent audit coverage cannot produce PASS.
+   Synthetic tests verify an unauthorized create/delete remains a serious failure
+   even with an empty final diff. This is an evidence requirement, not a newly
+   implemented live sandbox or process audit collector.
+3. With valid infrastructure/isolation, serious failures remain FAIL even on a
+   timeout/budget overrun. Otherwise exhaustion is INCONCLUSIVE before ordinary
+   failed criteria can imply a correctness regression. Regression tests cover
+   explicit timeout, wall-clock overrun, tool-call overrun and output-token
+   overrun, both with and without a serious failure.
+
+Run/fixture schema is now version 2; old preparations must be regenerated, and
+old-format grading fails explicitly. The new offline preparation reports 48
+NOT RUN, 24 inconclusive pairs and zero model calls. Current pack hash recorded
+in the regenerated preflight:
+`08627a0cbde05c14db2520c8a91aeb70e5c068b50ba1cdb10ae94cf7e6eb5be2`.
 
 ## Remaining step
 

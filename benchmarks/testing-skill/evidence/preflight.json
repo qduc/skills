@@ -8,27 +8,30 @@
           "stdout": "{\"discovered\": 3}\n"
         }
       ],
-      "case": "trivial-edit"
+      "case": "trivial-edit",
+      "filesystem_changes": []
     },
     {
       "attempts": [
         {
           "code": 1,
-          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... FAIL\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n======================================================================\nFAIL: test_nonpositive (test_app.WithdrawTests.test_nonpositive)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/testing-skill-smoke-ane1eesb/hidden-bug/checks/test_app.py\", line 12, in test_nonpositive\n    with self.assertRaisesRegex(ValueError, \"positive\"):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nFAILED (failures=1)\n",
+          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... FAIL\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n======================================================================\nFAIL: test_nonpositive (test_app.WithdrawTests.test_nonpositive)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/testing-skill-smoke-tzg0uu3m/hidden-bug/checks/test_app.py\", line 12, in test_nonpositive\n    with self.assertRaisesRegex(ValueError, \"positive\"):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nFAILED (failures=1)\n",
           "stdout": "{\"discovered\": 3}\n"
         }
       ],
-      "case": "hidden-bug"
+      "case": "hidden-bug",
+      "filesystem_changes": []
     },
     {
       "attempts": [
         {
           "code": 1,
-          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... FAIL\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n======================================================================\nFAIL: test_nonpositive (test_app.WithdrawTests.test_nonpositive)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/testing-skill-smoke-ane1eesb/stale-relevant/checks/test_app.py\", line 12, in test_nonpositive\n    with self.assertRaisesRegex(ValueError, \"positive\"):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n",
+          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... FAIL\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n======================================================================\nFAIL: test_nonpositive (test_app.WithdrawTests.test_nonpositive)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/testing-skill-smoke-tzg0uu3m/stale-relevant/checks/test_app.py\", line 12, in test_nonpositive\n    with self.assertRaisesRegex(ValueError, \"positive\"):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n",
           "stdout": "{\"discovered\": 3}\n"
         }
       ],
-      "case": "stale-relevant"
+      "case": "stale-relevant",
+      "filesystem_changes": []
     },
     {
       "attempts": [
@@ -38,7 +41,8 @@
           "stdout": "{\"discovered\": 3}\n"
         }
       ],
-      "case": "unrelated-change"
+      "case": "unrelated-change",
+      "filesystem_changes": []
     },
     {
       "attempts": [
@@ -53,7 +57,13 @@
           "stdout": "{\"discovered\": 3}\n"
         }
       ],
-      "case": "retry"
+      "case": "retry",
+      "filesystem_changes": [
+        {
+          "operation": "create_file",
+          "path": ".attempt"
+        }
+      ]
     },
     {
       "attempts": [
@@ -63,7 +73,8 @@
           "stdout": "{\"discovered\": 1}\n"
         }
       ],
-      "case": "shared-probe"
+      "case": "shared-probe",
+      "filesystem_changes": []
     },
     {
       "attempts": [
@@ -73,7 +84,8 @@
           "stdout": "{\"discovered\": 0}\n"
         }
       ],
-      "case": "zero-discovery"
+      "case": "zero-discovery",
+      "filesystem_changes": []
     },
     {
       "attempts": [
@@ -83,11 +95,12 @@
           "stdout": "{\"discovered\": 3}\n"
         }
       ],
-      "case": "readonly"
+      "case": "readonly",
+      "filesystem_changes": []
     }
   ],
   "kind": "deterministic_fixture_smoke_not_model_trials",
   "model_calls": 0,
-  "pack_sha256": "e9577128bcf92ff928662edb9666e4af91078047c1bfd59abdda1a87a3d59aea",
+  "pack_sha256": "08627a0cbde05c14db2520c8a91aeb70e5c068b50ba1cdb10ae94cf7e6eb5be2",
   "quality_comparison": "not_run"
 }
