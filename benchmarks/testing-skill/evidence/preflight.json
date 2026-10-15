@@ -1,0 +1,93 @@
+{
+  "cases": [
+    {
+      "attempts": [
+        {
+          "code": 0,
+          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... ok\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nOK\n",
+          "stdout": "{\"discovered\": 3}\n"
+        }
+      ],
+      "case": "trivial-edit"
+    },
+    {
+      "attempts": [
+        {
+          "code": 1,
+          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... FAIL\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n======================================================================\nFAIL: test_nonpositive (test_app.WithdrawTests.test_nonpositive)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/testing-skill-smoke-ane1eesb/hidden-bug/checks/test_app.py\", line 12, in test_nonpositive\n    with self.assertRaisesRegex(ValueError, \"positive\"):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nFAILED (failures=1)\n",
+          "stdout": "{\"discovered\": 3}\n"
+        }
+      ],
+      "case": "hidden-bug"
+    },
+    {
+      "attempts": [
+        {
+          "code": 1,
+          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... FAIL\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n======================================================================\nFAIL: test_nonpositive (test_app.WithdrawTests.test_nonpositive)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/testing-skill-smoke-ane1eesb/stale-relevant/checks/test_app.py\", line 12, in test_nonpositive\n    with self.assertRaisesRegex(ValueError, \"positive\"):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n",
+          "stdout": "{\"discovered\": 3}\n"
+        }
+      ],
+      "case": "stale-relevant"
+    },
+    {
+      "attempts": [
+        {
+          "code": 0,
+          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... ok\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nOK\n",
+          "stdout": "{\"discovered\": 3}\n"
+        }
+      ],
+      "case": "unrelated-change"
+    },
+    {
+      "attempts": [
+        {
+          "code": 3,
+          "stderr": "",
+          "stdout": "SYNTHETIC TRANSIENT: service unavailable; assertion not reached\n"
+        },
+        {
+          "code": 0,
+          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... ok\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nOK\n",
+          "stdout": "{\"discovered\": 3}\n"
+        }
+      ],
+      "case": "retry"
+    },
+    {
+      "attempts": [
+        {
+          "code": 0,
+          "stderr": "test_transaction (test_app.SharedTests.test_transaction) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+          "stdout": "{\"discovered\": 1}\n"
+        }
+      ],
+      "case": "shared-probe"
+    },
+    {
+      "attempts": [
+        {
+          "code": 0,
+          "stderr": "\n----------------------------------------------------------------------\nRan 0 tests in 0.000s\n\nNO TESTS RAN\n",
+          "stdout": "{\"discovered\": 0}\n"
+        }
+      ],
+      "case": "zero-discovery"
+    },
+    {
+      "attempts": [
+        {
+          "code": 0,
+          "stderr": "test_nonpositive (test_app.WithdrawTests.test_nonpositive) ... ok\ntest_rejection (test_app.WithdrawTests.test_rejection) ... ok\ntest_success (test_app.WithdrawTests.test_success) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nOK\n",
+          "stdout": "{\"discovered\": 3}\n"
+        }
+      ],
+      "case": "readonly"
+    }
+  ],
+  "kind": "deterministic_fixture_smoke_not_model_trials",
+  "model_calls": 0,
+  "pack_sha256": "e9577128bcf92ff928662edb9666e4af91078047c1bfd59abdda1a87a3d59aea",
+  "quality_comparison": "not_run"
+}
