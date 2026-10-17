@@ -97,9 +97,9 @@ not scores for the mutations below.
 ## Route card
 
 - **Hypothesis:** A short per-harness card in the dispatch prompt cuts failure
-  modes that today live only in the host inventory.
+  modes that today live only in the host profile.
 - **Mutation:** Keep a card of at most 15 lines per worker kind in the host
-  inventory, dated with that file. `dispatch` appends the matching card to
+  profile, dated with that file. `dispatch` appends the matching card to
   `dispatch.txt`.
 - **Metric:** Hidden-test pass rate, and how often a trace calls a failing gate
   unrelated, on the same model with and without the card.

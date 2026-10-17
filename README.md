@@ -1,8 +1,5 @@
 # Skills
 
-This collection is maintained as `skills/qduc-skills/` in the agents repository.
-Edit it here; the former standalone `qduc/skills` publishing workflow is retired.
-
 These are agent skills: procedures an agent can follow for a particular kind of work.
 
 There is no installer. A skill is a directory under `skills/<name>/` with a `SKILL.md` file. Read that file. The `name` and `description` in the frontmatter say when the skill applies. The rest of the file is the procedure. A skill may also keep notes, scripts, or other files next to `SKILL.md`. Use those only when the procedure tells you to.
@@ -61,6 +58,7 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **[profiling](skills/profiling/SKILL.md)** — Measures representative workloads, locates limiting mechanisms, and verifies optimizations with comparable evidence.
 - **proportionality-review** — Judges whether a proposal or design is more complex than the problem needs.
 - **[research](skills/research/SKILL.md)** — Sources, compares, and synthesizes evidence into traceable answers to bounded questions.
+- **risk-first-build** — Starts non-trivial builds with concrete discovery, verifies assumptions in order of risk, and reports evidence honestly.
 - **simplicity-architect** — Proposes software designs built on strong invariants and a small complexity budget, keeping edge cases from growing into extra defensive machinery.
 - **skill-creator** — Creates and revises agent skills, and measures how well they perform, including tests and how accurately a description gets the skill selected.
 - **slop-audit** — Surveys a whole repository for piled-up problems in design, correctness, tests, duplication, security, dependencies, and overbuilding, then ranks what to repair.

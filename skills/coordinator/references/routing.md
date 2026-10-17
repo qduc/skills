@@ -23,7 +23,7 @@ need design work. <!-- lesson: model-size-by-task-shape promoted 2026-09-27 -->
 ## Spread load across pools
 
 Routine dispatches rotate across the implementation pools the local
-[host inventory](host-inventory.md) lists as available; do not stack concurrent
+[host profile](host-profile.md) lists as available; do not stack concurrent
 or sequential workers on one pool while another suitable pool has headroom.
 Let `python3 <skill-dir>/scripts/coord_route.py pick --pool <name> ... --history
 <task-dir>/route-history.json --inventory <inventory-path> --dry-run` choose a
@@ -67,8 +67,8 @@ resolve the constraint before assignment. Refresh after material model,
 harness, or task changes.
 
 For local external CLI selection, consult the optional
-[host inventory](host-inventory.md) only when it describes the intended host.
+[host profile](host-profile.md) only when it describes the intended host.
 Its host facts are a dated discovery aid, so verify entries you intend to use
-against that host's live tools. Native workers do not require this inventory. Choose model
+against that host's live tools. Native workers do not require this profile. Choose model
 capability first, then provider cost and latency; a running pane does not decide
 which model the task deserves.

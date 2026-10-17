@@ -8,3 +8,4 @@ runtime/
 
 # Claude account skill downloads are local cache, not maintained skills.
 /skills/synced/
+synced/

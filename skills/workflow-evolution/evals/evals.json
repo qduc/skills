@@ -1,0 +1,3 @@
+{"skill_name":"workflow-evolution","evals":[
+{"id":1,"kind":"positive","prompt":"Skill X has a 10-task benchmark. A candidate that adds an early verification step passes 9/10 vs incumbent 7/10 at similar cost over 3 repeats. Decide.","expected_output":"Experiment record with decision promote, win criterion stated up front, incumbent preserved in history."},
+{"id":2,"kind":"control","prompt":"Improve skill Y. It has no evals, no benchmark and no recorded runs.","expected_output":"No experiment: no trustworthy benchmark; propose observability/eval work; skill unchanged (null/control case)."}]}
