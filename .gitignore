@@ -5,3 +5,6 @@ runtime/
 .env
 .env.*
 .external/
+
+# Claude account skill downloads are local cache, not maintained skills.
+/skills/synced/
