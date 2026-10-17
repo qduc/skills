@@ -15,7 +15,7 @@ description: Carry delegated, multi-step tasks through planning, action, observa
    - **Constraints:** scope, compatibility, cost/time limits, and user-owned decisions.
    - **Authority:** actions already authorized and decisions reserved for the human.
 
-   Check: each criterion names a check that could FAIL. Use reasonable, reversible assumptions for minor gaps. Ask only when a missing answer materially changes the outcome or authority. Do useful independent work first. Do not require a kickoff approval when the work is already authorized. Never silently weaken acceptance criteria to make a result pass.
+   Check: each criterion names a check that could FAIL. If a criterion has no cheap, repeatable check, building that check is the first unit of work, before the change it will judge; see [verification.md](references/verification.md#when-no-check-exists). Use reasonable, reversible assumptions for minor gaps. Ask only when a missing answer materially changes the outcome or authority. Do useful independent work first. Do not require a kickoff approval when the work is already authorized. Never silently weaken acceptance criteria to make a result pass.
 
    Maintain compact working state (goal, constraints, plan, facts, assumptions, evidence, actions, failures, questions, loaded skills, remaining risks, next step) in the existing task record; avoid duplicate paperwork. For long tasks or handoffs, read [state.md](references/state.md).
 
