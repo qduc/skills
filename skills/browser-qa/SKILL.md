@@ -17,7 +17,7 @@ Prioritize the changed journey and affected adjacent behavior. Include happy, er
 
 Record the current URL/environment, build or revision if available, browser/tool version if exposed, viewport, account role, fixtures, and observation time. Label unknown versions explicitly. Distinguish local, preview, staging, and production; verify that the intended build is served.
 
-Follow the host's browser, API, connector, plugin, and authentication policies. Read the chosen tool's documentation before using it. Prefer supported connectors where required, but do not claim UI verification from connector responses alone. If a permitted browser is unavailable, report the missing evidence. Do not install another tool, probe sessions, bypass a sign-in wall, or invent APIs to evade host restrictions.
+Follow the host's browser, API, connector, plugin, and authentication policies. Read the chosen tool's documentation before using it; when the host offers no browser tool of its own, drive the browser with [playwright-cli](../playwright-cli/SKILL.md). Prefer supported connectors where required, but do not claim UI verification from connector responses alone. If a permitted browser is unavailable, report the missing evidence. Do not install another tool, probe sessions, bypass a sign-in wall, or invent APIs to evade host restrictions.
 
 Verification grants no authority to send, purchase, delete, publish, or change another person's data. Use already authorized reversible test data and safe reads without needless approval. For an unauthorized consequential step, verify the reachable pre-submit behavior and identify the exact remaining gate.
 

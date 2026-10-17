@@ -5,7 +5,7 @@ from pathlib import Path
 
 from check_router import check
 
-EXITS = "Exits: `none` and `gap`. "
+EXITS = "Exits: `none`. "
 NONE_CASE = {"id": 0, "expected_exit": "none"}
 
 
@@ -47,13 +47,17 @@ class CheckRouterTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             make(Path(d), ["debugging"], "Use `debugging`.")
             md = Path(d) / "skill-router" / "SKILL.md"
-            md.write_text(md.read_text().replace("`gap`", "gap"))
-            self.assertEqual(check(Path(d)), ["router does not define exit: gap"])
+            md.write_text(md.read_text().replace("`none`", "none"))
+            self.assertEqual(check(Path(d)), ["router does not define exit: none"])
 
     def test_accepts_chain_and_builtin_eval_exits(self):
         evals = [{"id": 1, "expected_exit": "debugging → testing"},
-                 {"id": 2, "expected_exit": "gap"}]
+                 {"id": 2, "expected_exit": "none"}]
         self.assertEqual(self.run_check(["debugging", "testing"], "`debugging` `testing`", evals), [])
+
+    def test_gap_is_no_longer_an_exit(self):
+        self.assertEqual(self.run_check(["debugging"], "`debugging`", [{"id": 1, "expected_exit": "gap"}]),
+                         ["eval 1: invalid expected_exit: 'gap'"])
 
     def test_fails_on_eval_exit_that_is_not_real(self):
         evals = [{"id": 1, "expected_exit": "debuging"},
@@ -68,6 +72,24 @@ class CheckRouterTest(unittest.TestCase):
             ev = Path(d) / "skill-router" / "evals" / "evals.json"
             ev.write_text(json.dumps({"evals": [{"id": 1, "expected_exit": "debugging"}]}))
             self.assertEqual(check(Path(d)), ["evals have no `none` case"])
+
+    def test_fails_when_route_row_exit_has_no_eval(self):
+        body = ("\n## Route\n\n| The step needs to... | Exit |\n| --- | --- |\n"
+                "| Explain a failure | `debugging` | `testing` is not this |\n"
+                "| Prove behavior | `testing` (then `debugging`) |\n\n## After\n`debugging`")
+        self.assertEqual(self.run_check(["debugging", "testing"], body,
+                                        [{"id": 1, "expected_exit": "debugging"}]),
+                         ["route exit has no eval: testing"])
+
+    def test_chain_eval_covers_its_first_skill(self):
+        body = "\n## Route\n\n| Situation | Exit |\n| --- | --- |\n| Fuzzy | `debugging` → `testing` |\n"
+        self.assertEqual(self.run_check(["debugging", "testing"], body,
+                                        [{"id": 1, "expected_exit": "debugging → testing"}]), [])
+
+    def test_fails_on_also_ok_exit_that_is_not_real(self):
+        evals = [{"id": 1, "expected_exit": "debugging", "also_ok": ["debuging"]}]
+        self.assertEqual(self.run_check(["debugging"], "`debugging`", evals),
+                         ["eval 1: invalid also_ok: 'debuging'"])
 
     def test_repository_router_is_current(self):
         self.assertEqual(check(Path(__file__).resolve().parents[2]), [])

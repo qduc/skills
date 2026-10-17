@@ -10,9 +10,17 @@ appears in backticks in skill-router/SKILL.md (for example `debugging`).
 Fails (exit 1, problems listed) when:
   - a skill other than skill-router is missing from the router;
   - the router names a slug that is neither a skill nor a built-in exit;
-  - the router does not define the built-in exits `none` and `gap`;
-  - an eval's expected_exit is not `none`, `gap`, a skill, or `a → b` of skills;
-  - the evals have no `none` case (the fast exit must stay tested).
+  - the router does not define the built-in exit `none`;
+  - an eval's expected_exit or also_ok entry is not `none`, a skill, or
+    `a → b` of skills;
+  - the evals have no `none` case (the fast exit must stay tested);
+  - a route row's exit has no eval expecting it. Untested rows are where
+    shadowing hides: a row whose case is answered by an earlier, more general
+    row. Whether rows actually shadow each other needs a model reading them in
+    order; run_router_evals.py does that.
+
+A route row is a table row under "## Route"; its exit is the first slug in its
+second cell (in a chain, the first skill of the chain).
 """
 
 import json
@@ -21,7 +29,7 @@ import sys
 from pathlib import Path
 
 ROUTER = "skill-router"
-BUILTIN_EXITS = {"none", "gap"}
+BUILTIN_EXITS = {"none"}
 SLUG = re.compile(r"`([a-z0-9]+(?:-[a-z0-9]+)*)`")
 CHAIN = re.compile(r"\s*(?:→|->)\s*")
 
@@ -34,20 +42,41 @@ def named_in(router_md: Path) -> set[str]:
     return set(SLUG.findall(router_md.read_text(encoding="utf-8")))
 
 
-def check_evals(evals_path: Path, existing: set[str]) -> list[str]:
+def route_exits(router_md: Path) -> list[str]:
+    """Primary exit of each table row in the Route section, in order."""
+    text = router_md.read_text(encoding="utf-8")
+    section = re.search(r"^## Route\b.*?(?=^## |\Z)", text, re.M | re.S)
+    if not section:
+        return []
+    exits = []
+    for line in section.group(0).splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if not line.lstrip().startswith("|") or len(cells) < 2:
+            continue
+        found = SLUG.findall(cells[1])
+        if found and found[0] not in exits:
+            exits.append(found[0])
+    return exits
+
+
+def check_evals(evals_path: Path, existing: set[str], routed: list[str] = ()) -> list[str]:
     if not evals_path.is_file():
         return [f"evals not found: {evals_path}"]
     problems, exits = [], []
     for case in json.loads(evals_path.read_text(encoding="utf-8")).get("evals", []):
         exit_ = case.get("expected_exit", "")
         exits.append(exit_)
-        parts = CHAIN.split(exit_.strip())
-        if exit_ in BUILTIN_EXITS:
-            continue
-        if len(parts) > 2 or not all(p in existing for p in parts):
-            problems.append(f"eval {case.get('id')}: invalid expected_exit: {exit_!r}")
+        for field, value in [("expected_exit", exit_)] + [("also_ok", a) for a in case.get("also_ok", [])]:
+            parts = CHAIN.split(value.strip())
+            if value in BUILTIN_EXITS:
+                continue
+            if len(parts) > 2 or not all(p in existing for p in parts):
+                problems.append(f"eval {case.get('id')}: invalid {field}: {value!r}")
     if "none" not in exits:
         problems.append("evals have no `none` case")
+    tested = {p for e in exits for p in CHAIN.split(e.strip())}
+    problems += [f"route exit has no eval: {e}"
+                 for e in routed if e not in tested and e not in BUILTIN_EXITS]
     return problems
 
 
@@ -62,7 +91,7 @@ def check(skills_dir: Path) -> list[str]:
     problems += [f"router names unknown skill: {s}"
                  for s in sorted(named - existing - BUILTIN_EXITS)]
     problems += [f"router does not define exit: {e}" for e in sorted(BUILTIN_EXITS - named)]
-    problems += check_evals(router_dir / "evals" / "evals.json", existing)
+    problems += check_evals(router_dir / "evals" / "evals.json", existing, route_exits(router_md))
     return problems
 
 
@@ -73,7 +102,7 @@ def main(argv: list[str]) -> int:
     for p in problems:
         print(p)
     if not problems:
-        print(f"ok: router covers {len(skills_in(skills_dir)) - 1} skills; every eval exit is real")
+        print(f"ok: router covers {len(skills_in(skills_dir)) - 1} skills; every eval exit is real; every route exit is tested")
     return 1 if problems else 0
 
 

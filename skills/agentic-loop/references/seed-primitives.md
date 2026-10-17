@@ -8,7 +8,11 @@ methodology is needed now; the catalog may contain a better specialized match.
 | --- | --- | --- |
 | investigation | An engineering unknown needs evidence from the system or artifacts | Bounded findings, evidence, remaining unknowns |
 | debugging | A failure needs a causal explanation or discriminating experiment | Supported hypothesis, experiment results, next intervention |
+| simplicity-architect | A change's structure is still open, or a reviewer raised design concerns | Chosen design, rejected alternative, invariant owners, concern dispositions |
 | implementation | An authorized code change needs controlled execution | Coherent change, preserved invariants, validation evidence |
+| adversarial-review | A plan, spec, or design needs defect review before work builds on it | Evidence-backed defects and gaps, pointers to narrower reviews |
+| finding-triage | Review findings arrived and fixes must be chosen before acting | Must-fix set, cost per fix, route/narrow/accept/reject per finding |
+| bug-retro | A non-trivial bug was fixed during the task | Class-level prevention artifact, sibling audit, origin |
 | testing | A behavioral claim needs executable checks | Relevant results, coverage boundaries, untested risks |
 | code-review | A change needs inspection for correctness and risk | Actionable evidence-backed findings or explicit review limits |
 | research | A question needs external sources compared and synthesized | Traceable conclusions, conflicts, uncertainty |

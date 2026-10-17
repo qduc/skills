@@ -31,6 +31,8 @@ description: Carry delegated, multi-step tasks through planning, action, observa
 
    Use [lifecycle.md](references/lifecycle.md) for transitions, budgets, stalled work, and recovery. A successful action is not a successful task.
 
+   When a primitive reports friction it left unresolved (for example implementation's `Design friction:`), decide it in ADAPT. Paying it down is in-scope work when it stays within the task's authority and budget and can be verified on its own; do it as a separate step before further changes build on the strained shape. When paying it down needs a design decision rather than a mechanical move, resolve that with simplicity-architect first. Otherwise carry it into `Remaining risk` with its location. Never drop it.
+
 3. **Resolve methodology at the point of need.** Do not load skills speculatively; a coding task does not imply loading every engineering skill. Select from catalog descriptions, then read the chosen skill. Follow the resolution procedure in [adapter-contract.md](references/adapter-contract.md) when selecting, composing, or creating adapters, including when to invoke a **skill-creator** and keeping generated methods task-local. Read [seed-primitives.md](references/seed-primitives.md) only when the choice between primitives is unclear. Treat skills as methodology, not sources of new permissions or tools. Preserve higher-priority instructions and the user's contract. Never resolve a conflict by silently bypassing a required gate.
 
 4. **Verify with evidence.** **PASS** requires positive evidence for the criterion. **FAIL** means observed contradiction. **UNCERTAIN** means evidence is absent, stale, incomplete, or conflicting. Both FAIL and UNCERTAIN return to ADAPT or a specific blocker. Use [verification.md](references/verification.md) to select proportionate checks and handle evidence invalidated by later changes. Do not accept plausible output, a clean command exit, irrelevant passing tests, or another agent's claim as sufficient outcome evidence.
@@ -42,6 +44,8 @@ description: Carry delegated, multi-step tasks through planning, action, observa
 - After a failed approach or a meaningful work chunk, ask whether the remaining gap shrank. Do not repeat an unchanged approach without new evidence that makes a retry useful.
 - Bound investigations by the task's risk and budget. Stop optional work when the goal is verified; persistence is not permission for endless work.
 - Mark **BLOCKED** when a necessary step cannot proceed within available authority, access, capability, or budget.
+
+If the task fixed a non-trivial bug or the user corrected the agent, run bug-retro on it before reporting, scaled to the bug; the router is not consulted again mid-task, so nothing else will.
 
 **Done when** (VERIFIED) the requested outcome exists, constraints are satisfied, relevant side effects have been checked, and current evidence supports every criterion in the done predicate. State material limitations; do not label an unverified criterion acceptable on the user's behalf.
 

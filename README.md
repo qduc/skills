@@ -61,7 +61,7 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **risk-first-build** — Starts non-trivial builds with concrete discovery, verifies assumptions in order of risk, and reports evidence honestly.
 - **simplicity-architect** — Proposes software designs built on strong invariants and a small complexity budget, keeping edge cases from growing into extra defensive machinery.
 - **skill-creator** — Creates and revises agent skills, and measures how well they perform, including tests and how accurately a description gets the skill selected.
-- **skill-router** — Entry point for every request. Routes to exactly one exit: no skill (most requests), one skill, a two-skill chain, or a named gap. `scripts/check_router.py` fails if a skill is missing from it or an eval expects an exit that doesn't exist.
+- **skill-router** — Entry point for every request. Routes to exactly one exit: no skill (most requests), one skill, or a two-skill chain. `scripts/check_router.py` fails if a skill is missing from it, an eval expects an exit that doesn't exist, or a route exit has no eval; `scripts/run_router_evals.py` routes every eval through a model to catch rows shadowing each other.
 - **slop-audit** — Surveys a whole repository for piled-up problems in design, correctness, tests, duplication, security, dependencies, and overbuilding, then ranks what to repair.
 - **term2** — Starts, configures, and runs term2 for interactive coding sessions or one-shot command-line tasks.
 - **[testing](skills/testing/SKILL.md)** — Establishes proportionate behavioral evidence through meaningful assertions, isolated execution, and explicit test limits.
