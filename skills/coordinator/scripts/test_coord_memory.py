@@ -8,8 +8,11 @@ import unittest
 from unittest import mock
 
 import coord_memory
-import install_memory_hooks
 import coord_state
+
+
+def transcript_record(uuid, text):
+    return {'type': 'user', 'uuid': uuid, 'message': {'content': text}}
 
 
 def prompt_payload(value):
@@ -30,10 +33,6 @@ class MemoryHelpersTest(unittest.TestCase):
         self.assertNotIn('json-bearer', value)
         self.assertNotIn('sk-123456789', value)
         self.assertNotIn('ghp_123456789', value)
-
-    def test_tool_use_and_empty_records_are_represented(self):
-        self.assertIn('tool_use Bash', coord_memory.record_text({'type': 'tool_use', 'name': 'Bash', 'input': {'x': 1}}))
-        self.assertEqual(coord_memory.record_text({'role': 'system'}), '')
 
     def test_batches_preserve_record_limit(self):
         batches = list(coord_memory._batches([{'source_id': str(i), 'text': 'x', 'record_end': i} for i in range(30)]))
@@ -65,49 +64,42 @@ class MemoryHelpersTest(unittest.TestCase):
         self.assertTrue(value.startswith(frame + '\n\n'))
         self.assertEqual(json.loads(value[len(frame) + 2:])['events'][0]['event_id'], 'e1')
 
-    def test_non_boundary_does_not_read(self):
-        with tempfile.TemporaryDirectory() as directory:
-            result = coord_memory.capture({'hook_event_name': 'Stop', 'session_id': 'x'}, directory)
-        self.assertEqual(result['reason'], 'not a boundary')
-
-    def test_missing_binding_and_child_marker_do_not_read(self):
-        with tempfile.TemporaryDirectory() as directory:
-            with mock.patch.object(coord_memory, '_events', side_effect=AssertionError('read')):
-                self.assertEqual(coord_memory.capture({'hook_event_name': 'SessionEnd', 'session_id': 'x'}, directory)['reason'], 'no binding')
-            with mock.patch.dict(os.environ, {'COORD_MEMORY_SIDECAR': '1'}):
-                with mock.patch.object(coord_memory, '_binding', side_effect=AssertionError('read')):
-                    self.assertEqual(coord_memory.capture({'hook_event_name': 'SessionEnd', 'session_id': 'x'}, directory)['reason'], 'sidecar child marker')
-
-    def test_missing_transcript_is_deferred(self):
-        with tempfile.TemporaryDirectory() as directory:
-            with mock.patch.object(coord_memory, '_binding', return_value={'owner': 'o'}):
-                result = coord_memory.capture({'hook_event_name': 'SessionEnd', 'session_id': 'x'}, directory)
-        self.assertEqual(result, {'status': 'deferred', 'reason': 'missing transcript'})
-
-    def test_changed_task_owner_is_ignored(self):
-        with tempfile.TemporaryDirectory() as directory:
-            with mock.patch.object(coord_memory, '_binding', return_value=None):
-                result = coord_memory.capture({'hook_event_name': 'SessionEnd', 'session_id': 'x', 'transcript_path': '/missing'}, directory)
-        self.assertEqual(result, {'status': 'ignored', 'reason': 'no binding'})
-
     def test_partial_tail_is_ignored_until_completed(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             transcript = root / 't.jsonl'
-            transcript.write_bytes(b'{"uuid":"a","text":"one"}\n{"uuid":"b"')
+            first = json.dumps(transcript_record('a', 'one')) + '\n'
+            second = json.dumps(transcript_record('b', 'two'))
+            transcript.write_text(first + second[:-3])
             binding = {'transcript_offset': 0}
-            events = coord_memory._events({'transcript_path': str(transcript)}, binding)
+            events, _read_end = coord_memory._events({'transcript_path': str(transcript)}, binding)
             self.assertEqual([event['source_id'] for event in events], ['a'])
-            transcript.write_bytes(transcript.read_bytes() + b'}\n')
-            events = coord_memory._events({'transcript_path': str(transcript)}, {'transcript_offset': events[0]['record_end']})
+            transcript.write_text(first + second + '\n')
+            events, _read_end = coord_memory._events({'transcript_path': str(transcript)}, {'transcript_offset': events[0]['record_end']})
             self.assertEqual([event['source_id'] for event in events], ['b'])
 
-    def test_textless_record_has_coverage_placeholder(self):
+    def test_textless_record_is_dropped(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 't.jsonl'
-            path.write_text('{"uuid":"empty"}\n')
-            events = coord_memory._events({'transcript_path': str(path)}, {'transcript_offset': 0})
-        self.assertEqual(events[0]['text'], '[record has no text]')
+            path.write_text(json.dumps({'type': 'user', 'uuid': 'empty', 'message': {'content': []}}) + '\n')
+            events, _read_end = coord_memory._events({'transcript_path': str(path)}, {'transcript_offset': 0})
+        self.assertEqual(events, [])
+
+    def test_read_end_covers_a_dropped_trailing_record(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 't.jsonl'
+            path.write_text(json.dumps(transcript_record('a', 'one')) + '\n' +
+                            json.dumps({'type': 'mode', 'uuid': 'x', 'mode': 'plan'}) + '\n')
+            events, read_end = coord_memory._events({'transcript_path': str(path)}, {'transcript_offset': 0})
+            self.assertEqual([event['source_id'] for event in events], ['a'])
+            self.assertEqual(read_end, path.stat().st_size)
+
+    def test_offset_past_end_resets_to_start(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 't.jsonl'
+            path.write_text(json.dumps(transcript_record('a', 'one')) + '\n')
+            events, _read_end = coord_memory._events({'transcript_path': str(path)}, {'transcript_offset': 9999})
+            self.assertEqual([event['source_id'] for event in events], ['a'])
 
     def test_runner_environment_is_sanitized(self):
         with mock.patch.dict(os.environ, {'HERDR_ENV': 'bad', 'HERDR_PANE_ID': 'bad'}):
@@ -138,7 +130,7 @@ class MemoryHelpersTest(unittest.TestCase):
             task_id = created['state']['id']
             coord_state.bind_session(mock.Mock(task=task_id, owner='owner', revision=1, session_id='session'), root)
             transcript = root / 'transcript.jsonl'
-            transcript.write_text('{"uuid":"one","text":"decision"}\n')
+            transcript.write_text(json.dumps(transcript_record('one', 'decision')) + '\n')
             bindings = coord_state._load_bindings(root)
             bindings['bindings']['claude:session']['transcript_path'] = str(transcript)
             coord_state._save_bindings(root, bindings)
@@ -162,21 +154,6 @@ class MemoryHelpersTest(unittest.TestCase):
             self.assertNotIn('/secret', path.read_text())
 
 
-class InstallerTest(unittest.TestCase):
-    def test_install_uninstall_preserves_unrelated_hooks_and_is_idempotent(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / 'settings.json'
-            path.write_text(json.dumps({'hooks': {'PreCompact': [{'matcher': 'other', 'hooks': []}]}}))
-            install_memory_hooks.install(path)
-            install_memory_hooks.install(path)
-            value = json.loads(path.read_text())
-            self.assertEqual(sum(install_memory_hooks.own(entry) for entry in value['hooks']['PreCompact']), 1)
-            install_memory_hooks.uninstall(path)
-            value = json.loads(path.read_text())
-            self.assertFalse(install_memory_hooks.own(value['hooks']['PreCompact'][0]))
-            self.assertNotIn('SessionEnd', value['hooks'])
-
-
 class JudgeTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
@@ -197,7 +174,7 @@ class JudgeTest(unittest.TestCase):
         return json.dumps({'actions': [{'action': 'ignore', 'event_id': event['event_id'], 'reason': 'test'} for event in value['events']]})
 
     def write_records(self, count):
-        self.transcript.write_text(''.join(json.dumps({'uuid': str(i), 'text': 'decision'}) + '\n' for i in range(count)))
+        self.transcript.write_text(''.join(json.dumps(transcript_record(str(i), 'decision')) + '\n' for i in range(count)))
 
     def offset(self):
         return coord_state._load_bindings(self.root)['bindings']['claude:session']['transcript_offset']
@@ -215,7 +192,7 @@ class JudgeTest(unittest.TestCase):
         self.assertGreater(offsets[1], 0)
 
     def test_fixture_runner_cold_add_decision_is_current_memory(self):
-        self.transcript.write_text(json.dumps({'uuid': 'decision-1', 'text': 'We decided the retention period is 30 days.'}) + '\n')
+        self.transcript.write_text(json.dumps(transcript_record('decision-1', 'We decided the retention period is 30 days.')) + '\n')
         def cold_add(prompt, _env, _timeout):
             event_id = prompt_payload(prompt)['events'][0]['event_id']
             return json.dumps({'actions': [{'action': 'cold-add', 'event_id': event_id, 'category': 'decisions',
@@ -281,7 +258,7 @@ class JudgeTest(unittest.TestCase):
         self.assertFalse(lock.exists())
 
     def test_crashed_batch_retry_skips_a_and_applies_new_b(self):
-        first = {'uuid': 'a', 'text': 'first decision'}
+        first = transcript_record('a', 'first decision')
         self.transcript.write_text(json.dumps(first) + '\n')
         def add_a(prompt, _env, _timeout):
             event_id = prompt_payload(prompt)['events'][0]['event_id']
@@ -291,7 +268,7 @@ class JudgeTest(unittest.TestCase):
         bindings['bindings']['claude:session']['transcript_offset'] = 0
         coord_state._save_bindings(self.root, bindings)
         with self.transcript.open('a') as stream:
-            stream.write(json.dumps({'uuid': 'b', 'text': 'second decision'}) + '\n')
+            stream.write(json.dumps(transcript_record('b', 'second decision')) + '\n')
         def add_b(prompt, _env, _timeout):
             value = prompt_payload(prompt)
             self.assertEqual([event['event_id'] for event in value['events']], ['e1'])

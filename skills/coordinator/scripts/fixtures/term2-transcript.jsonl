@@ -1,0 +1,6 @@
+{"v":3,"seq":1,"ts":"2026-01-01T00:00:00.000Z","event":{"type":"session_init","id":"s1","projectPath":"/p","model":"m"}}
+{"v":3,"seq":2,"ts":"2026-01-01T00:00:01.000Z","event":{"type":"user_message","message":{"id":"u1","sender":"user","text":"Please ship the watcher."}}}
+{"v":3,"seq":3,"ts":"2026-01-01T00:00:02.000Z","event":{"type":"assistant_journal_item","turnId":"turn-1","seq":1,"item":{"type":"reasoning","text":"private chain of thought"}}}
+{"v":3,"seq":4,"ts":"2026-01-01T00:00:03.000Z","event":{"type":"tool_started","turnId":"turn-1","toolName":"Bash","toolCallId":"c1","arguments":"{}"}}
+{"v":3,"seq":5,"ts":"2026-01-01T00:00:04.000Z","event":{"type":"assistant_turn","turn":{"items":[{"type":"reasoning","text":"private chain of thought"},{"type":"assistant_text","text":"We decided the sidecar stays disabled until the gate passes."},{"type":"tool_result","toolName":"Bash","output":"huge"}]}}}
+{"v":3,"seq":6,"ts":"2026-01-01T00:00:05.000Z","event":{"type":"assistant_turn","turn":{"items":[{"type":"tool_call","toolName":"Bash","arguments":"{}"}]}}}

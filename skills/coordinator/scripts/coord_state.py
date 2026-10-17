@@ -441,51 +441,29 @@ def _save_bindings(root, value):
     atomic_write(bindings_path(root), json.dumps(value, ensure_ascii=False, indent=2) + '\n')
 
 
-def session_nonce():
-    return 'coord-nonce-' + uuid.uuid4().hex[:16]
-
-
-def _find_transcript(projects_dir, nonce):
-    candidates = sorted(projects_dir.glob('*/*.jsonl'), key=lambda path: path.stat().st_mtime_ns, reverse=True)[:50]
-    matches = []
-    needle = nonce.encode('utf-8')
-    for candidate in candidates:
-        try:
-            size = candidate.stat().st_size
-            with candidate.open('rb') as stream:
-                stream.seek(max(0, size - 256 * 1024))
-                if needle in stream.read():
-                    matches.append((candidate, size))
-        except OSError:
-            continue
-    if not matches:
-        raise StateError(f'no Claude transcript contains nonce {nonce}')
-    if len(matches) > 1:
-        raise StateError(f'multiple Claude transcripts contain nonce {nonce}; refusing to guess')
-    return matches[0]
-
-
 def bind_session(args, root):
     session_id = args.session_id
-    transcript = None
-    if session_id == 'auto':
-        if not getattr(args, 'nonce', None):
-            raise StateError('--nonce is required with --session-id auto')
-        transcript, size = _find_transcript(Path(getattr(args, 'projects_dir', None) or Path.home() / '.claude/projects'), args.nonce)
-        session_id = transcript.stem
     path = task_path(root, args.task)
     with locked(path / '.write.lock'):
         task = load(path); check_owner(task, args.owner); check_revision(task, args.revision)
         with locked(root / '.bindings.lock'):
             bindings = _load_bindings(root)
-            key = f'claude:{session_id}'
+            harness = getattr(args, 'harness', None)
+            harness = harness if isinstance(harness, str) and harness else 'claude'
+            key = f'{harness}:{session_id}'
             prior = bindings['bindings'].get(key)
             if prior and (prior.get('task_id') != args.task or prior.get('owner') != args.owner):
                 raise StateError('session binding is owned by another coordinator')
+            explicit = getattr(args, 'transcript', None)
+            if prior:
+                resolved_path = prior.get('transcript_path')
+                resolved_offset = prior.get('transcript_offset', 0)
+            else:
+                resolved_path = str(explicit) if explicit else None
+                resolved_offset = 0
             bindings['bindings'][key] = {'task_id': args.task, 'owner': args.owner,
-                'revision': args.revision + 1, 'harness': 'claude', 'session_id': session_id,
-                'transcript_offset': prior.get('transcript_offset', 0) if prior else (size if transcript else 0),
-                'transcript_path': prior.get('transcript_path') if prior else (str(transcript) if transcript else None)}
+                'revision': args.revision + 1, 'harness': harness, 'session_id': session_id,
+                'transcript_offset': resolved_offset, 'transcript_path': resolved_path}
             _save_bindings(root, bindings)
         task['revision'] += 1; task['updated_at'] = now(); warnings = save(path, task)
     return response(path, task, warnings)
@@ -497,7 +475,9 @@ def unbind_session(args, root):
         task = load(path); check_owner(task, args.owner); check_revision(task, args.revision)
         with locked(root / '.bindings.lock'):
             bindings = _load_bindings(root)
-            key = f'claude:{args.session_id}'
+            harness = getattr(args, 'harness', None)
+            harness = harness if isinstance(harness, str) and harness else 'claude'
+            key = f'{harness}:{args.session_id}'
             prior = bindings['bindings'].get(key)
             if prior and (prior.get('task_id') != args.task or prior.get('owner') != args.owner):
                 raise StateError('binding is owned by another coordinator')
@@ -1458,7 +1438,6 @@ def parser():
     command = sub.add_parser('resume')
     command.add_argument('--task', required=True)
     command.add_argument('--budget-bytes', type=int, default=16 * 1024)
-    sub.add_parser('session-nonce')
     for name in ('claim', 'checkpoint', 'select', 'release', 'archive', 'memory-apply'):
         command = sub.add_parser(name)
         command.add_argument('--task', required=True)
@@ -1488,9 +1467,9 @@ def parser():
         command.add_argument('--owner', required=True)
         command.add_argument('--revision', required=True, type=int)
         command.add_argument('--session-id', required=True)
+        command.add_argument('--harness', default='claude')
         if name == 'bind-session':
-            command.add_argument('--nonce')
-            command.add_argument('--projects-dir')
+            command.add_argument('--transcript')
     command = sub.add_parser('choices')
     command.add_argument('--task')
     command.add_argument('--project')
@@ -1506,8 +1485,6 @@ def main():
             args.task = resolve_task_id(root, args.task)
         if args.command == 'create':
             result = create(args, root)
-        elif args.command == 'session-nonce':
-            result = {'nonce': session_nonce()}
         elif args.command == 'list':
             result = list_tasks(args, root)
         elif args.command == 'choices':
