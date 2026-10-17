@@ -19,13 +19,14 @@ Design for simplicity and local reasoning. Own the complexity budget: every adde
 ## Phases
 
 1. **Frame.** State the problem and constraints in one or two sentences. Check: the statement names the observable outcome.
-2. **Design.** For each design choice, answer the per-choice checklist below. Check: every choice has three written answers.
+2. **Design it twice.** Sketch at least two genuinely different designs: different boundaries, or a different owner for the central rule, not two variants of one idea. For each, list what callers must know and which edge cases it removes or adds. Pick the one that leaves callers knowing least for the same outcome, and keep one line on why the other lost. Check: the alternatives differ in a boundary or owner, and the choice names its reason. Skip only when the design is already fixed by a constraint, and say which.
+3. **Design.** For each design choice, answer the per-choice checklist below. Check: every choice has three written answers.
    - What state or transition can be removed?
    - Does an invariant eliminate the edge case?
    - What new states does the solution introduce?
    - Can a developer understand this component without loading half the system into their head?
-3. **Assign owners.** List each invariant with the one component that enforces it. Check: no invariant has zero or two owners.
-4. **Resolve concerns.** When responding to a reviewer (often [invariant-reviewer](../invariant-reviewer/SKILL.md)), resolve each concern by changing the design, proving the invariant with evidence, or explicitly accepting the risk or rejecting the concern with reasons. Judge added complexity against the reachable failure and its impact. Check: every concern has exactly one of those four dispositions.
+4. **Assign owners.** List each invariant with the one component that enforces it. Check: no invariant has zero or two owners.
+5. **Resolve concerns.** When responding to a reviewer (often [invariant-reviewer](../invariant-reviewer/SKILL.md)), resolve each concern by changing the design, proving the invariant with evidence, or explicitly accepting the risk or rejecting the concern with reasons. Judge added complexity against the reachable failure and its impact. Check: every concern has exactly one of those four dispositions.
 
 ## Stop rules
 
@@ -43,6 +44,7 @@ Cite the enforcing mechanism for each invariant (file:line, type, test, or check
 
 ```
 Design: <simplest viable design, short>
+Rejected alternative: <design> | lost because: <...>   (or: fixed by <constraint>)
 Invariants:
 - <invariant> | owner: <component> | evidence: <file:line / type / test | assumed>
 Concerns:
