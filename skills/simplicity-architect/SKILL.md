@@ -1,6 +1,6 @@
 ---
 name: simplicity-architect
-description: Design systems around strong invariants and a small complexity budget. Use when proposing a software design that eliminates edge cases, or answering reviewer concerns without accumulating defensive machinery.
+description: Decide how to structure a change before building it, choosing the design that removes edge cases and keeps callers knowing least. Use when the user asks how to design, structure, or architect something, weighs approaches for a feature, data model, API, or refactor, or when implementation reports design friction too large to reshape in place; also when answering reviewer concerns about a design without piling on defensive machinery. Use deep-module-review to judge an existing module, proportionality-review to ask only whether something is overbuilt.
 ---
 
 # Simplicity Architect
@@ -20,7 +20,7 @@ Design for simplicity and local reasoning. Own the complexity budget: every adde
 
 1. **Frame.** State the problem and constraints in one or two sentences. Check: the statement names the observable outcome.
 2. **Design it twice.** Sketch at least two genuinely different designs: different boundaries, or a different owner for the central rule, not two variants of one idea. For each, list what callers must know and which edge cases it removes or adds. Pick the one that leaves callers knowing least for the same outcome, and keep one line on why the other lost. Check: the alternatives differ in a boundary or owner, and the choice names its reason. Skip only when the design is already fixed by a constraint, and say which.
-3. **Design.** For each design choice, answer the per-choice checklist below. Check: every choice has three written answers.
+3. **Design.** For each design choice, answer the per-choice checklist below. Check: every choice has four written answers.
    - What state or transition can be removed?
    - Does an invariant eliminate the edge case?
    - What new states does the solution introduce?

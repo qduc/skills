@@ -8,6 +8,7 @@ methodology is needed now; the catalog may contain a better specialized match.
 | --- | --- | --- |
 | investigation | An engineering unknown needs evidence from the system or artifacts | Bounded findings, evidence, remaining unknowns |
 | debugging | A failure needs a causal explanation or discriminating experiment | Supported hypothesis, experiment results, next intervention |
+| simplicity-architect | A change's structure is still open, or a reviewer raised design concerns | Chosen design, rejected alternative, invariant owners, concern dispositions |
 | implementation | An authorized code change needs controlled execution | Coherent change, preserved invariants, validation evidence |
 | testing | A behavioral claim needs executable checks | Relevant results, coverage boundaries, untested risks |
 | code-review | A change needs inspection for correctness and risk | Actionable evidence-backed findings or explicit review limits |

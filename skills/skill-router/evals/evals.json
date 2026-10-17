@@ -12,6 +12,9 @@
   {"id": 8, "kind": "task", "prompt": "Why does the trebuchet projectile sometimes pass straight through the castle?", "expected_exit": "debugging", "expected_output": "Causal question; Not: investigation."},
   {"id": 9, "kind": "task", "prompt": "The settings page takes 4 seconds to load, make it faster.", "expected_exit": "profiling", "expected_output": "Slow, not wrong; Not: debugging."},
   {"id": 10, "kind": "task", "prompt": "Is this event-sourcing design overkill for a single-user app?", "expected_exit": "proportionality-review", "expected_output": "Overbuilt question only; Not: adversarial-review."},
-  {"id": 11, "kind": "task", "prompt": "Write a grant proposal for our open-source project.", "expected_exit": "gap", "expected_output": "Substantial work, no matching method; does the work and names the gap in one line."}
+  {"id": 11, "kind": "task", "prompt": "Write a grant proposal for our open-source project.", "expected_exit": "gap", "expected_output": "Substantial work, no matching method; does the work and names the gap in one line."},
+  {"id": 12, "kind": "task", "prompt": "How should we structure the retry scheduler so a job can't run twice after a crash?", "expected_exit": "simplicity-architect", "expected_output": "Not the fast exit: a design question about something being built. Two designs compared, invariant with one owner."},
+  {"id": 13, "kind": "task", "prompt": "Add a plugin system to the ledger builder so new bank statement formats can be added without touching the core.", "expected_exit": "simplicity-architect → agentic-loop", "expected_output": "Clear goal, but the boundary is costly to redo; designs it twice before agentic-loop builds it. Not: agentic-loop alone."},
+  {"id": 14, "kind": "control", "prompt": "Add a --verbose flag to the export command that prints each row as it is written.", "expected_exit": "none", "expected_output": "Small, decided change; no design routing."}
  ]
 }

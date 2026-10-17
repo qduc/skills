@@ -28,7 +28,7 @@ Go top to bottom. Take the first row that matches.
 
 | The request is... | Exit |
 | --- | --- |
-| A question, explanation, or conversation | `none` |
+| A question, explanation, or conversation (not "how should we structure X" for something about to be built: that is design work, go on) | `none` |
 | One small, obvious, reversible edit | `none` |
 | A follow-up inside a task a skill already owns | `none` (the owning skill continues) |
 
@@ -45,6 +45,7 @@ Go top to bottom. Take the first row that matches.
 | Situation | Exit | Not this |
 | --- | --- | --- |
 | What to build is unclear and the human must react to examples first | `risk-first-build` → `agentic-loop` | `agentic-loop` assumes the goal is clear |
+| The goal is clear but its structure is open and costly to redo (new subsystem, data model, persistent format, public API) | `simplicity-architect` → `agentic-loop` | going straight to `agentic-loop` builds on the first design that comes to mind |
 | The goal is clear and one agent should carry it to verified done | `agentic-loop` | `coordinator` adds overhead one agent doesn't need |
 | Substantial independent pieces should run in parallel | `coordinator` (first run on a machine: `coordinator-setup` → `coordinator`) | `agentic-loop` runs one agent |
 
@@ -55,7 +56,8 @@ Go top to bottom. Take the first row that matches.
 | Find facts in the code, config, or running system | `investigation` | `research` looks outward |
 | Compare and synthesize outside sources or docs | `research` | `investigation` looks inward |
 | Explain why something fails | `debugging` | `investigation` gathers facts without testing a cause |
-| Make a code change that is already decided | `implementation` | |
+| Decide how to structure a change, or answer design concerns, before building | `simplicity-architect` | `deep-module-review` judges a design that already exists |
+| Make a code change that is already decided | `implementation` | `simplicity-architect` when the design is still open |
 | Prove a behavior with automated checks | `testing` | `browser-qa` covers what a user sees |
 | See what a user actually sees and does in a browser | `browser-qa` (it drives `playwright-cli`) | `testing` for logic below the UI |
 | Measure or fix performance | `profiling` | `debugging` when the output is wrong, not slow |
@@ -70,7 +72,6 @@ Go top to bottom. Take the first row that matches.
 | A whole repository's accumulated problems | `slop-audit` |
 | Only whether something is overbuilt | `proportionality-review` |
 | Whether a design has reachable failures | `invariant-reviewer` |
-| Proposing a design rather than judging one | `simplicity-architect` |
 | Review findings arrived and you must decide which to fix | `finding-triage` |
 
 ### 5. Tools
