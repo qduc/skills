@@ -1,0 +1,17 @@
+{
+ "skill_name": "skill-router",
+ "note": "Author-drafted. expected_exit is none, gap, a skill slug, or 'a → b'. Controls check the fast exit, which most real requests should take.",
+ "evals": [
+  {"id": 1, "kind": "control", "prompt": "What's the difference between a mutex and a semaphore?", "expected_exit": "none", "expected_output": "Answers directly; no Route line, no skill loaded."},
+  {"id": 2, "kind": "control", "prompt": "Rename the variable tmp to running_total in ledger.py.", "expected_exit": "none", "expected_output": "Makes the edit directly; no skill loaded."},
+  {"id": 3, "kind": "control", "prompt": "Write me a short haiku about coffee.", "expected_exit": "none", "expected_output": "Writes it; nothing matched, not substantial method work, so none rather than gap."},
+  {"id": 4, "kind": "control", "prompt": "(mid-task, agentic-loop already running) ok, also handle the empty state.", "expected_exit": "none", "expected_output": "Owning skill continues; router does not re-route mid-task."},
+  {"id": 5, "kind": "task", "prompt": "Fixed it, the timezone conversion was off by an hour.", "expected_exit": "bug-retro", "expected_output": "Route: bug-retro; aftermath row wins before any other question."},
+  {"id": 6, "kind": "task", "prompt": "Build a CSV import for the ledger, I'm not sure yet how the bank columns should map.", "expected_exit": "risk-first-build → agentic-loop", "expected_output": "Chain because intent is unclear; Not: agentic-loop alone."},
+  {"id": 7, "kind": "task", "prompt": "Add a health-check endpoint to the API and get it fully working with tests, end to end.", "expected_exit": "agentic-loop", "expected_output": "Clear goal, several steps, one agent; Not: coordinator."},
+  {"id": 8, "kind": "task", "prompt": "Why does the trebuchet projectile sometimes pass straight through the castle?", "expected_exit": "debugging", "expected_output": "Causal question; Not: investigation."},
+  {"id": 9, "kind": "task", "prompt": "The settings page takes 4 seconds to load, make it faster.", "expected_exit": "profiling", "expected_output": "Slow, not wrong; Not: debugging."},
+  {"id": 10, "kind": "task", "prompt": "Is this event-sourcing design overkill for a single-user app?", "expected_exit": "proportionality-review", "expected_output": "Overbuilt question only; Not: adversarial-review."},
+  {"id": 11, "kind": "task", "prompt": "Write a grant proposal for our open-source project.", "expected_exit": "gap", "expected_output": "Substantial work, no matching method; does the work and names the gap in one line."}
+ ]
+}
