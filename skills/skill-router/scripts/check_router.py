@@ -10,8 +10,8 @@ appears in backticks in skill-router/SKILL.md (for example `debugging`).
 Fails (exit 1, problems listed) when:
   - a skill other than skill-router is missing from the router;
   - the router names a slug that is neither a skill nor a built-in exit;
-  - the router does not define the built-in exits `none` and `gap`;
-  - an eval's expected_exit or also_ok entry is not `none`, `gap`, a skill, or
+  - the router does not define the built-in exit `none`;
+  - an eval's expected_exit or also_ok entry is not `none`, a skill, or
     `a → b` of skills;
   - the evals have no `none` case (the fast exit must stay tested);
   - a route row's exit has no eval expecting it. Untested rows are where
@@ -29,7 +29,7 @@ import sys
 from pathlib import Path
 
 ROUTER = "skill-router"
-BUILTIN_EXITS = {"none", "gap"}
+BUILTIN_EXITS = {"none"}
 SLUG = re.compile(r"`([a-z0-9]+(?:-[a-z0-9]+)*)`")
 CHAIN = re.compile(r"\s*(?:→|->)\s*")
 

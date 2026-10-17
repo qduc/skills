@@ -1,6 +1,6 @@
 ---
 name: skill-router
-description: Entry point for every request. Load this first, before any other skill, whenever a new user request arrives, and follow it to exactly one exit (no skill, one skill, a two-skill chain, or a named gap). Most requests exit immediately with no skill. Also use when the user asks which skill to use or whether a skill exists for something.
+description: Entry point for every request. Load this first, before any other skill, whenever a new user request arrives, and follow it to exactly one exit (no skill, one skill, or a two-skill chain). Most requests exit immediately with no skill. Also use when the user asks which skill to use or whether a skill exists for something.
 ---
 
 # Skill Router
@@ -16,7 +16,6 @@ Every route ends at exactly one of these. There is no other ending and no return
 | `none` | Do the request directly. Say nothing about routing. |
 | one skill | Load it and hand over. It owns the request from here. |
 | chain `A → B` | Load `A`; load `B` when `A` finishes. Never more than two. |
-| gap | No skill fits. Do the request directly and end the reply with one line naming the missing method. If the same gap appears again, it is a `skill-creator` candidate. |
 
 Never route to this skill, never load two skills to compare them, and never ask the user to choose a skill.
 
@@ -46,7 +45,7 @@ Go top to bottom. Take the first row that matches.
 | --- | --- | --- |
 | What to build is unclear and the human must react to examples first | `risk-first-build` → `agentic-loop` | `agentic-loop` assumes the goal is clear |
 | The user wants it built, the goal is clear, no design exists yet, and its structure is costly to redo (new subsystem, data model, persistent format, public API) | `simplicity-architect` → `agentic-loop` | going straight to `agentic-loop` builds on the first design that comes to mind |
-| The goal is clear and needs several steps (find out, change, verify) carried by one agent to verified done | `agentic-loop` | `coordinator` adds overhead one agent doesn't need; `implementation` for one change that is already decided |
+| The goal is clear and needs several steps (find out, change, verify) carried by one agent to verified done, in any domain | `agentic-loop` | `coordinator` adds overhead one agent doesn't need; `implementation` for one change that is already decided |
 | Substantial independent pieces should run in parallel | `coordinator` (first run on a machine: `coordinator-setup` → `coordinator`) | `agentic-loop` runs one agent |
 
 ### 3. One-step gap
@@ -84,7 +83,7 @@ Go top to bottom. Take the first row that matches.
 
 ### 6. Nothing matched
 
-Exit `gap` if the request is substantial work that seems to need a method. Otherwise exit `none`.
+Substantial work exits to `agentic-loop`: it is domain-generic and, when no skill supplies a method, resolves one or invokes `skill-creator` itself. Otherwise exit `none`.
 
 ## After the exit
 

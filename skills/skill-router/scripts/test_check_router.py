@@ -5,7 +5,7 @@ from pathlib import Path
 
 from check_router import check
 
-EXITS = "Exits: `none` and `gap`. "
+EXITS = "Exits: `none`. "
 NONE_CASE = {"id": 0, "expected_exit": "none"}
 
 
@@ -47,13 +47,17 @@ class CheckRouterTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             make(Path(d), ["debugging"], "Use `debugging`.")
             md = Path(d) / "skill-router" / "SKILL.md"
-            md.write_text(md.read_text().replace("`gap`", "gap"))
-            self.assertEqual(check(Path(d)), ["router does not define exit: gap"])
+            md.write_text(md.read_text().replace("`none`", "none"))
+            self.assertEqual(check(Path(d)), ["router does not define exit: none"])
 
     def test_accepts_chain_and_builtin_eval_exits(self):
         evals = [{"id": 1, "expected_exit": "debugging → testing"},
-                 {"id": 2, "expected_exit": "gap"}]
+                 {"id": 2, "expected_exit": "none"}]
         self.assertEqual(self.run_check(["debugging", "testing"], "`debugging` `testing`", evals), [])
+
+    def test_gap_is_no_longer_an_exit(self):
+        self.assertEqual(self.run_check(["debugging"], "`debugging`", [{"id": 1, "expected_exit": "gap"}]),
+                         ["eval 1: invalid expected_exit: 'gap'"])
 
     def test_fails_on_eval_exit_that_is_not_real(self):
         evals = [{"id": 1, "expected_exit": "debuging"},

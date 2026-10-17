@@ -35,7 +35,7 @@ Apply its Route section to the user's request exactly as written: top to bottom,
 first matching row wins. Do not do the request and do not explain.
 Reply with one line only:
 EXIT: <exit>
-where <exit> is none, gap, one skill slug, or a chain written as a → b.
+where <exit> is none, one skill slug, or a chain written as a → b.
 
 --- ROUTER ---
 """
