@@ -1,6 +1,6 @@
 {
  "skill_name": "skill-router",
- "note": "Author-drafted. expected_exit is none, gap, a skill slug, or 'a → b'. Controls check the fast exit, which most real requests should take.",
+ "note": "Author-drafted. expected_exit is none, gap, a skill slug, or 'a → b'. also_ok lists other exits that are acceptable on a genuinely fuzzy boundary; use it sparingly, never for shadowing. Controls check the fast exit, which most real requests should take.",
  "evals": [
   {"id": 1, "kind": "control", "prompt": "What's the difference between a mutex and a semaphore?", "expected_exit": "none", "expected_output": "Answers directly; no Route line, no skill loaded."},
   {"id": 2, "kind": "control", "prompt": "Rename the variable tmp to running_total in ledger.py.", "expected_exit": "none", "expected_output": "Makes the edit directly; no skill loaded."},
@@ -18,6 +18,21 @@
   {"id": 14, "kind": "control", "prompt": "Add a --verbose flag to the export command that prints each row as it is written.", "expected_exit": "none", "expected_output": "Small, decided change; no design routing."},
   {"id": 15, "kind": "task", "prompt": "Could this lease-based lock design ever let two workers hold the lock at once?", "expected_exit": "invariant-reviewer", "expected_output": "Reachable-failure question on a design; Not: adversarial-review, which is the catch-all and sits last."},
   {"id": 16, "kind": "task", "prompt": "Review the public API of the export module, callers keep having to pass cache keys.", "expected_exit": "deep-module-review", "expected_output": "One module's interface and leakage; Not: adversarial-review."},
-  {"id": 17, "kind": "task", "prompt": "Ok it works now, it was a stale cache entry. Why did that happen?", "expected_exit": "bug-retro", "expected_output": "Aftermath is checked before the fast exit, so this is not answered as a plain question."}
+  {"id": 17, "kind": "task", "prompt": "Ok it works now, it was a stale cache entry. Why did that happen?", "expected_exit": "bug-retro", "expected_output": "Aftermath is checked before the fast exit, so this is not answered as a plain question."},
+  {"id": 18, "kind": "task", "prompt": "The code-review skill keeps missing the same class of race condition across our last eight benchmark runs; improve it.", "expected_exit": "workflow-evolution", "expected_output": "Repeated, measured underperformance of a skill; Not: skill-creator, the method exists."},
+  {"id": 19, "kind": "task", "prompt": "Every week I hand-write a release-notes summary from merged PRs and there's no method for it, make it repeatable.", "expected_exit": "skill-creator", "expected_output": "Recurring work with no method; Not: workflow-evolution, nothing to evolve yet."},
+  {"id": 20, "kind": "task", "prompt": "Migrate all five services to the new logging library; they're independent, run them in parallel.", "expected_exit": "coordinator", "expected_output": "Substantial independent pieces in parallel; Not: agentic-loop, which runs one agent."},
+  {"id": 21, "kind": "task", "prompt": "Which module actually writes the session token to disk?", "expected_exit": "investigation", "expected_output": "Find facts in the code; Not: research, which looks outward."},
+  {"id": 22, "kind": "task", "prompt": "Compare how SQLite, DuckDB and LMDB handle concurrent writers, from their docs.", "expected_exit": "research", "expected_output": "Outside sources compared; Not: investigation."},
+  {"id": 33, "kind": "task", "prompt": "Per the design we settled on yesterday, move the cache invalidation logic out of the three API handlers into CacheStore.invalidate_for(account); update the handlers to call it.", "expected_exit": "implementation", "also_ok": ["agentic-loop"], "expected_output": "Decided change, more than a small edit, one step; Not: simplicity-architect, the design is settled."},
+  {"id": 24, "kind": "task", "prompt": "Prove that the ledger export rounds half-cents the way finance specified.", "expected_exit": "testing", "expected_output": "Behavior proven with automated checks; Not: browser-qa."},
+  {"id": 25, "kind": "task", "prompt": "Check that the signup form actually shows the error message when the email is already taken.", "expected_exit": "browser-qa", "expected_output": "What a user sees in a browser; Not: testing."},
+  {"id": 26, "kind": "task", "prompt": "Review this diff for bugs before I merge it.", "expected_exit": "code-review", "expected_output": "Code diff for correctness; Not: adversarial-review, the catch-all."},
+  {"id": 27, "kind": "task", "prompt": "This repo has grown for two years without cleanup, tell me what's rotting and what to fix first.", "expected_exit": "slop-audit", "expected_output": "Whole-repo accumulated problems; Not: adversarial-review."},
+  {"id": 28, "kind": "task", "prompt": "The reviewer left 14 comments on my PR, which ones do I actually need to fix?", "expected_exit": "finding-triage", "expected_output": "Findings arrived, decide which to fix; Not: code-review."},
+  {"id": 29, "kind": "task", "prompt": "Poke holes in this migration plan before we schedule it.", "expected_exit": "adversarial-review", "expected_output": "A plan reviewed for any defect, no narrower judging row fits; reached even though it sits last."},
+  {"id": 30, "kind": "task", "prompt": "Start a term2 session in a new tmux pane pointed at the ledger repo.", "expected_exit": "term2", "expected_output": "Run term2; tool row."},
+  {"id": 31, "kind": "task", "prompt": "Show me which herdr panes have agents still running.", "expected_exit": "herdr", "expected_output": "Inspect Herdr panes; Not: coordinator."},
+  {"id": 32, "kind": "task", "prompt": "Run the benchmark tasks against the new model and compare its solve rate to last month.", "expected_exit": "model-benchmark", "expected_output": "Benchmark models; Not: workflow-evolution."}
  ]
 }

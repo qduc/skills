@@ -36,7 +36,7 @@ Go top to bottom. Take the first row that matches.
 
 | The request is... | Exit |
 | --- | --- |
-| A question, explanation, or conversation (not "how should we structure X" for something about to be built: that is design work, go on) | `none` |
+| A question, explanation, or conversation answerable without looking into the user's own code, systems, or artifacts ("which module writes X", "could this design fail", "how should we structure X" all need a look: go on) | `none` |
 | One small, obvious, reversible edit | `none` |
 | A follow-up inside a task a skill already owns | `none` (the owning skill continues) |
 
@@ -45,18 +45,18 @@ Go top to bottom. Take the first row that matches.
 | Situation | Exit | Not this |
 | --- | --- | --- |
 | What to build is unclear and the human must react to examples first | `risk-first-build` → `agentic-loop` | `agentic-loop` assumes the goal is clear |
-| The goal is clear but its structure is open and costly to redo (new subsystem, data model, persistent format, public API) | `simplicity-architect` → `agentic-loop` | going straight to `agentic-loop` builds on the first design that comes to mind |
-| The goal is clear and one agent should carry it to verified done | `agentic-loop` | `coordinator` adds overhead one agent doesn't need |
+| The user wants it built, the goal is clear, no design exists yet, and its structure is costly to redo (new subsystem, data model, persistent format, public API) | `simplicity-architect` → `agentic-loop` | going straight to `agentic-loop` builds on the first design that comes to mind |
+| The goal is clear and needs several steps (find out, change, verify) carried by one agent to verified done | `agentic-loop` | `coordinator` adds overhead one agent doesn't need; `implementation` for one change that is already decided |
 | Substantial independent pieces should run in parallel | `coordinator` (first run on a machine: `coordinator-setup` → `coordinator`) | `agentic-loop` runs one agent |
 
 ### 3. One-step gap
 
 | The step needs to... | Exit | Not this |
 | --- | --- | --- |
+| Explain why something fails | `debugging` | `investigation` gathers facts without testing a cause |
 | Find facts in the code, config, or running system | `investigation` | `research` looks outward |
 | Compare and synthesize outside sources or docs | `research` | `investigation` looks inward |
-| Explain why something fails | `debugging` | `investigation` gathers facts without testing a cause |
-| Decide how to structure a change, or answer design concerns, before building | `simplicity-architect` | `deep-module-review` judges a design that already exists |
+| Decide how to structure a change that has no design yet, or answer a reviewer's concerns on your own proposal | `simplicity-architect` | Section 4 when a design already exists and is being judged (overbuilt, defects, interface) |
 | Make a code change that is already decided | `implementation` | `simplicity-architect` when the design is still open |
 | Prove a behavior with automated checks | `testing` | `browser-qa` covers what a user sees |
 | See what a user actually sees and does in a browser | `browser-qa` (it drives `playwright-cli`) | `testing` for logic below the UI |
@@ -69,7 +69,7 @@ Go top to bottom. Take the first row that matches.
 | A code diff for correctness and security | `code-review` |
 | One module's interface and what it hides | `deep-module-review` |
 | A whole repository's accumulated problems | `slop-audit` |
-| Only whether something is overbuilt | `proportionality-review` |
+| Only whether something is overbuilt, overkill, or more than needed | `proportionality-review` |
 | Whether a design has reachable failures | `invariant-reviewer` |
 | Review findings arrived and you must decide which to fix | `finding-triage` |
 | Any other defect hunt in one artifact: a PR, spec, design, or plan (the catch-all, so it sits last) | `adversarial-review` |
@@ -110,4 +110,6 @@ The description asks to be loaded first, but a description alone cannot guarante
 
 ## Keeping this file honest
 
-`scripts/check_router.py` fails when a skill directory is missing from this file, this file names a skill that doesn't exist, or `evals/evals.json` expects an exit that isn't a real skill. Run it after adding, renaming, or removing a skill.
+`scripts/check_router.py` fails when a skill directory is missing from this file, this file names a skill that doesn't exist, or `evals/evals.json` expects an exit that isn't a real skill, or a route row's exit has no eval. Run it after adding, renaming, or removing a skill.
+
+That check cannot see shadowing: a general row placed early quietly answers cases meant for a narrower row below it. `scripts/run_router_evals.py` catches that by having a model route every eval prompt with only this file as instructions, then reporting each case whose exit differs from `expected_exit`. Run it with `--runs 3` after reordering rows or rewording a row's trigger; it costs one model call per case per run. A case that misses in some runs is either shadowed (fix the rows) or on a genuinely fuzzy boundary (give the eval an `also_ok` alternative). Put a narrower row above the general one it overlaps; a catch-all sits last.

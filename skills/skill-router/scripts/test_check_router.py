@@ -69,6 +69,24 @@ class CheckRouterTest(unittest.TestCase):
             ev.write_text(json.dumps({"evals": [{"id": 1, "expected_exit": "debugging"}]}))
             self.assertEqual(check(Path(d)), ["evals have no `none` case"])
 
+    def test_fails_when_route_row_exit_has_no_eval(self):
+        body = ("\n## Route\n\n| The step needs to... | Exit |\n| --- | --- |\n"
+                "| Explain a failure | `debugging` | `testing` is not this |\n"
+                "| Prove behavior | `testing` (then `debugging`) |\n\n## After\n`debugging`")
+        self.assertEqual(self.run_check(["debugging", "testing"], body,
+                                        [{"id": 1, "expected_exit": "debugging"}]),
+                         ["route exit has no eval: testing"])
+
+    def test_chain_eval_covers_its_first_skill(self):
+        body = "\n## Route\n\n| Situation | Exit |\n| --- | --- |\n| Fuzzy | `debugging` → `testing` |\n"
+        self.assertEqual(self.run_check(["debugging", "testing"], body,
+                                        [{"id": 1, "expected_exit": "debugging → testing"}]), [])
+
+    def test_fails_on_also_ok_exit_that_is_not_real(self):
+        evals = [{"id": 1, "expected_exit": "debugging", "also_ok": ["debuging"]}]
+        self.assertEqual(self.run_check(["debugging"], "`debugging`", evals),
+                         ["eval 1: invalid also_ok: 'debuging'"])
+
     def test_repository_router_is_current(self):
         self.assertEqual(check(Path(__file__).resolve().parents[2]), [])
 
