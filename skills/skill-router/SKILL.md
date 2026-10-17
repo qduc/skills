@@ -1,0 +1,112 @@
+---
+name: skill-router
+description: Entry point for every request. Load this first, before any other skill, whenever a new user request arrives, and follow it to exactly one exit (no skill, one skill, a two-skill chain, or a named gap). Most requests exit immediately with no skill. Also use when the user asks which skill to use or whether a skill exists for something.
+---
+
+# Skill Router
+
+Every request passes through here once, and every path ends at an exit. Routing takes seconds and loads nothing until the exit is chosen.
+
+## Exits
+
+Every route ends at exactly one of these. There is no other ending and no return to the top.
+
+| Exit | Then |
+| --- | --- |
+| `none` | Do the request directly. Say nothing about routing. |
+| one skill | Load it and hand over. It owns the request from here. |
+| chain `A → B` | Load `A`; load `B` when `A` finishes. Never more than two. |
+| gap | No skill fits. Do the request directly and end the reply with one line naming the missing method. If the same gap appears again, it is a `skill-creator` candidate. |
+
+Never route to this skill, never load two skills to compare them, and never ask the user to choose a skill.
+
+## Route
+
+Go top to bottom. Take the first row that matches.
+
+### 0. Fast exit
+
+| The request is... | Exit |
+| --- | --- |
+| A question, explanation, or conversation | `none` |
+| One small, obvious, reversible edit | `none` |
+| A follow-up inside a task a skill already owns | `none` (the owning skill continues) |
+
+### 1. Aftermath
+
+| Something already happened | Exit |
+| --- | --- |
+| A bug was found, diagnosed, or fixed, or an agent had to be corrected | `bug-retro` |
+| A skill keeps underperforming across repeated, measurable runs | `workflow-evolution` |
+| A recurring kind of work has no method | `skill-creator` |
+
+### 2. Owner (several steps of work)
+
+| Situation | Exit | Not this |
+| --- | --- | --- |
+| What to build is unclear and the human must react to examples first | `risk-first-build` → `agentic-loop` | `agentic-loop` assumes the goal is clear |
+| The goal is clear and one agent should carry it to verified done | `agentic-loop` | `coordinator` adds overhead one agent doesn't need |
+| Substantial independent pieces should run in parallel | `coordinator` (first run on a machine: `coordinator-setup` → `coordinator`) | `agentic-loop` runs one agent |
+
+### 3. One-step gap
+
+| The step needs to... | Exit | Not this |
+| --- | --- | --- |
+| Find facts in the code, config, or running system | `investigation` | `research` looks outward |
+| Compare and synthesize outside sources or docs | `research` | `investigation` looks inward |
+| Explain why something fails | `debugging` | `investigation` gathers facts without testing a cause |
+| Make a code change that is already decided | `implementation` | |
+| Prove a behavior with automated checks | `testing` | `browser-qa` covers what a user sees |
+| See what a user actually sees and does in a browser | `browser-qa` (it drives `playwright-cli`) | `testing` for logic below the UI |
+| Measure or fix performance | `profiling` | `debugging` when the output is wrong, not slow |
+
+### 4. Judging
+
+| What is being judged | Exit |
+| --- | --- |
+| A code diff for correctness and security | `code-review` |
+| One artifact: a PR, spec, design, or plan, for any defect | `adversarial-review` |
+| One module's interface and what it hides | `deep-module-review` |
+| A whole repository's accumulated problems | `slop-audit` |
+| Only whether something is overbuilt | `proportionality-review` |
+| Whether a design has reachable failures | `invariant-reviewer` |
+| Proposing a design rather than judging one | `simplicity-architect` |
+| Review findings arrived and you must decide which to fix | `finding-triage` |
+
+### 5. Tools
+
+| Need | Exit |
+| --- | --- |
+| Run a term2 coding session | `term2` |
+| Inspect or drive Herdr panes and agents | `herdr` |
+| Benchmark models or harnesses | `model-benchmark` |
+
+### 6. Nothing matched
+
+Exit `gap` if the request is substantial work that seems to need a method. Otherwise exit `none`.
+
+## After the exit
+
+The router runs once per user request. An owner (`agentic-loop`, `coordinator`, `risk-first-build`) picks its own primitives as it works; do not come back here mid-task. Route again only when the user starts a different request.
+
+For any exit except `none`, put one line before starting work:
+
+```
+Route: <exit> — <reason>   (Not: <neighbor> — <why>, only when a neighbor was close)
+```
+
+## Making it run first
+
+The description asks to be loaded first, but a description alone cannot guarantee it. Add one mechanical trigger in the harness:
+
+- **Instruction file** (CLAUDE.md, AGENTS.md, or the harness equivalent): `Before acting on any new request, load the skill-router skill and follow it to an exit.`
+- **Claude Code hook** (stronger, injected on every prompt), in `settings.json`:
+
+  ```json
+  {"hooks": {"UserPromptSubmit": [{"hooks": [{"type": "command",
+    "command": "echo 'Load the skill-router skill first and follow it to an exit.'"}]}]}}
+  ```
+
+## Keeping this file honest
+
+`scripts/check_router.py` fails when a skill directory is missing from this file, this file names a skill that doesn't exist, or `evals/evals.json` expects an exit that isn't a real skill. Run it after adding, renaming, or removing a skill.

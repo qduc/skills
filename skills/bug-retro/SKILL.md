@@ -1,6 +1,6 @@
 ---
 name: bug-retro
-description: Post-fix retrospective that turns a single bug fix into a durable improvement for the whole class of bug. Use this whenever a bug has been found, diagnosed, or fixed — when a failing test goes green, a hotfix lands, a regression is resolved, or the user says "fixed it", "that was the bug", "ok it works now", "why did this happen", "post-mortem", "root cause", or asks how to stop a bug recurring. Also run it after YOU fix any non-trivial bug, even if the user only asked for the fix — the fix is the floor, not the deliverable. Do NOT use for feature requests or pure style refactors with no defect involved.
+description: Post-fix retrospective that turns a single bug fix into a durable improvement for the whole class of bug. Use this whenever a bug has been found, diagnosed, or fixed — when a failing test goes green, a hotfix lands, a regression is resolved, or the user says "fixed it", "that was the bug", "ok it works now", "why did this happen", "post-mortem", "root cause", or asks how to stop a bug recurring. Also run it after YOU fix any non-trivial bug, even if the user only asked for the fix — the fix is the floor, not the deliverable. Also use it when an agent's behaviour was the defect: the user corrects an agent ("no, we don't do it that way", "I told you before"), an agent broke a repo convention, or the same correction or explanation is needed a second time. Do NOT use for feature requests, pure style refactors, or a one-off preference change with no defect involved.
 ---
 
 # Bug Retro
@@ -104,6 +104,23 @@ If item 4 genuinely isn't worth it (trivial one-off, throwaway code), say so exp
 Then be honest about scope. If the real fix is a refactor that's out of scope right now, say so, size it roughly, and separate "now" from "later". Don't let a big correct answer crowd out a small good one that can ship today.
 
 If the codebase is available, *write* the test and the artifact as part of the retro rather than describing them. A retro that ends with a red-then-green test is worth ten that end with recommendations.
+
+## Agent-mistake mode
+
+Use this when the defect is what an agent did rather than (or as well as) what the code does: it broke a convention, took an approach the user rejected, skipped a check, or needed the same correction twice. The question becomes **"why was this mistake easy for an agent to make, and why didn't the environment catch it?"** The fix to the instance is the floor; rewording the prompt for this session is not a prevention.
+
+Inputs: the correction (the user's words, or the diff between what the agent did and what was wanted), and whether this correction has been given before. If it has, it is preventable by definition.
+
+Triage the class into one bucket, in this order, and take the first that fits:
+
+1. **Mechanical** — a correct answer exists and can be checked without judgment (file placement, import boundaries, naming, forbidden APIs, required test alongside a change, a command that must run). Prevent with a lint rule, type, CI gate, codemod, or a script in the relevant skill's `scripts/` that fails loudly. Write it now, and show it red on the agent's original mistake.
+2. **Missing check** — the agent declared done without evidence it could have had. Prevent by adding the check to the done predicate of the governing skill, or building it (see agentic-loop's verification.md).
+3. **Judgment** — the right answer depends on tradeoffs the agent could not infer. Prevent by stating the rule, with the reason and one counterexample, in the skill or repo instructions the agent actually loads for that work. Name the file; "the agent should know" is not a location.
+4. **One-off** — a preference for this task only. Note it and stop; do not grow a skill from it.
+
+Run the Level 3 checklist only as far as it applies: representability, implicit coupling, automation gap, sibling paths (where else would an agent make the same move?) and knowledge gap carry over directly.
+
+Report with the same shape, replacing `Bug` with `Mistake` and `Fixed` with `Corrected`, and add `Bucket: mechanical | missing check | judgment | one-off`. For a judgment fix that edits an existing skill, prefer recording it as a workflow-evolution candidate when that skill has a benchmark.
 
 ## Output
 
