@@ -1,6 +1,6 @@
 ---
 name: "risk-first-build"
-description: "Use before starting any non-trivial build task, especially when requirements are fuzzy or the work spans many steps: discover intent by example, verify in order of risk, report honestly."
+description: "Use before a build whose intent is still fuzzy, where the human needs to react to concrete examples before work is worth committing to: discover intent by example, verify in order of risk, report honestly. When the goal is already clear, use agentic-loop instead."
 ---
 
 # Risk-First Build

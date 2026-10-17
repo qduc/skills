@@ -24,21 +24,21 @@ Never route to this skill, never load two skills to compare them, and never ask 
 
 Go top to bottom. Take the first row that matches.
 
-### 0. Fast exit
-
-| The request is... | Exit |
-| --- | --- |
-| A question, explanation, or conversation (not "how should we structure X" for something about to be built: that is design work, go on) | `none` |
-| One small, obvious, reversible edit | `none` |
-| A follow-up inside a task a skill already owns | `none` (the owning skill continues) |
-
-### 1. Aftermath
+### 0. Aftermath (checked first: "fixed it" and "why did that happen" read like conversation)
 
 | Something already happened | Exit |
 | --- | --- |
 | A bug was found, diagnosed, or fixed, or an agent had to be corrected | `bug-retro` |
 | A skill keeps underperforming across repeated, measurable runs | `workflow-evolution` |
 | A recurring kind of work has no method | `skill-creator` |
+
+### 1. Fast exit
+
+| The request is... | Exit |
+| --- | --- |
+| A question, explanation, or conversation (not "how should we structure X" for something about to be built: that is design work, go on) | `none` |
+| One small, obvious, reversible edit | `none` |
+| A follow-up inside a task a skill already owns | `none` (the owning skill continues) |
 
 ### 2. Owner (several steps of work)
 
@@ -67,12 +67,12 @@ Go top to bottom. Take the first row that matches.
 | What is being judged | Exit |
 | --- | --- |
 | A code diff for correctness and security | `code-review` |
-| One artifact: a PR, spec, design, or plan, for any defect | `adversarial-review` |
 | One module's interface and what it hides | `deep-module-review` |
 | A whole repository's accumulated problems | `slop-audit` |
 | Only whether something is overbuilt | `proportionality-review` |
 | Whether a design has reachable failures | `invariant-reviewer` |
 | Review findings arrived and you must decide which to fix | `finding-triage` |
+| Any other defect hunt in one artifact: a PR, spec, design, or plan (the catch-all, so it sits last) | `adversarial-review` |
 
 ### 5. Tools
 

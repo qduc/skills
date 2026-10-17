@@ -15,6 +15,9 @@
   {"id": 11, "kind": "task", "prompt": "Write a grant proposal for our open-source project.", "expected_exit": "gap", "expected_output": "Substantial work, no matching method; does the work and names the gap in one line."},
   {"id": 12, "kind": "task", "prompt": "How should we structure the retry scheduler so a job can't run twice after a crash?", "expected_exit": "simplicity-architect", "expected_output": "Not the fast exit: a design question about something being built. Two designs compared, invariant with one owner."},
   {"id": 13, "kind": "task", "prompt": "Add a plugin system to the ledger builder so new bank statement formats can be added without touching the core.", "expected_exit": "simplicity-architect → agentic-loop", "expected_output": "Clear goal, but the boundary is costly to redo; designs it twice before agentic-loop builds it. Not: agentic-loop alone."},
-  {"id": 14, "kind": "control", "prompt": "Add a --verbose flag to the export command that prints each row as it is written.", "expected_exit": "none", "expected_output": "Small, decided change; no design routing."}
+  {"id": 14, "kind": "control", "prompt": "Add a --verbose flag to the export command that prints each row as it is written.", "expected_exit": "none", "expected_output": "Small, decided change; no design routing."},
+  {"id": 15, "kind": "task", "prompt": "Could this lease-based lock design ever let two workers hold the lock at once?", "expected_exit": "invariant-reviewer", "expected_output": "Reachable-failure question on a design; Not: adversarial-review, which is the catch-all and sits last."},
+  {"id": 16, "kind": "task", "prompt": "Review the public API of the export module, callers keep having to pass cache keys.", "expected_exit": "deep-module-review", "expected_output": "One module's interface and leakage; Not: adversarial-review."},
+  {"id": 17, "kind": "task", "prompt": "Ok it works now, it was a stale cache entry. Why did that happen?", "expected_exit": "bug-retro", "expected_output": "Aftermath is checked before the fast exit, so this is not answered as a plain question."}
  ]
 }

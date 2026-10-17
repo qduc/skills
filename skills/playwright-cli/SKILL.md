@@ -1,6 +1,6 @@
 ---
 name: playwright-cli
-description: Automate browser interactions, test web pages and work with Playwright tests.
+description: Drive a browser from the command line with playwright-cli — open pages, click, fill forms, screenshot, trace, mock requests — and run or generate Playwright tests. Use when a task needs browser automation and the host has no browser tool of its own, when browser-qa needs a driver, or when the user asks to run, write, or debug Playwright tests.
 allowed-tools: Bash(playwright-cli:*) Bash(npx:*) Bash(npm:*)
 ---
 

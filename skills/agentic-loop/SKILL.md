@@ -45,6 +45,8 @@ description: Carry delegated, multi-step tasks through planning, action, observa
 - Bound investigations by the task's risk and budget. Stop optional work when the goal is verified; persistence is not permission for endless work.
 - Mark **BLOCKED** when a necessary step cannot proceed within available authority, access, capability, or budget.
 
+If the task fixed a non-trivial bug or the user corrected the agent, run bug-retro on it before reporting, scaled to the bug; the router is not consulted again mid-task, so nothing else will.
+
 **Done when** (VERIFIED) the requested outcome exists, constraints are satisfied, relevant side effects have been checked, and current evidence supports every criterion in the done predicate. State material limitations; do not label an unverified criterion acceptable on the user's behalf.
 
 ## Evidence to report
