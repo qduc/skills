@@ -18,6 +18,16 @@ Require Linux `/proc`, Unix locking, and Python. Read the base coordinator's
 installed help. Process commands cannot accept mid-flight corrections. Keep
 provider/model selection in the task's confirmed route, not this profile.
 
+## Driven runtime
+
+Record `adapters.driver` when at least one harness can run a whole attempt
+non-interactively: given a prompt argv element, it edits files in its working
+directory, runs commands without approval prompts, and exits when done. Probe
+with a throwaway git repository and a one-line change before recording a route
+as verified. A judge command is optional; it must print one JSON object for a
+prompt received as an argv element or on stdin. Process-runtime requirements
+apply: Linux `/proc`, Unix locking, process groups.
+
 ## Herdr terminal
 
 Discover and read the installed Herdr skill. Locate its `scripts/herdr_worker.py`

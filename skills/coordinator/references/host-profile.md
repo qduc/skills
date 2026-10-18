@@ -16,6 +16,11 @@ supported operations, paths where applicable, verification date, and evidence.
 Record limitations, unresolved required capabilities, and revalidation triggers
 in the same entry. Distinguish capabilities established by interface inspection
 from those exercised in a live probe; `verified` never implies untested operations.
+The optional `adapters.driver` entry configures the [driven runtime](driven-runtime.md):
+`workers` lists `{"route": {...}, "argv": [...]}` pairs whose argv runs one
+non-interactive attempt with a `"{prompt}"` element, and `judge`, when present,
+is the argv that answers judgment requests headlessly. Listing a route records
+that it can run here; the per-task user confirmation still decides which run.
 `catalogs` contains absolute directories. Recheck paths and required capabilities
 before use; saved native tool observations do not survive a harness change.
 
