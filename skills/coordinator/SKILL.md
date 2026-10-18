@@ -1,6 +1,7 @@
 ---
 name: coordinator
 description: Coordinate work through bounded delegation, dependency management, verification, and integration. Use when the user asks to orchestrate workers or subagents, or when substantial independent work benefits from supervised delegation.
+disable-model-invocation: true
 ---
 
 # Coordinator
