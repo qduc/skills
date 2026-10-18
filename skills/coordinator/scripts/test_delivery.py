@@ -26,7 +26,7 @@ class DeliveryTests(unittest.TestCase):
         self.state['workers']['w'] = {'cwd': str(self.workspace)}
         self.mailbox = lifecycle.register_mailbox(self.state, 'w')
         brief = self.root / 'brief.md'
-        brief.write_text('bounded work')
+        brief.write_text('Done when `python3 -m unittest test_feature.py` passes. Do not ask the user questions. Do not delegate to subagents.')
         lifecycle.prepare_delivery(self.state, 'w', brief)
         lifecycle.save_state(self.path, self.state)
         self.entry = self.state['workers']['w']

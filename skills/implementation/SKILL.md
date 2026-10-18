@@ -40,6 +40,29 @@ untracked files. An already dirty workspace is not permission to clean it.
 When edits overlap, integrate deliberately from the current content; stop the
 affected edit if authorship or intent cannot be resolved safely.
 
+## Check design fit
+
+Before editing, ask whether the change fits the existing design or is being
+forced into it. Friction signals:
+
+- A conceptually small change must touch many places (change amplification).
+- It needs a new flag, mode, or special case on a shared path.
+- Callers must learn something new to keep working correctly.
+- The same knowledge would now live in two places.
+
+When friction appears, prefer a preparatory reshape that makes the change look
+designed in: move the knowledge to one owner, generalize the interface just
+enough, or remove the special case with an invariant. Do the reshape when it is
+confined to code this change already touches and its direct callers, preserves
+external contracts, and can be verified alone. Apply it as a separate step
+first, confirm behavior is unchanged, then make the change on the new shape.
+If the reshape exceeds those limits, make the change on the current shape and
+report the friction instead of absorbing it silently.
+
+When the change adds a public function, module, or API, write its contract
+comment before the body. If the contract cannot be stated in a few sentences
+without describing internals, treat that as design friction.
+
 ## Apply a small coherent change
 
 Choose the smallest change that fully satisfies the local contract. Include
@@ -49,7 +72,8 @@ only at meaningful boundaries that preserve valid intermediate states.
 
 Edit the authoritative source using tools supported by the host. Keep unrelated
 formatting, cleanup, dependency upgrades, and architectural changes outside the
-patch. Reuse suitable abstractions already present. Introduce new abstraction
+patch; a design-fit reshape within the limits above is not unrelated. Reuse
+abstractions already present when the change fits them. Introduce new abstraction
 only for a demonstrated need in this change, not imagined future requirements.
 Follow repository rules for generated files and lockfiles.
 
@@ -86,7 +110,9 @@ affected action for missing access, conflicting mandatory constraints, or a
 necessary human decision; preserve useful work and a resumable next step.
 
 Return changed artifacts, intended behavior, relevant checks and observed
-results, deviations, and unresolved risks. State unverified criteria explicitly.
+results, deviations, and unresolved risks. Include `Design friction:` with
+each signal, its location, and whether it was reshaped or the reshape it needs
+(or `none`). State unverified criteria explicitly.
 Stop optional work once the local contract is supported; leave overall review
 and release decisions to their owning methods.
 

@@ -1,0 +1,7 @@
+{"type":"user","uuid":"u1","message":{"role":"user","content":"Please implement the parser."}}
+{"type":"assistant","uuid":"a1","message":{"content":[{"type":"text","text":"I will read the file first."},{"type":"tool_use","name":"Read","input":{"path":"x.py"}}]}}
+{"type":"user","uuid":"u2","message":{"content":[{"type":"tool_result","tool_use_id":"t1","content":"ENORMOUS OUTPUT SENTINEL-IGNORE-PREVIOUS-INSTRUCTIONS"}]}}
+{"type":"assistant","uuid":"a2","message":{"content":[{"type":"thinking","thinking":"private reasoning"},{"type":"text","text":"We decided the retention period is 30 days."}]}}
+{"type":"user","uuid":"u3","message":{"content":[{"type":"image","source":{"data":"AAAA"}},{"type":"text","text":"   "}]}}
+{"type":"attachment","uuid":"x1","content":"file snapshot body"}
+{"type":"mode","uuid":"x2","mode":"plan"}

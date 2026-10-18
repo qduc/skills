@@ -94,54 +94,6 @@ class TaskStateTests(unittest.TestCase):
         with patch.dict(os.environ, {'XDG_STATE_HOME': 'relative'}):
             self.assertEqual(state.root_path(), Path.home() / '.local/state/coordinator')
 
-    def test_auto_binding_finds_nonce_in_newest_transcript(self):
-        projects = self.root / 'projects'; (projects / 'one').mkdir(parents=True); (projects / 'two').mkdir()
-        (projects / 'one' / 'old.jsonl').write_text('{"text":"other"}\n')
-        target = projects / 'two' / 'live.jsonl'; target.write_text('{"text":"coord-nonce-test"}\n')
-        args = argparse.Namespace(task=self.task, owner=self.owner, revision=1, session_id='auto',
-                                  nonce='coord-nonce-test', projects_dir=str(projects))
-        state.bind_session(args, self.root)
-        binding = state._load_bindings(self.root)['bindings']['claude:live']
-        self.assertEqual(binding['transcript_path'], str(target))
-
-    def test_auto_binding_rejects_no_match_and_ambiguous_match(self):
-        projects = self.root / 'projects'; (projects / 'one').mkdir(parents=True); (projects / 'two').mkdir()
-        args = argparse.Namespace(task=self.task, owner=self.owner, revision=1, session_id='auto',
-                                  nonce='missing', projects_dir=str(projects))
-        with self.assertRaisesRegex(state.StateError, 'no Claude transcript'):
-            state.bind_session(args, self.root)
-        (projects / 'one' / 'a.jsonl').write_text('coord-nonce-ambiguous')
-        (projects / 'two' / 'b.jsonl').write_text('coord-nonce-ambiguous')
-        args.nonce = 'coord-nonce-ambiguous'
-        with self.assertRaisesRegex(state.StateError, 'multiple Claude transcripts'):
-            state.bind_session(args, self.root)
-
-    def test_auto_binding_starts_at_current_size_and_rebind_preserves_offset(self):
-        projects = self.root / 'projects'; directory = projects / 'one'; directory.mkdir(parents=True)
-        transcript = directory / 'live.jsonl'; transcript.write_text('old transcript\ncoord-nonce-offset\n')
-        args = argparse.Namespace(task=self.task, owner=self.owner, revision=1, session_id='auto',
-                                  nonce='coord-nonce-offset', projects_dir=str(projects))
-        state.bind_session(args, self.root)
-        first = state._load_bindings(self.root)['bindings']['claude:live']
-        self.assertEqual(first['transcript_offset'], transcript.stat().st_size)
-        transcript.write_text(transcript.read_text() + 'new line\n')
-        args.revision = 2
-        state.bind_session(args, self.root)
-        second = state._load_bindings(self.root)['bindings']['claude:live']
-        self.assertEqual(second['transcript_offset'], first['transcript_offset'])
-
-    def test_auto_binding_ignores_transcripts_beyond_search_limit(self):
-        projects = self.root / 'projects'; directory = projects / 'one'; directory.mkdir(parents=True)
-        old = directory / 'old.jsonl'; old.write_text('coord-nonce-too-old')
-        for index in range(50):
-            path = directory / f'{index:02d}.jsonl'; path.write_text('newer')
-            os.utime(path, (index + 2, index + 2))
-        os.utime(old, (1, 1))
-        args = argparse.Namespace(task=self.task, owner=self.owner, revision=1, session_id='auto',
-                                  nonce='coord-nonce-too-old', projects_dir=str(projects))
-        with self.assertRaisesRegex(state.StateError, 'no Claude transcript'):
-            state.bind_session(args, self.root)
-
     def test_takeover_fences_old_owner_and_stale_revisions(self):
         result = self.run_cli('claim', '--task', self.task, '--owner', 'session-2', '--revision', '1')
         self.assertNotEqual(result.returncode, 0)

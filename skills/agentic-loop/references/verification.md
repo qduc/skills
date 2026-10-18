@@ -35,6 +35,40 @@ samples, and unresolved contradictory results. Do not hide an essential gap in a
 footnote under an overall success claim. Distinguish verified partial results
 from the unmet task outcome.
 
+## When no check exists
+
+If a criterion can only be judged by reading output and deciding it looks
+right, the loop cannot hill-climb: every iteration needs a human or a fresh
+guess. Before making the change, build the smallest check that can FAIL on
+the criterion (an oracle script, an invariant test, a fixture with a known
+answer, a replayable browser journey) and confirm it fails or discriminates
+on the current state. Prefer an invariant over an expected snapshot: "the
+journal balances" outlives "the output equals this file".
+
+Keep the check where the next run will find it: the repository's test suite
+or scripts, or the governing skill's `scripts/`. A check written inline and
+discarded is re-derived differently next time, and its verdicts are not
+comparable across runs.
+
+Skip this only when direct inspection is genuinely sufficient (a trivial,
+reversible edit) or building the check costs more than the risk it covers;
+say so in the evidence instead of implying the criterion was checked.
+
+## Deterministic work belongs in tools
+
+Spend model judgment on deciding what is wrong and what to change. Do not
+spend it re-deriving mechanical steps: parsing, counting, diffing, comparing
+runs, validating schemas, checking that cited files or commits exist. These
+have one right answer, and a model regenerating them each run is slower,
+costs context, and drifts between runs.
+
+When the same mechanical step has been scripted inline twice, or a check's
+result changed because the script was rewritten rather than because the
+subject changed, promote it to a reusable tool: a script with a usage line,
+deterministic output, and a nonzero exit on failure, stored with the skill
+or repository that needs it. Record the promotion in the task state. Leave
+tools for steps with one right answer; keep tradeoffs and diagnosis in prose.
+
 ## Invalidate selectively
 
 When a change affects an artifact, configuration, environment, or requirement,

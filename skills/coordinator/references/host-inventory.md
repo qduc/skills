@@ -1,4 +1,6 @@
-# Host inventory
+# Host inventory (legacy name)
+
+This file is kept for old links; the term is now **host profile**.
 
 Read the external [Host profile](host-profile.md) for this installation. When
 missing or stale, discover and read the installed `coordinator-setup` skill.

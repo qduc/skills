@@ -1,0 +1,18 @@
+{
+ "skill_name": "profiling",
+ "note": "Author-drafted placeholder evals to satisfy lint; replace with the independent eval set before adoption.",
+ "evals": [
+  {
+   "id": 1,
+   "prompt": "Endpoint p95 regressed from 120ms to 300ms after a release; find and verify a fix.",
+   "expected_output": "Contract, repeated baseline, actual profile, one hypothesis, comparable remeasure with n and spread.",
+   "kind": "task"
+  },
+  {
+   "id": 2,
+   "prompt": "Workload already meets its latency target in repeated runs.",
+   "expected_output": "Diagnostic only / no change; no invented optimization.",
+   "kind": "control"
+  }
+ ]
+}

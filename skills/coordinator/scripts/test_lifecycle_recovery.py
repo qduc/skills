@@ -26,6 +26,9 @@ class RecoveryTests(unittest.TestCase):
                                                   conversation=None, owner='owner-a'), self.root)
         self.task_dir = Path(created['state_path']).parent
         self.task_id = created['state']['id']
+        task = tasks.load(self.task_dir)
+        task['selection'] = [{'harness': 'pi', 'model': 'm', 'provider': 'p'}]
+        tasks.save(self.task_dir, task)
         self.state_path = self.root / 'lifecycle.json'
         self.call('prepare', '--task-id', self.task_id, '--task-dir', str(self.task_dir),
                   '--verify-command', '["true"]')
@@ -58,7 +61,7 @@ class RecoveryTests(unittest.TestCase):
                                     owned_tab=True, status='ready')
         lifecycle.save_state(self.state_path, state)
         brief = self.root / 'brief.md'
-        brief.write_text('bounded work')
+        brief.write_text('Done when `python3 -m unittest test_feature.py` passes. Do not ask the user questions. Do not delegate to subagents.')
         return brief
 
     def test_stale_owner_cannot_dispatch_or_close_or_ack(self):

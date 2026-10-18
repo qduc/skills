@@ -67,6 +67,14 @@ the profile. Record available model information as discovery evidence only;
 the coordinator's per-task selection gate still applies. Keep the memory sidecar
 disabled: the shipped implementation is not a safe portable integration.
 
+## Driver interview
+
+When the coordinator's `coord.py doctor` reports no profile or no driver workers,
+read [Driver interview](references/driver-interview.md) and run it with the user.
+It is the quick path for the driven runtime: a few questions, then `host_profile.py
+set-driver` probes each proposed command and saves only the ones that work. The
+rest of this skill still applies to the other adapters.
+
 ## 3. Save and verify
 
 Read [Host profile](../coordinator/references/host-profile.md) for the location and

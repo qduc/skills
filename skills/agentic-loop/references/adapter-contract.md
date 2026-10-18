@@ -80,3 +80,27 @@ new authority to install it. Favor a small set of strong, composable methods;
 do not promote duplicates, one-off task recipes, or success claims unsupported
 by observed outcomes. The explicitly requested initial seed set bootstraps the
 ecosystem; do not describe these new seeds as already proven by repeated use.
+
+## Resolution procedure (moved from SKILL.md)
+
+Run this at the point of need, when a loop phase needs methodology it does not have.
+
+1. Describe the capability needed for the next phase and the evidence it must produce.
+2. Search the available skill catalog; read the best match and its relevant resources.
+3. Check applicability, prerequisites, constraints, and whether it addresses the actual gap.
+4. Compose suitable skills when needed. Reuse loaded skills while their assumptions hold.
+5. If no suitable method exists, invoke an available **skill-creator** meta-skill
+   with the missing capability, context, constraints, and acceptance evidence.
+6. Create the smallest useful method, validate it, apply it, and evaluate its result.
+
+Ordinary skills can serve as adapters without rewriting them. Do not manufacture
+an adapter just to fill every phase. Compose task shapes from primitives as gaps
+arise instead of creating a skill for each task shape.
+
+Keep newly generated methodology task-local and provisional where the host
+supports it. Persistent installation is a separate decision governed by the
+user's authorization and the host's skill-management rules. If a creator only
+supports installation and that is outside scope, retain a task-local method
+in working state. Do not recursively create creators. A missing skill does not
+by itself block a task: use a bounded explicit method when competent to do so,
+or escalate the specific capability/access gap when reliable execution is impossible.

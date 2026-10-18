@@ -32,7 +32,7 @@ contested design. Use these playbook names with `--protocol`:
 
 | Task | Playbook |
 | --- | --- |
-| Read-only question | `investigation` |
+| Read-only question | `investigation` (resolves to the installed `investigation` skill, which declares `execution-protocol`; it takes precedence over the pstack playbook of the same name) |
 | Reproduce and repair a defect | `bug-fix` |
 | One measured performance fix / sustained metric improvement | `perf-issue` / `hillclimb` |
 | Diagnose live runtime / captured profiling evidence without fixing | `runtime-forensics` / `trace-forensics` |

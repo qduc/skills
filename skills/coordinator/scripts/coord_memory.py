@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Boundary-only semantic memory capture for Claude Code sessions.
+"""Semantic memory judge for coordinator sessions.
 
+The transcript watcher (``coord_memory_watch.py``) drives ``judge`` over
+launcher-bound transcripts; ``judge`` is also the single-session entry point.
 Known limits: a decision stated in two records may be stored twice. A complete
-non-JSON transcript line stops capture for that session until it is rebound.
+non-JSON transcript line stops collection at that point.
 """
 from __future__ import annotations
 
@@ -15,9 +17,9 @@ import subprocess
 import sys
 import tempfile
 import time
-import uuid
 
 import coord_state as state
+from coord_memory_filter import filter_record, profile_for
 
 MAX_RECORDS = 24
 MAX_BYTES = 12 * 1024
@@ -55,23 +57,18 @@ def _hook_log(root, payload, result):
         pass
 
 
-def record_text(value):
-    if isinstance(value, str):
-        return value
-    if isinstance(value, list):
-        return ' '.join(filter(None, (record_text(item) for item in value)))
-    if isinstance(value, dict):
-        if value.get('type') == 'tool_use':
-            return 'tool_use ' + str(value.get('name', '')) + ' ' + json.dumps(value.get('input', {}), ensure_ascii=False)
-        parts = [record_text(value[key]) for key in ('text', 'content', 'message', 'result', 'summary', 'event') if key in value]
-        return ' '.join(filter(None, parts))
-    return ''
+def _binding_entry(bindings, session_id):
+    """Locate a binding by session id, whatever its harness prefix."""
+    for key, value in bindings.items():
+        if isinstance(value, dict) and value.get('session_id') == session_id:
+            return key, value
+    return None, None
 
 
 def _binding(root, session_id):
     try:
         bindings = state._load_bindings(root).get('bindings', {})
-        binding = bindings.get('claude:' + session_id)
+        _key, binding = _binding_entry(bindings, session_id)
         if not isinstance(binding, dict):
             return None
         task = state.load(state.task_path(root, binding['task_id']))
@@ -110,13 +107,19 @@ def _events(payload, binding):
     if not isinstance(path, str) or not path:
         raise FileNotFoundError('missing transcript')
     offset = int(binding.get('transcript_offset', 0))
+    if offset > Path(path).stat().st_size:
+        offset = 0
     rows, _ = _records(path, offset)
+    read_end = rows[-1][2] if rows else offset
+    profile = profile_for(binding.get('harness'))
     events = []
     for item, start, end in rows:
+        text, _info = filter_record(item, profile)
+        if text is None:
+            continue
         source = str(item.get('uuid') or item.get('id') or 'offset:' + str(start))
-        text = redact(record_text(item)) or '[record has no text]'
-        events.append({'source_id': source, 'text': text, 'record_end': end})
-    return events
+        events.append({'source_id': source, 'text': redact(text), 'record_end': end})
+    return events, read_end
 
 
 def _batches(events):
@@ -183,7 +186,7 @@ def _runner(prompt_text, env, timeout):
         result = subprocess.run(argv, input=prompt_text, text=True, capture_output=True, env=env, timeout=timeout,
                                 cwd=tempfile.gettempdir(), check=True)
         return result.stdout
-    result = subprocess.run(['term2', '-p', 'codex', '-m', 'gpt-5.6-luna', '-r', 'low', '--json', prompt_text],
+    result = subprocess.run(['term2', '-p', 'codex', '-m', 'gpt-6-luna', '-r', 'low', '--json', prompt_text],
                             text=True, capture_output=True, env=env, timeout=timeout, cwd=tempfile.gettempdir(), check=True)
     return _extract_runner_text(result.stdout)
 
@@ -275,7 +278,7 @@ def _lock(path):
 def _advance_offset(root, session_id, owner, end):
     with state.locked(root / '.bindings.lock'):
         bindings = state._load_bindings(root)
-        current = bindings['bindings'].get('claude:' + session_id)
+        _key, current = _binding_entry(bindings['bindings'], session_id)
         if not current or current.get('owner') != owner:
             raise RuntimeError('binding changed')
         current['transcript_offset'] = end
@@ -291,7 +294,7 @@ def judge(root, session_id, runner=None, timeout=RUNNER_TIMEOUT):
         return {'status': 'ignored', 'reason': 'lock held'}
     try:
         task = state.load(state.task_path(root, binding['task_id']))
-        events = _events({'transcript_path': binding.get('transcript_path')}, binding)
+        events, read_end = _events({'transcript_path': binding.get('transcript_path')}, binding)
         for batch in _batches(events):
             audit_ids = {event.get('event_id') for event in task.get('memory', {}).get('audit', [])}
             remaining = [event for event in batch if event['source_id'] not in audit_ids]
@@ -337,6 +340,8 @@ def judge(root, session_id, runner=None, timeout=RUNNER_TIMEOUT):
                 Path(action_file).unlink(missing_ok=True)
             _advance_offset(root, session_id, binding['owner'], batch[-1]['record_end'])
             task = state.load(state.task_path(root, binding['task_id']))
+        if read_end > int(binding.get('transcript_offset', 0)):
+            _advance_offset(root, session_id, binding['owner'], read_end)
         return {'status': 'applied', 'events': len(events)}
     except (OSError, RuntimeError, KeyError, TypeError):
         return {'status': 'deferred', 'reason': 'memory-apply rejected'}
@@ -345,35 +350,6 @@ def judge(root, session_id, runner=None, timeout=RUNNER_TIMEOUT):
             Path(lock).unlink()
         except FileNotFoundError:
             pass
-
-
-def capture(payload, root=None):
-    root = Path(root) if root else state.root_path()
-    try:
-        if os.environ.get('COORD_MEMORY_SIDECAR') == '1':
-            return {'status': 'ignored', 'reason': 'sidecar child marker'}
-        event = str(payload.get('hook_event_name', '')).lower() if isinstance(payload, dict) else ''
-        if event not in {'precompact', 'sessionend', 'session_end', 'session.end'}:
-            return {'status': 'ignored', 'reason': 'not a boundary'}
-        session_id = payload.get('session_id')
-        binding = _binding(root, session_id) if isinstance(session_id, str) else None
-        if not binding:
-            return {'status': 'ignored', 'reason': 'no binding'}
-        transcript = payload.get('transcript_path')
-        if not isinstance(transcript, str) or not transcript:
-            return {'status': 'deferred', 'reason': 'missing transcript'}
-        with state.locked(root / '.bindings.lock'):
-            bindings = state._load_bindings(root)
-            current = bindings['bindings'].get('claude:' + session_id)
-            if current and current.get('owner') == binding.get('owner'):
-                current['transcript_path'] = transcript
-                state._save_bindings(root, bindings)
-        command = [sys.executable, str(Path(__file__).resolve()), '--judge', '--root', str(root), '--session-id', session_id]
-        subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-        return {'status': 'queued'}
-    finally:
-        # The hook wrapper logs the returned result in main; direct callers get a log too.
-        pass
 
 
 def flush(root, task_id, session_id):
@@ -392,22 +368,18 @@ def main():
     parser.add_argument('command', nargs='?', choices=('flush',))
     parser.add_argument('--task')
     args = parser.parse_args()
+    if args.command != 'flush' and not args.judge:
+        parser.error('specify flush or --judge')
+    root = Path(args.root) if args.root else state.root_path()
     try:
         if args.command == 'flush':
-            result = flush(Path(args.root) if args.root else state.root_path(), args.task, args.session_id)
-        elif args.judge:
-            root = Path(args.root) if args.root else state.root_path()
+            result = flush(root, args.task, args.session_id)
+        else:
             result = judge(root, args.session_id)
             _hook_log(root, {'hook_event_name': 'judge', 'session_id': args.session_id}, result)
-        else:
-            payload = json.load(sys.stdin)
-            root = Path(args.root) if args.root else state.root_path()
-            result = capture(payload, root)
-            _hook_log(root, payload, result)
-    except Exception as error:
-        result = {'status': 'deferred', 'reason': 'hook failure'}
-        if not args.judge and args.command != 'flush':
-            _hook_log(Path(args.root) if args.root else state.root_path(), locals().get('payload', {}), result)
+    except Exception:
+        result = {'status': 'deferred', 'reason': 'judge failure'}
+        _hook_log(root, {'hook_event_name': 'judge', 'session_id': args.session_id}, result)
     print(json.dumps(result))
     return 0
 

@@ -369,6 +369,8 @@ def load(path):
             raise StateError(f'invalid choice event: {source}')
         validate_pool(event.get('pool'))
     validate_details(state['details'])
+    if 'gates' in state:
+        validate_gates(state['gates'])
     if 'outcome_plan' in state:
         import coord_outcomes
         coord_outcomes.validate_record(state)
@@ -441,51 +443,29 @@ def _save_bindings(root, value):
     atomic_write(bindings_path(root), json.dumps(value, ensure_ascii=False, indent=2) + '\n')
 
 
-def session_nonce():
-    return 'coord-nonce-' + uuid.uuid4().hex[:16]
-
-
-def _find_transcript(projects_dir, nonce):
-    candidates = sorted(projects_dir.glob('*/*.jsonl'), key=lambda path: path.stat().st_mtime_ns, reverse=True)[:50]
-    matches = []
-    needle = nonce.encode('utf-8')
-    for candidate in candidates:
-        try:
-            size = candidate.stat().st_size
-            with candidate.open('rb') as stream:
-                stream.seek(max(0, size - 256 * 1024))
-                if needle in stream.read():
-                    matches.append((candidate, size))
-        except OSError:
-            continue
-    if not matches:
-        raise StateError(f'no Claude transcript contains nonce {nonce}')
-    if len(matches) > 1:
-        raise StateError(f'multiple Claude transcripts contain nonce {nonce}; refusing to guess')
-    return matches[0]
-
-
 def bind_session(args, root):
     session_id = args.session_id
-    transcript = None
-    if session_id == 'auto':
-        if not getattr(args, 'nonce', None):
-            raise StateError('--nonce is required with --session-id auto')
-        transcript, size = _find_transcript(Path(getattr(args, 'projects_dir', None) or Path.home() / '.claude/projects'), args.nonce)
-        session_id = transcript.stem
     path = task_path(root, args.task)
     with locked(path / '.write.lock'):
         task = load(path); check_owner(task, args.owner); check_revision(task, args.revision)
         with locked(root / '.bindings.lock'):
             bindings = _load_bindings(root)
-            key = f'claude:{session_id}'
+            harness = getattr(args, 'harness', None)
+            harness = harness if isinstance(harness, str) and harness else 'claude'
+            key = f'{harness}:{session_id}'
             prior = bindings['bindings'].get(key)
             if prior and (prior.get('task_id') != args.task or prior.get('owner') != args.owner):
                 raise StateError('session binding is owned by another coordinator')
+            explicit = getattr(args, 'transcript', None)
+            if prior:
+                resolved_path = prior.get('transcript_path')
+                resolved_offset = prior.get('transcript_offset', 0)
+            else:
+                resolved_path = str(explicit) if explicit else None
+                resolved_offset = 0
             bindings['bindings'][key] = {'task_id': args.task, 'owner': args.owner,
-                'revision': args.revision + 1, 'harness': 'claude', 'session_id': session_id,
-                'transcript_offset': prior.get('transcript_offset', 0) if prior else (size if transcript else 0),
-                'transcript_path': prior.get('transcript_path') if prior else (str(transcript) if transcript else None)}
+                'revision': args.revision + 1, 'harness': harness, 'session_id': session_id,
+                'transcript_offset': resolved_offset, 'transcript_path': resolved_path}
             _save_bindings(root, bindings)
         task['revision'] += 1; task['updated_at'] = now(); warnings = save(path, task)
     return response(path, task, warnings)
@@ -497,7 +477,9 @@ def unbind_session(args, root):
         task = load(path); check_owner(task, args.owner); check_revision(task, args.revision)
         with locked(root / '.bindings.lock'):
             bindings = _load_bindings(root)
-            key = f'claude:{args.session_id}'
+            harness = getattr(args, 'harness', None)
+            harness = harness if isinstance(harness, str) and harness else 'claude'
+            key = f'{harness}:{args.session_id}'
             prior = bindings['bindings'].get(key)
             if prior and (prior.get('task_id') != args.task or prior.get('owner') != args.owner):
                 raise StateError('binding is owned by another coordinator')
@@ -606,6 +588,70 @@ def apply_patch(state, patch):
         if 'outcome_plan' in state:
             import coord_outcomes
             coord_outcomes.completion_guard(state)
+
+
+REAL_USE_STATUSES = {'required', 'passed', 'waived'}
+LIFECYCLE_LINKS = 'lifecycle-runs.json'
+SETTLED_LIFECYCLE = {'idle', 'done', 'missing', 'closed'}
+
+
+def validate_gates(gates):
+    """Protected completion gates; only `real-use` writes them, never a generic checkpoint."""
+    if not isinstance(gates, dict) or set(gates) - {'real_use'}:
+        raise StateError('gates accepts only real_use')
+    entry = gates.get('real_use')
+    if entry is None:
+        return
+    if (not isinstance(entry, dict) or entry.get('status') not in REAL_USE_STATUSES
+            or not isinstance(entry.get('events'), list) or not entry['events']):
+        raise StateError('real_use gate requires a status and its event history')
+
+
+def set_real_use(state, status, source, evidence=None):
+    if status not in REAL_USE_STATUSES:
+        raise StateError('real-use status must be required, passed, or waived')
+    if not isinstance(source, str) or not source.strip():
+        raise StateError('real-use changes need a source: who decided and on what basis')
+    gates = state.setdefault('gates', {})
+    current = gates.get('real_use', {}).get('status')
+    if status != 'required' and current != 'required':
+        raise StateError('only a required real-use gate can be passed or waived')
+    event = {'at': now(), 'status': status, 'source': source.strip(), 'owner': state['owner']}
+    if status == 'passed':
+        if not evidence or not Path(evidence).is_file():
+            raise StateError('a passed real-use gate needs an evidence file')
+        digest = hashlib.sha256(Path(evidence).read_bytes()).hexdigest()
+        event['evidence'] = {'path': str(Path(evidence).resolve()), 'sha256': digest}
+    events = gates.get('real_use', {}).get('events', []) + [event]
+    gates['real_use'] = {'status': status, 'events': events}
+    validate_gates(gates)
+
+
+def link_lifecycle(task_dir, lifecycle_state):
+    """Record a lifecycle run against its task; callers hold the task write lock."""
+    links_file = Path(task_dir) / LIFECYCLE_LINKS
+    links = json.loads(links_file.read_text()) if links_file.exists() else []
+    entry = str(Path(lifecycle_state).resolve())
+    if entry not in links:
+        atomic_write(links_file, json.dumps(links + [entry], indent=2) + '\n')
+
+
+def completion_gates(path, state):
+    """Gates that must hold on every completion path, with or without an outcome plan."""
+    if state.get('gates', {}).get('real_use', {}).get('status') == 'required':
+        raise StateError('real-use verification is still required; pass it with evidence or record the user waiver')
+    links_file = Path(path) / LIFECYCLE_LINKS
+    unsettled = []
+    for lifecycle_state in json.loads(links_file.read_text()) if links_file.exists() else []:
+        source = Path(lifecycle_state)
+        if not source.is_file():
+            unsettled.append(f'{source}: lifecycle state missing')
+            continue
+        for name, worker in json.loads(source.read_text()).get('workers', {}).items():
+            if worker.get('status') not in SETTLED_LIFECYCLE or worker.get('dispatch_status') in {'intended', 'unknown'}:
+                unsettled.append(f"{name}: {worker.get('status')}")
+    if unsettled:
+        raise StateError('reconcile lifecycle workers before completion: ' + ', '.join(unsettled))
 
 
 def validate_pool(pool):
@@ -1239,6 +1285,10 @@ def mutate(args, root):
                 changed = apply_memory_actions(state, proposal, args.owner) or was_v1
             elif args.command == 'checkpoint':
                 apply_patch(state, json.loads(Path(args.patch_file).read_text()))
+                if state['status'] == 'completed':
+                    completion_gates(path, state)
+            elif args.command == 'real-use':
+                set_real_use(state, args.status, args.source, args.evidence)
             elif args.command == 'select':
                 if not args.confirmed or not args.source.strip():
                     raise StateError('record only a user-confirmed selection with its source')
@@ -1257,6 +1307,7 @@ def mutate(args, root):
                 if 'outcome_plan' in state:
                     import coord_outcomes
                     coord_outcomes.completion_guard(state)
+                completion_gates(path, state)
                 state['archived_at'] = now()
                 state['owner'] = None
         if args.command == 'memory-apply' and not changed:
@@ -1458,8 +1509,7 @@ def parser():
     command = sub.add_parser('resume')
     command.add_argument('--task', required=True)
     command.add_argument('--budget-bytes', type=int, default=16 * 1024)
-    sub.add_parser('session-nonce')
-    for name in ('claim', 'checkpoint', 'select', 'release', 'archive', 'memory-apply'):
+    for name in ('claim', 'checkpoint', 'select', 'release', 'archive', 'memory-apply', 'real-use'):
         command = sub.add_parser(name)
         command.add_argument('--task', required=True)
         command.add_argument('--owner', required=True)
@@ -1475,6 +1525,10 @@ def parser():
             command.add_argument('--source', required=True)
         elif name == 'memory-apply':
             command.add_argument('--actions-file', required=True)
+        elif name == 'real-use':
+            command.add_argument('--status', required=True, choices=sorted(REAL_USE_STATUSES))
+            command.add_argument('--source', required=True, help='who decided and on what basis; a waiver quotes the user')
+            command.add_argument('--evidence', help='evidence file for a passed gate; its hash is recorded')
     command = sub.add_parser('memory-demote')
     command.add_argument('--task', required=True)
     command.add_argument('--owner', required=True)
@@ -1488,9 +1542,9 @@ def parser():
         command.add_argument('--owner', required=True)
         command.add_argument('--revision', required=True, type=int)
         command.add_argument('--session-id', required=True)
+        command.add_argument('--harness', default='claude')
         if name == 'bind-session':
-            command.add_argument('--nonce')
-            command.add_argument('--projects-dir')
+            command.add_argument('--transcript')
     command = sub.add_parser('choices')
     command.add_argument('--task')
     command.add_argument('--project')
@@ -1506,8 +1560,6 @@ def main():
             args.task = resolve_task_id(root, args.task)
         if args.command == 'create':
             result = create(args, root)
-        elif args.command == 'session-nonce':
-            result = {'nonce': session_nonce()}
         elif args.command == 'list':
             result = list_tasks(args, root)
         elif args.command == 'choices':
