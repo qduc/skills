@@ -64,13 +64,17 @@ def judge(directory, request_id, argv, timeout):
     """Ask the configured judge command for one typed answer; the driver validates it."""
     prompt = drive.request_prompt(directory, request_id)
     command = [prompt if part == '{prompt}' else part for part in argv]
-    result = subprocess.run(command, input=None if '{prompt}' in argv else prompt, capture_output=True,
-                            text=True, timeout=timeout)
-    value = parse_judge_output(result.stdout)
+    try:
+        result = subprocess.run(command, input=None if '{prompt}' in argv else prompt, capture_output=True,
+                                text=True, timeout=timeout)
+        value = parse_judge_output(result.stdout)
+        failure = (f'judge returned no JSON object (exit {result.returncode}): '
+                   f'{drive.tail(result.stdout or result.stderr, 400)}')
+    except (OSError, subprocess.TimeoutExpired) as error:
+        value, failure = None, f'judge command failed: {error}'
     try:
         if value is None:
-            raise drive.DriveError(f'judge returned no JSON object (exit {result.returncode}): '
-                                   f'{drive.tail(result.stdout or result.stderr, 400)}')
+            raise drive.DriveError(failure)
         return drive.answer(directory, request_id, value)
     except tasks.StateError as error:
         if value is None:  # record the failure against the request like any rejected answer

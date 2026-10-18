@@ -293,6 +293,40 @@ class DriverTests(unittest.TestCase):
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertEqual(self.judged('assess')[0]['event'], 'no_progress')
 
+    def test_halt_stops_work_and_resume_does_not_spend_an_attempt(self):
+        self.scenario({'multiplication': [{'sleep': 30, 'files': {'calc.py': MUL}}, {'files': {'calc.py': MUL}}]},
+                      decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
+        self.start(limits={'attempts_per_outcome': 1})
+        self.confirm()
+        deadline = time.monotonic() + 30
+        while not (self.base / 'prompts-multiplication.jsonl').exists():  # first worker is running
+            coord.run(self.task, self.judge, poll=0.1, max_seconds=0.5, judge_timeout=60)
+            self.assertLess(time.monotonic(), deadline)
+        status = drive.halt(self.task)
+        self.assertTrue(status['halted'])
+        deadline = time.monotonic() + 30
+        while drive.advance(self.task)['outcomes'][0]['status'] != 'attempt finished':
+            self.assertLess(time.monotonic(), deadline)
+            time.sleep(0.1)
+        drive.halt(self.task, resume=True)
+        self.assert_done_on_branch(self.run_until(), MUL)
+        prompts = self.prompts('multiplication')
+        self.assertEqual(len(prompts), 2)  # with a budget of 1, the halted attempt was not counted
+        self.assertNotIn('Earlier attempts', prompts[1])
+
+    def test_second_task_on_same_repo_sees_the_earlier_choice(self):
+        self.scenario({'multiplication': [{'files': {'calc.py': MUL}}]},
+                      decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
+        self.start()
+        self.confirm()
+        first = self.task
+        self.start()
+        self.run_until()
+        harness = self.judged('harness')[-1]
+        self.assertNotEqual(self.task, first)
+        self.assertEqual(harness['recent_choices'][0]['pool'], [{'harness': 'fake', 'model': 'scripted'}])
+        self.assertIn('yes, use the scripted worker', harness['recent_choices'][0]['source'])
+
     def test_selection_must_name_configured_routes(self):
         self.scenario({}, decompose=[])
         self.start()

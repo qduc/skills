@@ -417,7 +417,7 @@ def selection_phase(task_dir, drive, state):
         open_request(drive, 'harness', 'harness', {
             'goal': details['objective'], 'acceptance_criteria': details['acceptance_criteria'],
             'routes': [w['route'] for w in drive['workers']],
-            'recent_choices': recent_choices(task_dir, state)})
+            'recent_choices': recent_choices(task_dir, drive['repo'])})
     elif request['status'] == 'answered':
         value = request['answer']
         open_question(drive, 'confirm_selection', 'confirm_selection',
@@ -426,19 +426,23 @@ def selection_phase(task_dir, drive, state):
         request['status'] = 'applied'
 
 
-def recent_choices(task_dir, state):
-    history = Path(task_dir).parents[1] / 'choices.jsonl'
+def recent_choices(task_dir, repo):
+    """Confirmed choices for the same repository, whether its tasks were driven or manual."""
+    root = Path(task_dir).parents[1]
     try:
-        lines = history.read_text().splitlines()[-20:]
+        lines = (root / 'choices.jsonl').read_text().splitlines()[-50:]
     except OSError:
         return []
     found = []
     for line in lines:
         try:
             event = json.loads(line)
-        except ValueError:
+            other = root / 'tasks' / str(event.get('task_id')) / DRIVE_FILE
+            # A driven task's project is its own integration worktree; its repo is in drive.json.
+            same = event.get('project') == repo or (other.is_file() and json.loads(other.read_text())['repo'] == repo)
+        except (ValueError, OSError, KeyError, TypeError):
             continue
-        if event.get('project') == state['project']:
+        if same:
             found.append({'pool': event.get('pool'), 'source': event.get('source')})
     return found[-5:]
 
@@ -650,7 +654,13 @@ def settled(task_dir, drive, oid, observation):
     if stopping:
         if stopping['reason'] == 'redirect':
             redirect(task_dir, drive, state, oid, stopping['guidance'])
-        return
+        elif stopping['reason'] == 'halt':
+            # A user halt is not a failed attempt: start over without spending the budget.
+            record['allowance'] += 1
+            contract = item['contract']
+            mutate(task_dir, drive, lambda s, p: outcomes.revise(s, oid, copy.deepcopy(contract)))
+            log(drive, 'attempt_discarded_after_halt', outcome=oid)
+        return  # replan: the new plan replaces this outcome
     if observation.get('blocker') and not flags.get('blocker_seen'):
         flags['blocker_seen'] = True
         request = open_request(drive, 'assess', 'blocked-' + attempt['id'], {
