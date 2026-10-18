@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """Code-driven coordinator runtime. Code owns order and gates; the AI answers typed judgments.
 
-`advance()` performs every deterministic step it can: worktrees, worker launch,
-observation, independent checks and claimcheck, patch integration, goal checks,
+`advance()` performs every deterministic step it can: isolated workspaces, worker launch,
+observation, independent checks and claimcheck, patch or artifact integration, goal checks,
 and completion. It stops only to wait for workers, for a typed judgment request
 (harness, decompose, assess, inspect), or for a user question. Judgment answers
 are validated against their schema before anything acts on them; an invalid
 answer is returned with its error, a bounded number of times, then escalated.
 
-Isolation: each outcome works in its own git worktree under the task directory.
+Native dispatch uses durable host actions exposed by the front-desk CLI.
+Artifact outcomes use separate directories and publish accepted files with checks
+and evidence; their source directory is read-only by worker instruction.
+
+Git isolation: each outcome works in its own git worktree under the task directory.
 The wrapper (`_work`) packages the worker's changes as a patch and publishes the
 report, so workers never handle reporting. Accepted patches are committed onto
 the task branch in a separate integration worktree; the user's checkout is not
@@ -142,8 +146,16 @@ def state_mutate(task_dir, drive, command, **fields):
 def command_for(drive, route):
     for worker in drive['workers']:
         if route_matches(worker['route'], route):
-            return worker['argv']
+            return worker.get('argv')
     return None
+
+
+def worker_for(drive, route):
+    return next((w for w in drive['workers'] if route_matches(w['route'], route)), None)
+
+
+def artifact_delivery(drive):
+    return drive.get('delivery', 'patch') == 'artifact'
 
 
 def route_matches(configured, route):
@@ -205,7 +217,8 @@ def reject_answer(drive, request, error):
 SCHEMAS = {
     'harness': '{"pool": [{"harness": str, "model": str, "provider"?: str}], "rationale": str}',
     'decompose': ('{"outcomes": [{"id": "lowercase-slug", "objective": str, "rationale": str, "scope": str, '
-                  '"authority": str, "needs": [outcome ids], "checks": [{"id": str, "argv": [str]}]}], '
+                  '"authority": str, "needs": [outcome ids], "checks": [{"id": str, "argv": [str]}], '
+                  '"artifact"?: "relative/file.ext"}], '
                   '"goal_checks": [{"id": str, "argv": [str]}], "rationale": str}'),
     'assess': '{"action": one of context.actions, "reason": str, "guidance"?: str, "question"?: str}',
     'inspect': '{"verdict": "accept" | "reject", "reason": str, "feedback"?: str}',
@@ -228,7 +241,7 @@ def validate_answer(drive, request, answer):
             raise DriveError('harness answer needs exactly pool and rationale')
         tasks.validate_pool(answer['pool'])
         nonempty(answer['rationale'], 'rationale')
-        missing = [r for r in answer['pool'] if command_for(drive, r) is None]
+        missing = [r for r in answer['pool'] if worker_for(drive, r) is None]
         if missing:
             raise DriveError(f'no worker command is configured for {missing}; choose from context.routes')
     elif kind == 'decompose':
@@ -238,8 +251,11 @@ def validate_answer(drive, request, answer):
         if not isinstance(answer['outcomes'], list) or not answer['outcomes']:
             raise DriveError('outcomes must be a non-empty list')
         for entry in answer['outcomes']:
-            if not isinstance(entry, dict) or set(entry) != OUTCOME_FIELDS:
-                raise DriveError('each outcome needs exactly ' + ', '.join(sorted(OUTCOME_FIELDS)))
+            expected = OUTCOME_FIELDS | ({'artifact'} if artifact_delivery(drive) else set())
+            if not isinstance(entry, dict) or set(entry) != expected:
+                raise DriveError('each outcome needs exactly ' + ', '.join(sorted(expected)))
+            if artifact_delivery(drive):
+                outcomes.artifact_name(entry['artifact'])
             if not isinstance(entry['id'], str) or not OUTCOME_ID.fullmatch(entry['id']):
                 raise DriveError(f"outcome id {entry['id']!r} must be a lowercase slug of at most 32 characters")
             if entry['id'].endswith(CHECKS_SUFFIX):
@@ -299,6 +315,13 @@ def request_prompt(task_dir, request_id):
 # --------------------------------------------------------------------------- worktrees and workers
 
 def ensure_worktree(task_dir, drive, oid):
+    if artifact_delivery(drive):
+        workspace = drive.setdefault('workspaces', {}).get(oid)
+        if workspace is None:
+            workspace = str(Path(task_dir) / 'workspaces' / oid / uuid.uuid4().hex[:12])
+            drive['workspaces'][oid] = workspace
+        Path(workspace).mkdir(parents=True, exist_ok=True)
+        return Path(workspace)
     path = Path(task_dir) / 'worktrees' / oid
     if not path.exists():
         path.parent.mkdir(exist_ok=True)
@@ -311,11 +334,12 @@ def reset_worktree(path, head):
     git(path, 'clean', '-fd', '-e', PACKAGE_DIR)  # previous attempts' patches stay as evidence
 
 
-def worker_instructions(feedback, frozen=()):
+def worker_instructions(feedback, frozen=(), drive=None):
     def build(assignment, path):
         contract = assignment['contract']
         cwd = contract['cwd']
         summary = Path(cwd) / PACKAGE_DIR / assignment['attempt_id'] / 'summary.md'
+        summary.parent.mkdir(parents=True, exist_ok=True)
         checks = '\n'.join(f"- {c['id']}: {shlex.join(c['argv'])}" for c in contract['checks'])
         lines = [
             'You are working on one bounded outcome of a larger task.',
@@ -339,6 +363,12 @@ def worker_instructions(feedback, frozen=()):
         if frozen:
             lines += ['These tests were written and reviewed before you started; make them pass without '
                       'modifying them (write a blocker if one is wrong):', *(f'- {name}' for name in frozen)]
+        if drive and artifact_delivery(drive):
+            lines[5] = f'Working directory: {cwd} (an isolated artifact workspace; write only here).'
+            lines[9] = (f"- Deliver the file {contract['artifact']} inside your working directory. "
+                        'The runtime publishes it after independent checks and inspection.')
+            lines += [f"Source material: {drive['repo']} (read-only; do not edit the source directory).",
+                      'Accepted dependencies are in inputs/<outcome-id>/<artifact-name> (read-only).']
         if feedback:
             lines += ['Earlier attempts at this outcome did not pass. Address this feedback:',
                       *(f"- {entry['text']}" for entry in feedback[-5:])]
@@ -362,18 +392,32 @@ def is_integrated(state, oid):
 def start_attempt(task_dir, drive, state, oid):
     record = outcome_record(drive, oid)
     worktree = ensure_worktree(task_dir, drive, oid)
-    head = git(drive['integration'], 'rev-parse', 'HEAD')
-    reset_worktree(worktree, head)
+    head = None if artifact_delivery(drive) else git(drive['integration'], 'rev-parse', 'HEAD')
+    if head:
+        reset_worktree(worktree, head)
+    else:
+        for dependency in outcomes.outcome_of(state, oid)['contract']['needs']:
+            upstream = outcomes.outcome_of(state, dependency)
+            target = worktree / 'inputs' / dependency / upstream['contract']['artifact']
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(outcomes.integrated(state, dependency)['artifact']['path'], target)
     pool = state['selection']
     route = pool[record['attempts'] % len(pool)]  # rotate across the confirmed pool on retries
     command = [sys.executable, str(SELF), '_work', '--assignment', '{assignment}', '--cwd', '{cwd}',
-               '--base', head, '--', *command_for(drive, route)]
+               '--base', head or 'artifact', '--', *(command_for(drive, route) or [])]
     partner = drive.get('checks_for', {}).get(oid)
     receipt = outcomes.outcome_of(state, partner).get('integration') if partner else None
     frozen = sorted(files_in_patch(receipt['artifact']['path'])) if receipt else []
-    build = worker_instructions(record['feedback'], frozen)
-    started = mutate(task_dir, drive, lambda s, p: runtime.start(s, p, oid, 'process', route, 'bounded_worker',
-                                                                  [], command, instructions=build))
+    build = worker_instructions(record['feedback'], frozen, drive)
+    def instructions(assignment, path):
+        tasks.atomic_write(Path(path).parent / 'packaging.json', json.dumps({'base': head}) + '\n')
+        return build(assignment, path)
+    kind = worker_for(drive, route).get('runtime', 'process')
+    started = mutate(task_dir, drive, lambda s, p: runtime.start(s, p, oid, kind, route, 'bounded_worker',
+                                                                  [], command, instructions=instructions))
+    if kind == 'native':
+        enqueue_host(drive, oid, started['attempt_id'], 'spawn', route=route,
+                     message=started['request']['message'])
     record['attempts'] += 1
     record['progress'] = {'signature': None, 'at': now_ts()}
     log(drive, 'attempt_started', outcome=oid, attempt=started['attempt_id'], route=route, base=head)
@@ -385,6 +429,10 @@ def progress_signature(attempt, worktree):
              for name in ('stdout.log', 'stderr.log')]
     # Never write the index: the worker's own git commands may need it right now. `git diff` refreshes
     # and rewrites it even with --no-optional-locks, so use the plumbing `diff-files` instead.
+    if not (Path(worktree) / '.git').exists():
+        files = [(str(p.relative_to(worktree)), p.stat().st_size, p.stat().st_mtime_ns)
+                 for p in Path(worktree).rglob('*') if p.is_file() and PACKAGE_DIR not in p.parts]
+        return hashlib.sha256(json.dumps([sizes, files]).encode()).hexdigest()
     status = git(worktree, '--no-optional-locks', 'status', '--porcelain', '--', '.', EXCLUDE_PACKAGE,
                  check=False).stdout
     diff = git(worktree, '--no-optional-locks', 'diff-files', '-p', '--', '.', EXCLUDE_PACKAGE, check=False).stdout
@@ -406,8 +454,15 @@ def retry(task_dir, drive, state, oid, text, counted=True):
             'actions': ['retry', 'escalate', 'replan']})
         record['blocked'] = request['id']
         return
-    contract = outcomes.outcome_of(state, oid)['contract']
-    mutate(task_dir, drive, lambda s, p: outcomes.revise(s, oid, copy.deepcopy(contract)))
+    revise_attempt(task_dir, drive, state, oid)
+
+
+def revise_attempt(task_dir, drive, state, oid):
+    contract = copy.deepcopy(outcomes.outcome_of(state, oid)['contract'])
+    if artifact_delivery(drive):
+        drive.setdefault('workspaces', {}).pop(oid, None)
+        contract['cwd'] = str(ensure_worktree(task_dir, drive, oid))
+    mutate(task_dir, drive, lambda s, p: outcomes.revise(s, oid, contract))
 
 
 def stop_attempt(task_dir, drive, oid, reason, guidance=None):
@@ -417,13 +472,104 @@ def stop_attempt(task_dir, drive, oid, reason, guidance=None):
     if attempt.get('status') in {'finished', 'stopped'}:
         record['flags'].setdefault(attempt['id'], {})['stopping'] = {'reason': reason, 'guidance': guidance}
         return
+    if attempt.get('runtime') == 'native' and not attempt.get('handle'):
+        spawn = next((a for a in drive.get('host_actions', {}).values()
+                      if a['attempt'] == attempt['id'] and a['action'] == 'spawn'), None)
+        if spawn is None or spawn['status'] == 'pending':
+            evidence = Path(attempt['run_dir']) / 'cancelled-before-host.json'
+            basis = 'driver cancelled the pending spawn before host-next issued it'
+            tasks.atomic_write(evidence, json.dumps({'attempt_id': attempt['id'],
+                                                     'status': 'not_started', 'basis': basis}) + '\n')
+            mutate(task_dir, drive, lambda s, p: runtime.reconcile(s, oid, attempt['id'], evidence, basis))
+            if spawn:
+                spawn.update(status='answered', result={'status': 'not_started', 'basis': basis})
+            record['flags'].setdefault(attempt['id'], {})['stopping'] = {'reason': reason, 'guidance': guidance}
+            return
     try:
-        mutate(task_dir, drive, lambda s, p: runtime.control(s, oid, 'stop'))
+        result = mutate(task_dir, drive, lambda s, p: runtime.control(s, oid, 'stop'))
+        if attempt.get('runtime') == 'native':
+            enqueue_host(drive, oid, attempt['id'], 'stop', handle=result['request']['handle'])
     except tasks.StateError as error:
         # Identity unknown: the unknown-attempt path reconciles it once no process remains.
         log(drive, 'attempt_stop_deferred', outcome=oid, error=str(error))
     record['flags'].setdefault(attempt['id'], {})['stopping'] = {'reason': reason, 'guidance': guidance}
     log(drive, 'attempt_stop_requested', outcome=oid, reason=reason)
+
+
+# Host tools execute requests; all lifecycle decisions remain inside the driver.
+def enqueue_host(drive, oid, attempt_id, action, **payload):
+    actions = drive.setdefault('host_actions', {})
+    for entry in actions.values():
+        if entry['attempt'] == attempt_id and entry['action'] == action and entry['status'] != 'answered':
+            return entry
+    entry = dict(id=uuid.uuid4().hex[:12], outcome=oid, attempt=attempt_id,
+                 action=action, status='pending', **payload)
+    if action == 'spawn':
+        entry['label'] = 'coord_' + oid.replace('-', '_') + '_' + attempt_id[:8]
+    actions[entry['id']] = entry
+    return entry
+
+
+def host_next(task_dir):
+    """Issue one host-tool request durably. Re-reading an issued spawn requires inspection, never respawn."""
+    advance(task_dir)
+    with driving(task_dir) as drive:
+        actions = [a for a in drive.get('host_actions', {}).values() if a['status'] != 'answered']
+        actions.sort(key=lambda a: (a['status'] != 'issued', a['action'] != 'stop'))
+        if not actions:
+            return {'action': None, 'next': summary(task_dir, drive)}
+        entry = actions[0]
+        repeated_spawn = entry['status'] == 'issued' and entry['action'] == 'spawn'
+        entry['status'] = 'issued'
+        result = {k: v for k, v in entry.items() if k not in {'attempt', 'status'}}
+        if repeated_spawn:
+            result.update(action='reconcile', instruction=(
+                'A spawn request was already issued. Inspect the host for that worker; do not spawn again. '
+                'Return its handle, or status not_started with basis only if host inspection proves non-delivery. '
+                'If uncertain, return status unknown with basis and keep the request unresolved.'))
+        result['reply_with'] = ({'handle': '<returned worker handle>'} if entry['action'] == 'spawn' else
+                                {'handle': entry['handle'], 'status': 'working|finished|stopped|unknown'})
+        return result
+
+
+def host_result(task_dir, action_id, value):
+    """Record the observed result of a host request; bind identity and package settled work internally."""
+    if not isinstance(value, dict):
+        raise DriveError('host result must be a JSON object')
+    with driving(task_dir) as drive:
+        entry = drive.get('host_actions', {}).get(action_id)
+        if not entry or entry['status'] != 'issued':
+            raise DriveError('no issued host action ' + action_id)
+        state = tasks.load(task_dir)
+        item = outcomes.outcome_of(state, entry['outcome'])
+        attempt = item.get('attempt', {})
+        if attempt.get('id') != entry['attempt'] or attempt.get('runtime') != 'native':
+            raise DriveError('host result belongs to an obsolete worker request')
+        if entry['action'] == 'spawn':
+            if outcomes.text(value.get('handle')):
+                mutate(task_dir, drive, lambda s, p: runtime.bind_native(
+                    s, entry['outcome'], entry['attempt'], value['handle']))
+            elif value.get('status') in {'not_started', 'unknown'} and outcomes.text(value.get('basis')):
+                if value['status'] == 'unknown':
+                    entry['last_observation'] = value
+                    return summary(task_dir, drive)
+                evidence = Path(attempt['run_dir']) / 'host-non-delivery.json'
+                tasks.atomic_write(evidence, json.dumps(dict(value, attempt_id=entry['attempt'])) + '\n')
+                mutate(task_dir, drive, lambda s, p: runtime.reconcile(
+                    s, entry['outcome'], entry['attempt'], evidence, value['basis']))
+            else:
+                raise DriveError('spawn result needs a handle, or inspected not_started/unknown status with basis')
+        else:
+            if value.get('handle') != entry['handle']:
+                raise DriveError('host observation must match the requested handle')
+            mutate(task_dir, drive, lambda s, p: runtime.observe(s, entry['outcome'], value))
+        entry.update(status='answered', result=value)
+        if value.get('status') in {'finished', 'stopped', 'not_started'}:
+            for other in drive.get('host_actions', {}).values():
+                if other['attempt'] == entry['attempt'] and other['status'] != 'answered':
+                    other.update(status='answered', result={'superseded_by': action_id})
+        log(drive, 'host_result', outcome=entry['outcome'], action=entry['action'], result=value)
+    return advance(task_dir)
 
 
 # --------------------------------------------------------------------------- phases
@@ -468,14 +614,23 @@ def recent_choices(task_dir, repo):
 def plan_context(task_dir, drive, state, mode, evidence=None, guidance=None):
     details = state['details']
     integration = drive['integration']
-    files = git(integration, 'ls-files', check=False).stdout.splitlines()
+    files = [] if artifact_delivery(drive) else git(integration, 'ls-files', check=False).stdout.splitlines()
     context = {'mode': mode, 'goal': details['objective'], 'acceptance_criteria': details['acceptance_criteria'],
                'constraints': details['constraints'], 'authority': details['authority'],
                'repository': integration, 'files': files[:400] + (['...'] if len(files) > 400 else []),
+               'delivery': drive.get('delivery', 'patch'), 'source': drive['repo'],
                'rules': ['Outcome checks run from that outcome\'s isolated worktree root.',
                          'Goal checks run from the repository root after every outcome is integrated.',
                          'Each check is argv run without a shell; exit code 0 means pass.',
                          'An outcome may only need outcomes listed earlier.']}
+    if artifact_delivery(drive):
+        context['rules'] += [
+            'Read source for context only; never edit it. Each outcome gets an empty isolated workspace.',
+            'Each outcome must name one artifact (relative file path, e.g. report.md or chart.png).',
+            'Outcome checks run beside that artifact; dependencies are copied into inputs/<id>/<artifact>.',
+            'Accepted artifacts are published at artifacts/<outcome-id>/<artifact> under repository.',
+            'Goal checks run there. No Git, patch, commit, or checks-first phase is required.',
+            'Report quality and evidence must also be inspected; existence checks alone do not prove claims.']
     if 'outcome_plan' in state:
         plan = state['outcome_plan']
         context['previous_plan'] = [item['contract'] for item in plan['outcomes'].values()]
@@ -532,9 +687,11 @@ def apply_plan(task_dir, drive, request, replan):
         if all(check['exit_code'] == 0 for check in baseline):
             raise DriveError('every goal check already passes on the current code, so none of them can show '
                              'whether the work was done; include at least one check that fails until the goal is met')
-        entries, partners = expand(drive, value['outcomes'])
+        entries, partners = (value['outcomes'], {}) if artifact_delivery(drive) else expand(drive, value['outcomes'])
         spec = {'outcomes': [], 'goal_checks': value['goal_checks']}
         for entry in entries:
+            if artifact_delivery(drive):
+                drive.setdefault('workspaces', {}).pop(entry['id'], None)
             contract = dict(entry, cwd=str(ensure_worktree(task_dir, drive, entry['id'])))
             spec['outcomes'].append(contract)
         if replan:
@@ -598,8 +755,7 @@ def redirect(task_dir, drive, state, oid, guidance):
     record = outcome_record(drive, oid)
     record['feedback'].append({'at': tasks.now(), 'text': guidance})
     if attempt:
-        contract = outcomes.outcome_of(state, oid)['contract']
-        mutate(task_dir, drive, lambda s, p: outcomes.revise(s, oid, copy.deepcopy(contract)))
+        revise_attempt(task_dir, drive, state, oid)
     return True
 
 
@@ -646,6 +802,26 @@ def replan_pending(drive):
 
 
 def observe(task_dir, drive, oid):
+    state = tasks.load(task_dir)
+    attempt = outcomes.outcome_of(state, oid).get('attempt', {})
+    if attempt.get('runtime') == 'native':
+        if attempt.get('status') in {'finished', 'stopped'}:
+            root = Path(attempt['run_dir'])
+            return {'status': attempt['status'], 'attempt_id': attempt['id'],
+                    'blocker': str(root / 'blocker.json') if (root / 'blocker.json').exists() else None}
+        if not attempt.get('handle'):
+            enqueue_host(drive, oid, attempt['id'], 'spawn', route=attempt['route'],
+                         message=(Path(attempt['run_dir']) / 'prompt.txt').read_text())
+        else:
+            stopping = outcome_record(drive, oid)['flags'].get(attempt['id'], {}).get('stopping')
+            if stopping and not any(a['attempt'] == attempt['id'] and a['action'] == 'stop'
+                                    for a in drive.get('host_actions', {}).values()):
+                enqueue_host(drive, oid, attempt['id'], 'stop', handle=attempt['handle'])
+            pending_stop = any(a['attempt'] == attempt['id'] and a['action'] == 'stop'
+                               and a['status'] != 'answered' for a in drive.get('host_actions', {}).values())
+            if not pending_stop:
+                enqueue_host(drive, oid, attempt['id'], 'observe', handle=attempt['handle'])
+        return {'status': 'working' if attempt['status'] == 'working' else 'unknown', 'attempt_id': attempt['id']}
     return mutate(task_dir, drive, lambda s, p: runtime.observe(s, oid))
 
 
@@ -665,7 +841,8 @@ def watch_progress(task_dir, drive, state, oid):
         'event': 'no_progress', 'outcome': oid, 'contract': outcomes.outcome_of(state, oid)['contract'],
         'idle_minutes': round(idle / 60, 1), 'stdout_tail': read_tail(run_dir / 'stdout.log'),
         'stderr_tail': read_tail(run_dir / 'stderr.log'),
-        'diff_stat': git(attempt_cwd(state, oid), '--no-optional-locks', 'diff-files', '--stat', check=False).stdout,
+        'diff_stat': (None if artifact_delivery(drive) else
+                      git(attempt_cwd(state, oid), '--no-optional-locks', 'diff-files', '--stat', check=False).stdout),
         'actions': ['continue', 'retry', 'escalate', 'replan']})
     record['blocked'] = request['id']
 
@@ -678,6 +855,8 @@ def reconcile_if_gone(task_dir, drive, oid):
     """Code observes the process table; only a provably dead attempt is reconciled."""
     state = tasks.load(task_dir)
     attempt = outcomes.outcome_of(state, oid)['attempt']
+    if attempt.get('runtime') == 'native':
+        return  # Native delivery can only be settled by actual host observations.
     age = now_ts() - _timestamp(attempt.get('created_at'))
     resources = [attempt.get('launcher', {}), attempt.get('receipt', {})]
     live = [r for r in resources if r.get('pid') and runtime.process_live(r)]
@@ -714,8 +893,7 @@ def settled(task_dir, drive, oid, observation):
         elif stopping['reason'] == 'halt':
             # A user halt is not a failed attempt: start over without spending the budget.
             record['allowance'] += 1
-            contract = item['contract']
-            mutate(task_dir, drive, lambda s, p: outcomes.revise(s, oid, copy.deepcopy(contract)))
+            revise_attempt(task_dir, drive, state, oid)
             log(drive, 'attempt_discarded_after_halt', outcome=oid)
         return  # replan: the new plan replaces this outcome
     if observation.get('blocker') and not flags.get('blocker_seen'):
@@ -733,6 +911,13 @@ def settled(task_dir, drive, oid, observation):
             apply_inspection(task_dir, drive, state, oid, request)
         return
     package = Path(attempt['run_dir']) / 'package.json'
+    if attempt.get('runtime') == 'native' and not package.exists() and attempt.get('handle'):
+        try:
+            meta = json.loads((Path(attempt['run_dir']) / 'packaging.json').read_text())
+            package_work(attempt['assignment_file'], item['contract']['cwd'], meta['base'])
+        except (tasks.StateError, OSError, ValueError, subprocess.SubprocessError) as error:
+            retry(task_dir, drive, state, oid, f'Worker output could not be packaged: {error}')
+            return
     result = json.loads(package.read_text()) if package.is_file() else {'status': 'missing'}
     if result['status'] != 'reported':
         reason = {'no_changes': 'The attempt finished without changing any files.',
@@ -779,7 +964,9 @@ def settled(task_dir, drive, oid, observation):
             return
         retry(task_dir, drive, tasks.load(task_dir), oid, '\n'.join(lines))
         return
-    patch = Path(verification['artifact']['path']).read_text(errors='replace')
+    with Path(verification['artifact']['path']).open('rb') as stream:
+        preview = stream.read(60001)
+    patch = preview.decode('utf-8', errors='replace')
     implements = next((x for x, c in drive.get('checks_for', {}).items() if c == oid), None)
     extra = {}
     if implements:  # a checks phase: review the tests against what the outcome and the task must achieve
@@ -788,6 +975,8 @@ def settled(task_dir, drive, oid, observation):
                  'red_evidence': verification['checks'][0]['stdout']}
     open_request(drive, 'review_checks' if implements else 'inspect', inspect_key, dict(extra, **{
         'outcome': oid, 'contract': item['contract'], 'attempt': record['attempts'],
+        'delivery': drive.get('delivery', 'patch'), 'source': drive['repo'],
+        'artifact': verification['artifact'],
         'summary': json.loads(Path(result['report']).read_text()).get('summary'),
         'patch': patch if len(patch) <= 60000 else patch[:60000] + '\n[patch truncated; read the artifact file]',
         'patch_file': verification['artifact']['path'],
@@ -875,6 +1064,15 @@ def integrate(task_dir, drive, state, oid):
     assignment = item['assignment_id']
     integration = Path(drive['integration'])
     patch = Path(acceptance['artifact']['path'])
+    if artifact_delivery(drive):
+        target = integration / 'artifacts' / oid / item['contract']['artifact']
+        target.parent.mkdir(parents=True, exist_ok=True)
+        temporary = target.with_name('.' + target.name + '.tmp')
+        shutil.copyfile(patch, temporary)
+        temporary.replace(target)
+        mutate(task_dir, drive, lambda s, p: outcomes.integrate(s, oid, target))
+        log(drive, 'outcome_integrated', outcome=oid, artifact=str(target))
+        return
     trailer = f'Coord-Assignment: {assignment}'
     if not git(integration, 'log', '--format=%H', '--fixed-strings', '--grep', trailer):
         applied = git(integration, 'apply', '--index', '--binary', str(patch), check=False)
@@ -951,7 +1149,8 @@ def open_replan(task_dir, drive, state, evidence, guidance=None):
 def complete(task_dir, drive):
     patch_file = Path(task_dir) / '.drive-complete.json'
     tasks.atomic_write(patch_file, json.dumps({'status': 'completed', 'details': {
-        'phase': 'done', 'next_action': f"Review and merge branch {drive['branch']}"}}) + '\n')
+        'phase': 'done', 'next_action': (f"Review artifacts in {drive['integration']}" if artifact_delivery(drive)
+                                       else f"Review and merge branch {drive['branch']}")}}) + '\n')
     try:
         state_mutate(task_dir, drive, 'checkpoint', patch_file=str(patch_file))
     except tasks.StateError as error:
@@ -1022,16 +1221,16 @@ def profile_driver():
     return entry if isinstance(entry, dict) else {}
 
 
-def doctor():
+def doctor(workers=None, delivery='patch'):
     """Is this host ready for driven tasks? Lists every problem rather than the first."""
     path = profile_path()
     problems = []
-    if not Path('/proc/self/stat').is_file():
-        problems.append('the driven runtime needs Linux /proc (WSL2 works)')
-    if not shutil.which('git'):
+    if delivery == 'patch' and not shutil.which('git'):
         problems.append('git is not on PATH')
     driver = {}
-    if not path.is_file():
+    if workers is not None:
+        driver = {'workers': workers}
+    elif not path.is_file():
         problems.append(f'no host profile at {path}')
     else:
         try:
@@ -1040,7 +1239,13 @@ def doctor():
             problems.append(f'host profile is unreadable: {error}')
         if not driver.get('workers'):
             problems.append('the host profile has no adapters.driver workers')
+    if not driver.get('workers') and workers is not None:
+        problems.append('configure at least one worker route')
+    if not Path('/proc/self/stat').is_file() and any(w.get('runtime') != 'native' for w in driver.get('workers', [])):
+        problems.append('the driven runtime needs Linux /proc (WSL2 works)')
     for worker in driver.get('workers', []):
+        if worker.get('runtime') == 'native':
+            continue
         if not shutil.which(worker['argv'][0]):
             problems.append(f"worker command {worker['argv'][0]!r} for "
                             f"{worker['route'].get('harness')}/{worker['route'].get('model')} is not on PATH")
@@ -1074,9 +1279,23 @@ def summary(task_dir, drive):
     working = any(row['status'] == 'attempt working' or row['status'] == 'attempt delivery_unknown'
                   or row['status'] == 'attempt unknown' for row in rows)
     done = state['status'] == 'completed'
-    waiting = None if done else 'user' if questions else 'judgment' if requests else 'workers' if working else 'driver'
+    host_actions = [{'id': a['id'], 'action': a['action'], 'outcome': a['outcome'], 'status': a['status']}
+                    for a in drive.get('host_actions', {}).values() if a['status'] != 'answered']
+    waiting = (None if done else 'user' if questions else 'judgment' if requests else
+               'host' if host_actions else 'workers' if working else 'driver')
+    plan = state.get('outcome_plan') or {}
+    def check_evidence(checks):
+        return [{k: v for k, v in c.items() if k not in {'stdout', 'stderr'}} |
+                {'stdout_tail': tail(c.get('stdout', ''), 1500), 'stderr_tail': tail(c.get('stderr', ''), 1500)}
+                for c in checks]
+    evidence = {'goal_checks': check_evidence((plan.get('goal_verification') or {}).get('checks', [])),
+                'outcomes': [{'id': oid, 'artifact': item['integration']['artifact'],
+                              'decision': item['acceptance']['decision'],
+                              'checks': check_evidence(item['acceptance']['checks'])}
+                             for oid, item in plan.get('outcomes', {}).items() if item.get('integration')]}
     return {'task': state['id'], 'title': state['title'], 'status': state['status'], 'done': done,
             'waiting_on': waiting, 'branch': drive['branch'], 'integration': drive['integration'],
+            'delivery': drive.get('delivery', 'patch'), 'host_actions': host_actions, 'evidence': evidence,
             'halted': bool(drive.get('halted')), 'outcomes': rows, 'requests': requests, 'questions': questions,
             'recent': drive['log'][-8:]}
 
@@ -1089,7 +1308,7 @@ def confirm_selection(task_dir, question_id, user_message, pool=None):
         nonempty(user_message, 'user message')
         pool = pool or question['payload']['pool']
         tasks.validate_pool(pool)
-        missing = [r for r in pool if command_for(drive, r) is None]
+        missing = [r for r in pool if worker_for(drive, r) is None]
         if missing:
             raise DriveError(f'no worker command is configured for {missing}')
         pool_file = Path(task_dir) / '.drive-pool.json'
@@ -1137,9 +1356,13 @@ def halt(task_dir, resume=False):
 
 
 def start(root, repo, goal, criteria, workers, title=None, constraints=(), authority=None,
-          real_use_required=False, limits=None):
+          real_use_required=False, limits=None, delivery='patch'):
     repo = Path(repo).expanduser().resolve()
-    if git(repo, 'rev-parse', '--show-toplevel', check=False).stdout.strip() != str(repo):
+    if delivery not in {'patch', 'artifact'}:
+        raise DriveError('delivery must be patch or artifact')
+    if not repo.is_dir():
+        raise DriveError('source workspace must be an existing directory')
+    if delivery == 'patch' and git(repo, 'rev-parse', '--show-toplevel', check=False).stdout.strip() != str(repo):
         raise DriveError('repo must be the root of a git repository')
     nonempty(goal, 'goal')
     criteria = [c.strip() for c in criteria if c and c.strip()]
@@ -1147,37 +1370,51 @@ def start(root, repo, goal, criteria, workers, title=None, constraints=(), autho
         raise DriveError('give at least one acceptance criterion: what observable result means done?')
     if not isinstance(workers, list) or not workers:
         raise DriveError('configure at least one worker route and its command')
+    seen_routes = set()
     for worker in workers:
-        if not isinstance(worker, dict) or set(worker) != {'route', 'argv'}:
-            raise DriveError('each worker needs route and argv')
+        if not isinstance(worker, dict):
+            raise DriveError('each worker must be an object')
+        native = worker.get('runtime') == 'native'
+        if set(worker) != ({'route', 'runtime'} if native else {'route', 'argv'}):
+            raise DriveError('each worker needs route and argv, or route and runtime: native')
         tasks.validate_pool([worker['route']])
-        if not outcomes.argv(worker['argv']) or '{prompt}' not in worker['argv']:
+        identity = json.dumps(worker['route'], sort_keys=True)
+        if identity in seen_routes:
+            raise DriveError('each worker route must identify exactly one runtime/command')
+        seen_routes.add(identity)
+        if not native and (not outcomes.argv(worker['argv']) or '{prompt}' not in worker['argv']):
             raise DriveError('worker argv must be a list of strings containing a "{prompt}" element')
     unknown = set(limits or {}) - set(DEFAULT_LIMITS)
     if unknown:
         raise DriveError('unknown limits: ' + ', '.join(sorted(unknown)))
-    base = git(repo, 'rev-parse', 'HEAD')
-    dirty = bool(git(repo, 'status', '--porcelain'))
+    base = git(repo, 'rev-parse', 'HEAD') if delivery == 'patch' else None
+    dirty = bool(git(repo, 'status', '--porcelain')) if delivery == 'patch' else False
     created = tasks.create(argparse.Namespace(title=title or goal[:80], objective=goal, project=str(repo),
                                               conversation=None, owner=None), Path(root))
     task_dir = Path(created['state_path']).parent
     task_id = created['state']['id']
-    branch = f'coord/{task_id[:8]}'
+    branch = f'coord/{task_id[:8]}' if delivery == 'patch' else None
     integration = task_dir / 'integration'
-    git(repo, 'worktree', 'add', '-q', '-b', branch, str(integration), base)
+    if delivery == 'patch':
+        git(repo, 'worktree', 'add', '-q', '-b', branch, str(integration), base)
+    else:
+        integration.mkdir()
     with tasks.locked(task_dir / '.write.lock'):
         state = tasks.load(task_dir)
         state['project'] = str(integration)
         state['status'] = 'active'
         state['details'].update(
             acceptance_criteria=criteria, constraints=list(constraints),
-            authority=authority or (f'Change files only in this task\'s isolated worktrees; results land on branch '
-                                    f'{branch}. No pushing, publishing, merging, or edits to the original checkout.'),
+            authority=authority or ((f'Read source material at {repo}; write only in assigned artifact workspaces. '
+                                     'No edits to the source, external mutations, pushing, or publishing.') if delivery == 'artifact'
+                                    else (f'Change files only in this task\'s isolated worktrees; results land on branch '
+                                          f'{branch}. No pushing, publishing, merging, or edits to the original checkout.')),
             phase='selection', next_action='Choose and confirm worker harness/model')
         state['revision'] += 1
         state['updated_at'] = tasks.now()
         tasks.save(task_dir, state)
     drive = {'version': 1, 'owner': created['state']['owner'], 'repo': str(repo), 'base': base, 'branch': branch,
+             'delivery': delivery,
              'integration': str(integration), 'workers': workers, 'limits': dict(DEFAULT_LIMITS, **(limits or {})),
              'requests': {}, 'questions': {}, 'outcomes': {}, 'goal_rounds': 0, 'log': []}
     log(drive, 'task_started', base=base, branch=branch)
@@ -1196,26 +1433,39 @@ def start(root, repo, goal, criteria, workers, title=None, constraints=(), autho
 
 def work(assignment, cwd, base, argv):
     """Run the worker, then package its changes and publish the report on its behalf."""
+    code = subprocess.call(argv, cwd=cwd, stdin=subprocess.DEVNULL)
+    package_work(assignment, cwd, base, code)
+    return code
+
+
+def package_work(assignment, cwd, base, code=0):
+    """Publish a settled worker's patch or contracted file; native and process workers share packaging."""
     assignment_file = Path(assignment)
     run_dir = assignment_file.parent
-    attempt_id = json.loads(assignment_file.read_text())['attempt_id']
+    descriptor = json.loads(assignment_file.read_text())
+    attempt_id = descriptor['attempt_id']
     package_dir = Path(cwd) / PACKAGE_DIR / attempt_id
     package_dir.mkdir(parents=True, exist_ok=True)
-    code = subprocess.call(argv, cwd=cwd, stdin=subprocess.DEVNULL)
-    git(cwd, 'add', '-A', '--', '.', EXCLUDE_PACKAGE)
-    patch = subprocess.run(['git', '-C', cwd, 'diff', '--cached', '--binary', base, '--', '.', EXCLUDE_PACKAGE],
-                           capture_output=True, check=True).stdout
-    if not patch.strip():
-        tasks.atomic_write(run_dir / 'package.json', json.dumps({'status': 'no_changes', 'exit_code': code}) + '\n')
-        return code
-    patch_file = package_dir / 'changes.patch'
-    patch_file.write_bytes(patch)
+    if 'artifact' in descriptor['contract']:
+        patch_file = Path(cwd) / descriptor['contract']['artifact']
+        if not patch_file.is_file():
+            tasks.atomic_write(run_dir / 'package.json', json.dumps({'status': 'missing_artifact', 'exit_code': code}) + '\n')
+            return
+        outcomes.file_ref(patch_file, cwd)
+    else:
+        git(cwd, 'add', '-A', '--', '.', EXCLUDE_PACKAGE)
+        patch = subprocess.run(['git', '-C', cwd, 'diff', '--cached', '--binary', base, '--', '.', EXCLUDE_PACKAGE],
+                               capture_output=True, check=True).stdout
+        if not patch.strip():
+            tasks.atomic_write(run_dir / 'package.json', json.dumps({'status': 'no_changes', 'exit_code': code}) + '\n')
+            return
+        patch_file = package_dir / 'changes.patch'
+        patch_file.write_bytes(patch)
     summary_file = package_dir / 'summary.md'
     summary = summary_file.read_text(errors='replace').strip() if summary_file.is_file() else ''
     report = outcomes.report(assignment_file, patch_file, summary or None)
     tasks.atomic_write(run_dir / 'package.json', json.dumps(
         {'status': 'reported', 'report': report['report'], 'exit_code': code}) + '\n')
-    return code
 
 
 def main(argv=None):

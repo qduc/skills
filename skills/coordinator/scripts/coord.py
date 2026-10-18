@@ -7,7 +7,8 @@ those in code once the evidence and typed judgments allow it.
 
   doctor             is the host set up? (missing profile or workers means: run the setup interview)
   start              submit a goal with acceptance criteria; workers come from the host profile
-  status             what the task is waiting on, per outcome
+  host-next / host-result  perform a native host action and record its observed result
+  status             what the task is waiting on, per outcome, with delivery evidence
   advance            run every deterministic step available now
   run                advance repeatedly; the profile's judge answers judgments unless --no-judge
   requests / prompt  open judgment requests and the full prompt for one
@@ -91,7 +92,7 @@ def run(directory, judge_argv, poll, max_seconds, judge_timeout):
     judged = []
     while True:
         status = drive.advance(directory)
-        if status['done'] or status['questions'] or status['halted']:
+        if status['done'] or status['questions'] or status['halted'] or status.get('host_actions'):
             break
         if status['requests']:
             if not judge_argv:
@@ -112,7 +113,11 @@ def main(argv=None):
     sub = parser.add_subparsers(dest='command', required=True)
 
     command = sub.add_parser('start')
-    command.add_argument('--repo', required=True, help='git repository root the work is for')
+    source = command.add_mutually_exclusive_group(required=True)
+    source.add_argument('--repo', help='git repository root the work is for')
+    source.add_argument('--workspace', help='source directory for report/artifact delivery; never modified')
+    command.add_argument('--delivery', choices=['patch', 'artifact'],
+                         help='default: patch for --repo, artifact for --workspace')
     command.add_argument('--goal', required=True)
     command.add_argument('--criterion', action='append', default=[], help='observable done condition; repeatable')
     command.add_argument('--constraint', action='append', default=[])
@@ -124,8 +129,10 @@ def main(argv=None):
                          help='the task changes a skill or workflow; completion needs a real-use pass or waiver')
     command.add_argument('--limits-file', help='JSON overrides for driver limits')
 
-    sub.add_parser('doctor')
-    for name in ('status', 'advance', 'requests', 'questions', 'halt', 'resume'):
+    command = sub.add_parser('doctor')
+    command.add_argument('--workers-file', help='check a task-specific worker configuration instead of the profile')
+    command.add_argument('--delivery', choices=['patch', 'artifact'], default='patch')
+    for name in ('status', 'advance', 'requests', 'questions', 'halt', 'resume', 'host-next'):
         sub.add_parser(name).add_argument('--task', required=True)
 
     command = sub.add_parser('run')
@@ -145,6 +152,11 @@ def main(argv=None):
     command.add_argument('--request', required=True)
     command.add_argument('--file', required=True, help="answer JSON file, or '-' for stdin")
 
+    command = sub.add_parser('host-result', help='record the actual result of the issued host-tool request')
+    command.add_argument('--task', required=True)
+    command.add_argument('--action', required=True)
+    command.add_argument('--file', required=True, help="observed result JSON file, or '-' for stdin")
+
     command = sub.add_parser('confirm-selection')
     command.add_argument('--task', required=True)
     command.add_argument('--question', required=True)
@@ -159,22 +171,25 @@ def main(argv=None):
     command = sub.add_parser('real-use')
     command.add_argument('--task', required=True)
     command.add_argument('--status', required=True, choices=['passed', 'waived'])
-    command.add_argument('--source', required=True, help='for a waiver, quote the user')
+    command.add_argument('--source', help='for a waiver, quote the user; for a pass, identify the verifier')
     command.add_argument('--evidence', help='evidence file for a pass')
 
     args = parser.parse_args(argv)
     try:
         if args.command == 'doctor':
-            result = drive.doctor()
+            result = drive.doctor(read_json(args.workers_file) if args.workers_file else None, args.delivery)
         elif args.command == 'start':
             limits = read_json(args.limits_file) if args.limits_file else None
             workers = read_json(args.workers_file) if args.workers_file else drive.profile_driver().get('workers')
             if not workers:
                 raise drive.DriveError('no worker commands: the host profile has no adapters.driver workers. '
                                        'Run `coord.py doctor`, then the coordinator-setup driver interview.')
-            result = drive.start(tasks.root_path(args.root), args.repo, args.goal, args.criterion,
+            delivery = args.delivery or ('artifact' if args.workspace else 'patch')
+            if args.workspace and delivery != 'artifact':
+                raise drive.DriveError('--workspace requires artifact delivery; use --repo for patches')
+            result = drive.start(tasks.root_path(args.root), args.repo or args.workspace, args.goal, args.criterion,
                                  workers, args.title, args.constraint, args.authority,
-                                 args.real_use_required, limits)
+                                 args.real_use_required, limits, delivery)
         else:
             directory = task_dir(args)
             if args.command == 'status':
@@ -195,6 +210,10 @@ def main(argv=None):
                 result = drive.answer(directory, args.request, read_json(args.file))
                 result = {'id': result['id'], 'kind': result['kind'], 'status': result['status'],
                           'next': drive.advance(directory)}
+            elif args.command == 'host-next':
+                result = drive.host_next(directory)
+            elif args.command == 'host-result':
+                result = drive.host_result(directory, args.action, read_json(args.file))
             elif args.command == 'questions':
                 record = drive.load_drive(directory)
                 result = [{'id': q['id'], 'kind': q['kind'], 'prompt': q['prompt'], 'payload': q['payload']}
@@ -205,7 +224,9 @@ def main(argv=None):
             elif args.command == 'reply':
                 result = drive.reply(directory, args.question, args.user_message)
             elif args.command == 'real-use':
-                result = drive.real_use(directory, args.status, args.source, args.evidence)
+                if args.status == 'waived' and not args.source:
+                    raise drive.DriveError('a real-use waiver requires --source quoting the user')
+                result = drive.real_use(directory, args.status, args.source or 'front desk recorded real-use evidence', args.evidence)
             else:
                 result = drive.halt(directory, resume=args.command == 'resume')
     except (tasks.StateError, OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:

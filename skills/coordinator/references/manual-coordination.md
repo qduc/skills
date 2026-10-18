@@ -1,8 +1,9 @@
 # Manual coordination
 
 The phase procedure for work the [driven runtime](driven-runtime.md) does not cover:
-research, provisioning, existing task records, Herdr or native-tool workers you
-supervise directly, and work outside a git repository. It was the whole skill before
+provisioning, existing task records, and interactive Herdr workers. Native host
+agents and report/file-artifact work, including research outside Git, use the
+driven runtime. This was the whole skill before
 the driven runtime existed and is unchanged apart from link paths.
 
 Several of its rules are now enforced by the helpers, so a refusal from one of

@@ -21,6 +21,13 @@ flowchart TD
 
 ## Boundaries
 
+The default driven interface is `coord.py`: it owns lifecycle decisions for both
+process and native workers, and for Git patches and file artifacts. Native host
+tools remain a transport bridge (`host-next` / `host-result`); the front desk
+executes the requested call and records actual observations. It does not manage
+assignment revisions, packaging, acceptance, or integration through helper APIs.
+See [Driven runtime](driven-runtime.md) for this public interface.
+
 `coord_state.py` remains the authoritative owner/revision store and completion
 entry point. `coord_outcomes.py` owns protected contracts, assignment identity,
 dependencies, verification, acceptance, integration, and the goal gate.

@@ -45,7 +45,7 @@ def checks(value):
 
 def contract(value):
     required = {'id', 'objective', 'rationale', 'scope', 'authority', 'cwd', 'needs', 'checks'}
-    if not isinstance(value, dict) or set(value) != required:
+    if not isinstance(value, dict) or set(value) - {'artifact'} != required:
         raise tasks.StateError('contract requires ' + ', '.join(sorted(required)))
     if any(not text(value[k]) for k in required - {'needs', 'checks'}):
         raise tasks.StateError('contract text fields must be non-empty')
@@ -54,6 +54,16 @@ def contract(value):
     if not isinstance(value['needs'], list) or any(not text(n) for n in value['needs']) or len(set(value['needs'])) != len(value['needs']):
         raise tasks.StateError('needs must contain unique outcome IDs')
     checks(value['checks'])
+    if 'artifact' in value:
+        artifact_name(value['artifact'])
+
+
+def artifact_name(value):
+    """An artifact contract names one file relative to its isolated workspace."""
+    if (not text(value) or Path(value).is_absolute() or '\\' in value
+            or any(part in {'', '.', '..', '.coord', 'inputs'} for part in value.split('/'))):
+        raise tasks.StateError('artifact must be a relative file path outside inputs/ and .coord/')
+    return value
 
 
 def file_ref(path, root=None):

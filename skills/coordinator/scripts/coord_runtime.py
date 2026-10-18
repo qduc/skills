@@ -109,13 +109,15 @@ def start(state, task_dir, oid, runtime, route, protocol, catalogs, command=None
     attempt = {'id': attempt_id, 'runtime': runtime, 'route': route, 'status': 'start_intended',
                'assignment_file': str(assignment_file), 'assignment_ref': outcomes.file_ref(assignment_file),
                'run_dir': str(run_dir), 'created_at': tasks.now()}
+    # A durable intent must already contain everything needed to resume dispatch.
+    # Preparing the prompt performs no host call or process launch.
+    prompt = (instructions or assignment_prompt)(assignment, assignment_file)
+    tasks.atomic_write(run_dir / 'prompt.txt', prompt)
     item['attempt'] = attempt
     # Persist launch intent before calling either host or process launcher.
     state['revision'] += 1
     state['updated_at'] = tasks.now()
     tasks.save(task_dir, state)
-    prompt = (instructions or assignment_prompt)(assignment, assignment_file)
-    tasks.atomic_write(run_dir / 'prompt.txt', prompt)
     if runtime == 'native':
         attempt['status'] = 'delivery_unknown'
         return {'attempt_id': attempt_id, 'request': {'action': 'spawn', 'message': prompt},

@@ -44,7 +44,7 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **[browser-qa](skills/browser-qa/SKILL.md)** — Verifies scoped user journeys and rendered behavior in a real browser, with reproducible evidence and explicit coverage limits.
 - **bug-retro** — After a bug is fixed, turns that single fix into a lasting improvement for the whole class of bug.
 - **[code-review](skills/code-review/SKILL.md)** — Inspects code changes for evidence-backed correctness, security, and compatibility risks.
-- **coordinator** — Splits substantial work across bounded workers, then tracks dependencies, checks the results, and integrates them. Code owns the flow and gates; the agent acts as the front desk and answers typed judgments.
+- **coordinator** — Splits substantial work across bounded workers, then tracks dependencies, checks the results, and integrates them. Handles process or native workers and Git patches or report/file artifacts. Code owns the flow and gates; the agent answers typed judgments and performs requested native host calls.
 - **coordinator-setup** — Discovers host capabilities and configures optional coordinator adapters in an external host profile without rewriting the base skill.
 - **[debugging](skills/debugging/SKILL.md)** — Tests causal explanations through hypotheses, discriminating experiments, and model updates.
 - **deep-module-review** — Judges one module or API for cohesion, what it hides, how heavy its interface is, what leaks out, and how much callers have to carry.

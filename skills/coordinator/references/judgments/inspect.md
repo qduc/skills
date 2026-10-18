@@ -4,8 +4,13 @@ The worker's change already passed its contract checks, and every test or
 commit its summary cites exists. You decide whether it is fit to integrate.
 Checks catch what they test; you catch what they do not.
 
-Read the `patch` (and `patch_file` when it was truncated) against the
-`contract`. Reject when you find any of these:
+For patch delivery, read the `patch` (and `patch_file` when truncated) against
+the `contract`. For `delivery: artifact`, `patch` is just a text preview of the
+deliverable: inspect `artifact.path` with the appropriate file reader (especially
+for binary files), and verify claims against the original material at `source`
+and the acceptance criteria. Do not demand code changes or tests from a report.
+Passing format/existence checks does not establish that its claims are true.
+Reject when you find any of these:
 
 - **Scope or authority violations.** Changes outside `scope`, edits to unrelated
   files, deleted or weakened tests, or decisions the contract did not authorize.

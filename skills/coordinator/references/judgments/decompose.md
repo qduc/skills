@@ -1,7 +1,8 @@
 # Judgment: decompose the goal into outcomes and checks
 
 You are turning the user's goal into a small plan the driver can execute. Read
-the repository at `repository` before deciding; the file list is only a start.
+the repository at `repository` before deciding; for `delivery: artifact`, read
+the original material at `source` instead. The file list is only a start.
 Your answer becomes binding contracts, so everything in it must be true and
 runnable.
 
@@ -30,6 +31,16 @@ Each outcome is one worker's bounded job with one accountable result.
   for missing cases. So a check may run a test file that does not exist yet
   (`python3 -m unittest test_feature.py`); say in the `scope` what that file must
   cover. The implementing worker cannot modify those approved tests.
+
+For `delivery: artifact`, each outcome also needs `artifact`: one relative file
+path such as `report.md`, `data.json`, or `chart.png`. The worker starts in an
+empty workspace and reads original material at `source` without editing it.
+Already accepted dependencies are at `inputs/<outcome-id>/<artifact>`; an
+outcome's checks run beside its output. No test-writing phase is added. Goal
+checks run from `repository`, where accepted files appear at
+`artifacts/<outcome-id>/<artifact>`. Plan meaningful content/format checks and
+state which claims need semantic source inspection. Do not require reports or
+binary files to be Git patches. Omit `artifact` for patch delivery.
 
 ## Goal checks
 
