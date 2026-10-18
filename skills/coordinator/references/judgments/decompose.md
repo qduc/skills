@@ -24,6 +24,12 @@ Each outcome is one worker's bounded job with one accountable result.
   focused existing tests plus new tests the worker must make pass. A check that
   passes before the work is done proves nothing. Use `python3 -c ...` or
   `sh -c ...` when you need a small inline assertion.
+- **Tests come first.** Unless the task turned it off, each outcome gets a
+  separate checks phase: a worker writes the tests before anyone implements, at
+  least one of your checks must fail once they exist, and the tests are reviewed
+  for missing cases. So a check may run a test file that does not exist yet
+  (`python3 -m unittest test_feature.py`); say in the `scope` what that file must
+  cover. The implementing worker cannot modify those approved tests.
 
 ## Goal checks
 
@@ -31,7 +37,10 @@ Goal checks run from the repository root after every outcome is integrated.
 They are the definition of done for the whole task, so derive them from the
 `acceptance_criteria`: every criterion should be covered by at least one goal
 check, and goal checks should exercise the combined behavior, not repeat a
-single outcome's check.
+single outcome's check. Name the cases a too-eager or too-narrow solution would
+get wrong, not only the main behavior. At least one goal check must fail on the
+current code; the plan is refused otherwise, because a goal that already passes
+its checks cannot show the work was done.
 
 ## Replanning
 

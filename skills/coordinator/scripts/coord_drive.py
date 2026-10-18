@@ -32,6 +32,7 @@ import time
 import uuid
 
 import coord_outcomes as outcomes
+import coord_process
 import coord_runtime as runtime
 import coord_state as tasks
 
@@ -41,8 +42,11 @@ DRIVE_FILE = 'drive.json'
 PACKAGE_DIR = '.coord'
 EXCLUDE_PACKAGE = ':(exclude)' + PACKAGE_DIR
 DEFAULT_LIMITS = {'attempts_per_outcome': 3, 'goal_rounds': 3, 'judgment_retries': 2,
-                  'stall_seconds': 900, 'check_timeout': 300, 'unknown_grace_seconds': 120}
-OUTCOME_ID = re.compile(r'[a-z0-9][a-z0-9-]{0,39}')
+                  'stall_seconds': 900, 'check_timeout': 300, 'unknown_grace_seconds': 120,
+                  'checks_first': True}
+OUTCOME_ID = re.compile(r'[a-z0-9][a-z0-9-]{0,31}')
+CHECKS_SUFFIX = '-checks'
+DIFF_HEADER = re.compile(r'^diff --git a/(\S+) b/(\S+)$', re.M)
 TAIL = 4000
 
 
@@ -203,6 +207,7 @@ SCHEMAS = {
                   '"goal_checks": [{"id": str, "argv": [str]}], "rationale": str}'),
     'assess': '{"action": one of context.actions, "reason": str, "guidance"?: str, "question"?: str}',
     'inspect': '{"verdict": "accept" | "reject", "reason": str, "feedback"?: str}',
+    'review_checks': '{"verdict": "accept" | "reject", "reason": str, "feedback"?: str}',
 }
 OUTCOME_FIELDS = {'id', 'objective', 'rationale', 'scope', 'authority', 'needs', 'checks'}
 
@@ -234,7 +239,9 @@ def validate_answer(drive, request, answer):
             if not isinstance(entry, dict) or set(entry) != OUTCOME_FIELDS:
                 raise DriveError('each outcome needs exactly ' + ', '.join(sorted(OUTCOME_FIELDS)))
             if not isinstance(entry['id'], str) or not OUTCOME_ID.fullmatch(entry['id']):
-                raise DriveError(f"outcome id {entry['id']!r} must be a lowercase slug")
+                raise DriveError(f"outcome id {entry['id']!r} must be a lowercase slug of at most 32 characters")
+            if entry['id'].endswith(CHECKS_SUFFIX):
+                raise DriveError(f"outcome ids ending in {CHECKS_SUFFIX} are reserved for the checks phase")
             outcomes.checks(entry['checks'])
         outcomes.checks(answer['goal_checks'])
         kept = {(c['id'], tuple(c['argv'])) for c in answer['goal_checks']}
@@ -250,7 +257,7 @@ def validate_answer(drive, request, answer):
             nonempty(answer.get('guidance'), 'guidance for retry')
         if answer['action'] == 'escalate':
             nonempty(answer.get('question'), 'question for escalate')
-    elif kind == 'inspect':
+    elif kind in {'inspect', 'review_checks'}:
         if answer.get('verdict') not in {'accept', 'reject'}:
             raise DriveError('verdict must be accept or reject')
         nonempty(answer.get('reason'), 'reason')
@@ -302,7 +309,7 @@ def reset_worktree(path, head):
     git(path, 'clean', '-fd', '-e', PACKAGE_DIR)  # previous attempts' patches stay as evidence
 
 
-def worker_instructions(feedback):
+def worker_instructions(feedback, frozen=()):
     def build(assignment, path):
         contract = assignment['contract']
         cwd = contract['cwd']
@@ -327,6 +334,9 @@ def worker_instructions(feedback):
             f'missing decision>"}} to {Path(path).parent / "blocker.json"} and stop.',
             f'The full assignment is at {path} (read-only).',
         ]
+        if frozen:
+            lines += ['These tests were written and reviewed before you started; make them pass without '
+                      'modifying them (write a blocker if one is wrong):', *(f'- {name}' for name in frozen)]
         if feedback:
             lines += ['Earlier attempts at this outcome did not pass. Address this feedback:',
                       *(f"- {entry['text']}" for entry in feedback[-5:])]
@@ -356,7 +366,10 @@ def start_attempt(task_dir, drive, state, oid):
     route = pool[record['attempts'] % len(pool)]  # rotate across the confirmed pool on retries
     command = [sys.executable, str(SELF), '_work', '--assignment', '{assignment}', '--cwd', '{cwd}',
                '--base', head, '--', *command_for(drive, route)]
-    build = worker_instructions(record['feedback'])
+    partner = drive.get('checks_for', {}).get(oid)
+    receipt = outcomes.outcome_of(state, partner).get('integration') if partner else None
+    frozen = sorted(files_in_patch(receipt['artifact']['path'])) if receipt else []
+    build = worker_instructions(record['feedback'], frozen)
     started = mutate(task_dir, drive, lambda s, p: runtime.start(s, p, oid, 'process', route, 'bounded_worker',
                                                                   [], command, instructions=build))
     record['attempts'] += 1
@@ -480,11 +493,43 @@ def plan_phase(task_dir, drive, state):
         apply_plan(task_dir, drive, request, replan=False)
 
 
+def red_check(checks):
+    """A check that passes only while at least one of `checks` still fails."""
+    return {'id': 'red-before-green', 'argv': [sys.executable, str(SELF), '_red', '--checks', json.dumps(checks)]}
+
+
+def expand(drive, entries):
+    """Give each outcome a checks phase that writes its tests first; the outcome then needs it."""
+    if not limit(drive, 'checks_first'):
+        return entries, {}
+    expanded, partners = [], {}
+    for entry in entries:
+        checks_id = entry['id'] + CHECKS_SUFFIX
+        expanded.append({
+            'id': checks_id,
+            'objective': ('Write the tests that will prove this outcome, before anyone implements it: '
+                          f"{entry['objective']} Do not implement the behavior itself."),
+            'rationale': ('Tests are written and reviewed before implementation so missing cases are caught '
+                          'while they are cheap to add. ' + entry['rationale']),
+            'scope': ('Test files and test fixtures only; no production code. These checks must fail until the '
+                      'outcome is implemented: ' + '; '.join(shlex.join(c['argv']) for c in entry['checks'])),
+            'authority': entry['authority'] + ' Limited to tests and fixtures.',
+            'needs': list(entry['needs']), 'checks': [red_check(entry['checks'])]})
+        expanded.append(dict(entry, needs=list(entry['needs']) + [checks_id]))
+        partners[entry['id']] = checks_id
+    return expanded, partners
+
+
 def apply_plan(task_dir, drive, request, replan):
     value = request['answer']
     try:
+        baseline = outcomes.run_checks(value['goal_checks'], drive['integration'], limit(drive, 'check_timeout'))
+        if all(check['exit_code'] == 0 for check in baseline):
+            raise DriveError('every goal check already passes on the current code, so none of them can show '
+                             'whether the work was done; include at least one check that fails until the goal is met')
+        entries, partners = expand(drive, value['outcomes'])
         spec = {'outcomes': [], 'goal_checks': value['goal_checks']}
-        for entry in value['outcomes']:
+        for entry in entries:
             contract = dict(entry, cwd=str(ensure_worktree(task_dir, drive, entry['id'])))
             spec['outcomes'].append(contract)
         if replan:
@@ -496,10 +541,11 @@ def apply_plan(task_dir, drive, request, replan):
         reject_answer(drive, request, error)
         return
     request['status'] = 'applied'
-    for entry in value['outcomes']:
+    drive['checks_for'] = partners
+    for entry in entries:
         drive['outcomes'][entry['id']] = {'attempts': 0, 'allowance': 0, 'feedback': [], 'blocked': None,
                                           'progress': {}, 'flags': {}}
-    log(drive, 'plan_applied', request=request['id'], outcomes=[e['id'] for e in value['outcomes']], replan=replan)
+    log(drive, 'plan_applied', request=request['id'], outcomes=[e['id'] for e in entries], replan=replan)
 
 
 def resolve_block(task_dir, drive, state, oid):
@@ -684,6 +730,11 @@ def settled(task_dir, drive, oid, observation):
         retry(task_dir, drive, state, oid, f"{reason} Exit code: {result.get('exit_code')}."
               + (f' stderr tail:\n{stderr}' if stderr else ''))
         return
+    frozen = frozen_tests_touched(state, drive, oid, result['report'])
+    if frozen:
+        retry(task_dir, drive, state, oid, 'You changed tests that were reviewed and approved before implementation: '
+              + ', '.join(frozen) + '. Make them pass without modifying them; if one is wrong, write a blocker.')
+        return
     try:
         verification = mutate(task_dir, drive, lambda s, p: outcomes.verify_result(
             s, oid, result['report'], limit(drive, 'check_timeout')))
@@ -699,14 +750,53 @@ def settled(task_dir, drive, oid, observation):
         retry(task_dir, drive, tasks.load(task_dir), oid, '\n'.join(lines))
         return
     patch = Path(verification['artifact']['path']).read_text(errors='replace')
-    open_request(drive, 'inspect', inspect_key, {
+    implements = next((x for x, c in drive.get('checks_for', {}).items() if c == oid), None)
+    extra = {}
+    if implements:  # a checks phase: review the tests against what the outcome and the task must achieve
+        extra = {'implements': outcomes.outcome_of(state, implements)['contract'],
+                 'acceptance_criteria': state['details']['acceptance_criteria'],
+                 'red_evidence': verification['checks'][0]['stdout']}
+    open_request(drive, 'review_checks' if implements else 'inspect', inspect_key, dict(extra, **{
         'outcome': oid, 'contract': item['contract'], 'attempt': record['attempts'],
         'summary': json.loads(Path(result['report']).read_text()).get('summary'),
         'patch': patch if len(patch) <= 60000 else patch[:60000] + '\n[patch truncated; read the artifact file]',
         'patch_file': verification['artifact']['path'],
         'checks': [{'id': c['id'], 'argv': c['argv'], 'exit_code': c['exit_code'],
                     'stdout_tail': tail(c['stdout'], 1500)} for c in verification['checks']],
-        'earlier_feedback': [f['text'] for f in record['feedback'][-3:]]})
+        'earlier_feedback': [f['text'] for f in record['feedback'][-3:]]}))
+
+
+def files_in_patch(path):
+    return {name for pair in DIFF_HEADER.findall(Path(path).read_text(errors='replace')) for name in pair}
+
+
+def frozen_tests_touched(state, drive, oid, report):
+    """Files from this outcome's approved checks phase that its implementation patch changes."""
+    partner = drive.get('checks_for', {}).get(oid)
+    if not partner:
+        return []
+    receipt = outcomes.outcome_of(state, partner).get('integration')
+    if not receipt:
+        return []
+    artifact = json.loads(Path(report).read_text())['artifact']['path']
+    return sorted(files_in_patch(receipt['artifact']['path']) & files_in_patch(artifact))
+
+
+def red(checks, cwd, timeout=600):
+    """Exit 0 only while at least one check fails: tests that already pass prove nothing new."""
+    failing = []
+    for check in checks:
+        try:
+            code, _, _ = coord_process.run(check['argv'], cwd, timeout)
+        except (subprocess.TimeoutExpired, OSError):
+            code = None
+        state = 'fails (good: it needs the implementation)' if code != 0 else 'passes already (guards regressions only)'
+        print(f"{check['id']}: {state}")
+        if code != 0:
+            failing.append(check['id'])
+    if not failing:
+        print('Every check passes before any implementation, so none of them can show the work was done.')
+    return 0 if failing else 1
 
 
 def apply_inspection(task_dir, drive, state, oid, request):
@@ -1029,7 +1119,11 @@ def main(argv=None):
     worker.add_argument('--cwd', required=True)
     worker.add_argument('--base', required=True)
     worker.add_argument('argv', nargs=argparse.REMAINDER)
+    red_parser = sub.add_parser('_red', help=argparse.SUPPRESS)
+    red_parser.add_argument('--checks', required=True)
     args = parser.parse_args(argv)
+    if args.command == '_red':
+        return red(json.loads(args.checks), Path.cwd())
     command = args.argv[1:] if args.argv[:1] == ['--'] else args.argv
     return work(args.assignment, args.cwd, args.base, command)
 

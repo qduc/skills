@@ -51,7 +51,8 @@ scenario = json.loads(scenario_file.read_text())
 prompt = sys.stdin.read()
 context = json.loads(re.search(r"## This request\s+```json\n(.*?)\n```", prompt, re.S).group(1))
 kind = re.search(r"# Judgment: (\w+)", prompt).group(1)
-kind = {"recommend": "harness", "decompose": "decompose", "assess": "assess", "inspect": "inspect"}[kind]
+kind = {"recommend": "harness", "decompose": "decompose", "assess": "assess", "inspect": "inspect",
+        "review": "review_checks"}[kind]
 counts_file = scenario_file.parent / "judge-counts.json"
 counts = json.loads(counts_file.read_text()) if counts_file.exists() else {}
 n = counts.get(kind, 0)
@@ -75,12 +76,21 @@ WRONG_MUL = CALC + '\n\ndef mul(a, b):\n    return a + b\n'
 DIV = MUL + '\n\ndef div(a, b):\n    return a / b\n'
 
 
+GOOD_TESTS = ('import unittest\nimport calc\n\n\nclass MulTest(unittest.TestCase):\n'
+              '    def test_mul(self):\n        self.assertEqual(calc.mul(2, 3), 6)\n'
+              '        self.assertEqual(calc.mul(0, 5), 0)\n')
+MORE_TESTS = GOOD_TESTS + '        self.assertEqual(calc.mul(-2, 3), -6)\n'
+VACUOUS_TESTS = ('import unittest\nimport calc\n\n\nclass MulTest(unittest.TestCase):\n'
+                 '    def test_mul(self):\n        self.assertTrue(callable(calc.add))\n')
+
+
 def check(cid, code):
     return {'id': cid, 'argv': [sys.executable, '-c', code]}
 
 
 MUL_CHECK = check('mul-works', 'import calc; assert calc.mul(2, 3) == 6')
 SUITE = {'id': 'suite', 'argv': [sys.executable, '-m', 'unittest', '-q']}
+MUL_TESTS = {'id': 'mul-tests', 'argv': [sys.executable, '-m', 'unittest', '-q', 'test_mul']}
 
 
 def outcome(oid, objective, checks, needs=()):
@@ -124,7 +134,8 @@ class DriverTests(unittest.TestCase):
     def start(self, **kwargs):
         result = drive.start(self.root, self.repo, 'Add multiplication to the calculator',
                              ['calc.mul multiplies two numbers', 'existing tests still pass'], self.workers,
-                             limits=dict({'check_timeout': 60}, **kwargs.pop('limits', {})), **kwargs)
+                             limits=dict({'check_timeout': 60, 'checks_first': False}, **kwargs.pop('limits', {})),
+                             **kwargs)
         self.task = Path(self.root) / 'tasks' / result['task']
         return result
 
@@ -353,6 +364,71 @@ class DriverTests(unittest.TestCase):
         self.confirm()
         self.assert_done_on_branch(self.run_until(), both)
         self.assertIn('no longer applies', self.prompts('subtraction')[1])
+
+    # Checks first: tests are written, proven red, and reviewed before implementation.
+    def checks_first_plan(self):
+        return plan(outcome('mul', 'Add multiplication to calc', [MUL_TESTS]))
+
+    def test_checks_first_story(self):
+        self.scenario({'Write the tests': [{'files': {'test_mul.py': GOOD_TESTS}}],
+                       'multiplication': [{'files': {'calc.py': MUL}}]},
+                      decompose=[self.checks_first_plan()])
+        self.start(limits={'checks_first': True})
+        self.confirm()
+        self.assert_done_on_branch(self.run_until(), MUL)
+        self.assertEqual(self.git('show', f'coord/{self.task.name[:8]}:test_mul.py') + '\n', GOOD_TESTS)
+        subjects = self.git('log', '--format=%s', f'main..coord/{self.task.name[:8]}').splitlines()
+        self.assertEqual([s.split(':')[0] for s in subjects], ['coord(mul)', 'coord(mul-checks)'])
+        review = self.judged('review_checks')[0]
+        self.assertEqual(review['implements']['id'], 'mul')
+        self.assertIn('fails (good', review['red_evidence'])
+        self.assertIn('test_mul.py', review['patch'])
+        self.assertEqual(len(self.judged('inspect')), 1)  # the implementation still gets its own inspection
+        self.assertIn('test_mul.py', self.prompts('multiplication')[0])  # the implementer is told its checks
+
+    def test_tests_that_already_pass_are_sent_back(self):
+        self.scenario({'Write the tests': [{'files': {'test_mul.py': VACUOUS_TESTS}}, {'files': {'test_mul.py': GOOD_TESTS}}],
+                       'multiplication': [{'files': {'calc.py': MUL}}]},
+                      decompose=[self.checks_first_plan()])
+        self.start(limits={'checks_first': True})
+        self.confirm()
+        self.assert_done_on_branch(self.run_until(), MUL)
+        self.assertIn('Every check passes before any implementation', self.prompts('Write the tests')[1])
+        self.assertEqual(len(self.judged('review_checks')), 1)  # the vacuous tests never reached review
+
+    def test_review_sends_missing_cases_back_to_the_test_writer(self):
+        self.scenario({'Write the tests': [{'files': {'test_mul.py': GOOD_TESTS}}, {'files': {'test_mul.py': MORE_TESTS}}],
+                       'multiplication': [{'files': {'calc.py': MUL}}]},
+                      decompose=[self.checks_first_plan()],
+                      review_checks=[{'verdict': 'reject', 'reason': 'no negative numbers',
+                                      'feedback': 'Add a case: mul(-2, 3) must be -6.'},
+                                     {'verdict': 'accept', 'reason': 'covers zero and negatives'}])
+        self.start(limits={'checks_first': True})
+        self.confirm()
+        self.assert_done_on_branch(self.run_until(), MUL)
+        self.assertIn('mul(-2, 3) must be -6', self.prompts('Write the tests')[1])
+        self.assertEqual(self.git('show', f'coord/{self.task.name[:8]}:test_mul.py') + '\n', MORE_TESTS)
+
+    def test_implementation_cannot_edit_approved_tests(self):
+        self.scenario({'Write the tests': [{'files': {'test_mul.py': GOOD_TESTS}}],
+                       'multiplication': [{'files': {'calc.py': WRONG_MUL, 'test_mul.py': VACUOUS_TESTS}},
+                                          {'files': {'calc.py': MUL}}]},
+                      decompose=[self.checks_first_plan()])
+        self.start(limits={'checks_first': True})
+        self.confirm()
+        self.assert_done_on_branch(self.run_until(), MUL)
+        self.assertIn('You changed tests that were reviewed and approved', self.prompts('multiplication')[1])
+        self.assertEqual(self.git('show', f'coord/{self.task.name[:8]}:test_mul.py') + '\n', GOOD_TESTS)
+
+    def test_plan_with_no_failing_goal_check_is_refused(self):
+        already_green = plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]), goal_checks=[SUITE])
+        self.scenario({'multiplication': [{'files': {'calc.py': MUL}}]},
+                      decompose=[already_green, plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
+        self.start()
+        self.confirm()
+        self.assert_done_on_branch(self.run_until(), MUL)
+        request = next(r for r in drive.load_drive(self.task)['requests'].values() if r['kind'] == 'decompose')
+        self.assertIn('already passes on the current code', request['errors'][0])
 
     def test_judge_output_parsing_unwraps_cli_envelopes(self):
         wrapped = json.dumps({'type': 'result', 'result': 'Here you go:\n{"verdict": "accept", "reason": "ok"}'})

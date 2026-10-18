@@ -27,7 +27,14 @@ per-task choice, confirmed below.
 `adapters.driver.judge`, when present, is the argv for answering judgments
 headlessly (prompt as a `"{prompt}"` element, or on stdin when there is none).
 Limits are optional: `attempts_per_outcome` (3), `goal_rounds` (3),
-`judgment_retries` (2), `stall_seconds` (900), `check_timeout` (300).
+`judgment_retries` (2), `stall_seconds` (900), `check_timeout` (300), and
+`checks_first` (true).
+
+With `checks_first`, every outcome starts with a checks phase: a worker writes
+the tests, at least one of the outcome's checks must fail with them in place,
+and a *review_checks* judgment looks for missing cases before anyone
+implements. The implementer then cannot change those tests. Turn it off only
+for work whose checks are already complete, such as a mechanical rename.
 
 ## Start
 
