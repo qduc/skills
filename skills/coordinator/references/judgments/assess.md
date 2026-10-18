@@ -18,6 +18,12 @@ action from `actions`; the driver executes it.
   specified, its checks cannot pass, or the split was wrong. The driver stops
   the work and asks for a new decomposition with your `reason` as evidence.
 
+For `repeated_failure`, read the failing output before blaming the worker. If
+the check itself cannot pass (it runs from the wrong directory, imports a
+module that is not on the path, or asserts something the contract does not
+ask for), choose `replan` and name the broken check in `reason`; a retry
+cannot fix a check the worker is not allowed to change.
+
 For a `blocked` event, answer the blocker within the recorded authority when
 you can (as `retry` guidance); otherwise escalate it unchanged in meaning.
 

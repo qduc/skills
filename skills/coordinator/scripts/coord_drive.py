@@ -383,8 +383,11 @@ def progress_signature(attempt, worktree):
     run_dir = Path(attempt['run_dir'])
     sizes = [(run_dir / name).stat().st_size if (run_dir / name).exists() else 0
              for name in ('stdout.log', 'stderr.log')]
-    status = git(worktree, 'status', '--porcelain', '--', '.', EXCLUDE_PACKAGE, check=False).stdout
-    diff = git(worktree, 'diff', '--', '.', EXCLUDE_PACKAGE, check=False).stdout
+    # Never write the index: the worker's own git commands may need it right now. `git diff` refreshes
+    # and rewrites it even with --no-optional-locks, so use the plumbing `diff-files` instead.
+    status = git(worktree, '--no-optional-locks', 'status', '--porcelain', '--', '.', EXCLUDE_PACKAGE,
+                 check=False).stdout
+    diff = git(worktree, '--no-optional-locks', 'diff-files', '-p', '--', '.', EXCLUDE_PACKAGE, check=False).stdout
     return hashlib.sha256(json.dumps([sizes, status, diff]).encode()).hexdigest()
 
 
@@ -615,7 +618,7 @@ def outcomes_phase(task_dir, drive):
             continue
         state = tasks.load(task_dir)
         item = outcomes.outcome_of(state, oid)
-        if drive.get('replan') or drive.get('halted'):
+        if drive.get('replan') or drive.get('halted') or replan_pending(drive):
             attempt = item.get('attempt')
             if attempt and attempt.get('status') not in {'finished', 'stopped'}:
                 observe(task_dir, drive, oid)
@@ -634,6 +637,12 @@ def outcomes_phase(task_dir, drive):
             reconcile_if_gone(task_dir, drive, oid)
         else:
             settled(task_dir, drive, oid, observation)
+
+
+def replan_pending(drive):
+    """A replan was requested but its plan has not landed: the old plan only settles, never advances."""
+    return any(r['kind'] == 'decompose' and r['key'].startswith('replan-') and r['status'] in {'open', 'answered', 'failed'}
+               for r in drive['requests'].values())
 
 
 def observe(task_dir, drive, oid):
@@ -656,7 +665,7 @@ def watch_progress(task_dir, drive, state, oid):
         'event': 'no_progress', 'outcome': oid, 'contract': outcomes.outcome_of(state, oid)['contract'],
         'idle_minutes': round(idle / 60, 1), 'stdout_tail': read_tail(run_dir / 'stdout.log'),
         'stderr_tail': read_tail(run_dir / 'stderr.log'),
-        'diff_stat': git(attempt_cwd(state, oid), 'diff', '--stat', check=False).stdout,
+        'diff_stat': git(attempt_cwd(state, oid), '--no-optional-locks', 'diff-files', '--stat', check=False).stdout,
         'actions': ['continue', 'retry', 'escalate', 'replan']})
     record['blocked'] = request['id']
 
@@ -749,6 +758,25 @@ def settled(task_dir, drive, oid, observation):
         lines = [f"Check {c['id']} failed (exit {c['exit_code']}).\nstdout:\n{tail(c['stdout'], 1500)}\n"
                  f"stderr:\n{tail(c['stderr'], 1500)}" for c in failing]
         lines += [f'Your summary cites something that does not exist: {b}' for b in blockers]
+        signature = failure_signature(failing)
+        previous = record.get('last_failure')
+        record['last_failure'] = signature
+        budget_left = record['attempts'] < limit(drive, 'attempts_per_outcome') + record['allowance']
+        if failing and signature == previous and budget_left:
+            # Same checks, same output, twice: another identical retry has no new evidence to act on.
+            record['feedback'].append({'at': tasks.now(), 'text': '\n'.join(lines)})
+            request = open_request(drive, 'assess', f"repeated-{oid}-{attempt['id']}", {
+                'event': 'repeated_failure', 'outcome': oid, 'contract': item['contract'],
+                'attempts': record['attempts'], 'failing_checks': [
+                    {'id': c['id'], 'argv': c['argv'], 'exit_code': c['exit_code'],
+                     'stdout_tail': tail(c['stdout'], 1500), 'stderr_tail': tail(c['stderr'], 1500)} for c in failing],
+                'note': ('The same checks failed with identical output on two attempts in a row. Retrying unchanged '
+                         'is unlikely to help; the check itself may be broken (wrong directory, missing module), '
+                         'which only a replan can fix.'),
+                'actions': ['retry', 'escalate', 'replan']})
+            record['blocked'] = request['id']
+            log(drive, 'repeated_failure', outcome=oid)
+            return
         retry(task_dir, drive, tasks.load(task_dir), oid, '\n'.join(lines))
         return
     patch = Path(verification['artifact']['path']).read_text(errors='replace')
@@ -766,6 +794,12 @@ def settled(task_dir, drive, oid, observation):
         'checks': [{'id': c['id'], 'argv': c['argv'], 'exit_code': c['exit_code'],
                     'stdout_tail': tail(c['stdout'], 1500)} for c in verification['checks']],
         'earlier_feedback': [f['text'] for f in record['feedback'][-3:]]}))
+
+
+def failure_signature(failing):
+    """Failing checks and their output, with numbers removed so timings and addresses do not differ."""
+    normalized = [(c['id'], c['exit_code'], re.sub(r'\d+', '#', c['stdout'] + c['stderr'])) for c in failing]
+    return hashlib.sha256(json.dumps(normalized).encode()).hexdigest()
 
 
 def files_in_patch(path):

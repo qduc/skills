@@ -283,6 +283,45 @@ class DriverTests(unittest.TestCase):
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertIn('User decision: mul must multiply', self.prompts('multiplication')[2])
 
+    def test_progress_polling_never_writes_the_worker_index(self):
+        # Plain `git status` refreshes and rewrites the index when timestamps change; while a worker
+        # runs, that takes index.lock and can make the worker's own git commands fail.
+        index = self.repo / '.git' / 'index'
+        before = index.read_bytes()
+        time.sleep(1.1)
+        os.utime(self.repo / 'calc.py')  # newer mtime, same content: stale stat info in the index
+        run_dir = self.base / 'run'
+        run_dir.mkdir()
+        drive.progress_signature({'run_dir': str(run_dir)}, self.repo)
+        self.assertEqual(index.read_bytes(), before)
+        subprocess.run(['git', '-C', str(self.repo), 'status', '--porcelain'], check=True, capture_output=True)
+        self.assertNotEqual(index.read_bytes(), before)  # the hazard is real without the flag
+
+    def test_old_plan_is_held_while_a_replan_is_pending(self):
+        self.scenario({'multiplication': [{'files': {'calc.py': WRONG_MUL}}], 'product': [{'files': {'calc.py': MUL}}]},
+                      decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK])),
+                                 plan(outcome('product', 'Add the product function to calc', [MUL_CHECK]))],
+                      assess=[{'action': 'replan', 'reason': 'the contract needs a different approach'}])
+        self.start(limits={'attempts_per_outcome': 1})
+        self.confirm()
+        self.assert_done_on_branch(self.run_until(), MUL)
+        self.assertEqual(len(self.prompts('multiplication')), 1)
+        self.assertEqual(len(self.judged('assess')), 1)  # no second judgment about the abandoned plan
+
+    def test_identical_failures_go_to_judgment_before_the_budget_runs_out(self):
+        self.scenario({'multiplication': [{'files': {'calc.py': WRONG_MUL}}]},
+                      decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))],
+                      assess=[{'action': 'escalate', 'reason': 'same failure twice',
+                               'question': 'Is the mul check right?'}])
+        self.start(limits={'attempts_per_outcome': 5})
+        self.confirm()
+        status = self.run_until()
+        self.assertEqual(status['questions'][0]['kind'], 'escalation')
+        assessed = self.judged('assess')[0]
+        self.assertEqual(assessed['event'], 'repeated_failure')
+        self.assertEqual(assessed['failing_checks'][0]['id'], 'mul-works')
+        self.assertEqual(len(self.prompts('multiplication')), 2)  # not 5
+
     def test_worker_blocker_is_assessed_not_guessed(self):
         self.scenario({'multiplication': [{'blocker': 'Which rounding mode should mul use?'},
                                           {'files': {'calc.py': MUL}}]},
