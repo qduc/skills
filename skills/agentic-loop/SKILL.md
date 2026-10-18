@@ -37,6 +37,8 @@ description: Carry delegated, multi-step tasks through planning, action, observa
 
 4. **Verify with evidence.** **PASS** requires positive evidence for the criterion. **FAIL** means observed contradiction. **UNCERTAIN** means evidence is absent, stale, incomplete, or conflicting. Both FAIL and UNCERTAIN return to ADAPT or a specific blocker. Use [verification.md](references/verification.md) to select proportionate checks and handle evidence invalidated by later changes. Do not accept plausible output, a clean command exit, irrelevant passing tests, or another agent's claim as sufficient outcome evidence.
 
+   When progress stalls, assumptions narrow the search prematurely, or the outcome is high-impact, use [independent-challenge.md](references/independent-challenge.md) to challenge the search direction separately from checking the solution. A fresh challenger is optional; independently observable evidence is not.
+
 5. **Escalate only the missing human decision.** Escalate for a material preference/requirement ambiguity, conflicting constraints, missing access, required authorization, or exhausted reasonable approaches. Honor authorization already granted. Failure, investigation, harder-than-expected work, and equivalent technical choices are not by themselves escalation reasons. Read [escalation.md](references/escalation.md) when blocked. Preserve useful partial work and a resumable next step. Do not return management of the entire workflow to the human.
 
 ## Stop rules
