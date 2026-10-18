@@ -1,11 +1,11 @@
 ---
 name: skill-router
-description: Entry point for every request. Load this first, before any other skill, whenever a new user request arrives, and follow it to exactly one exit (no skill, one skill, or a two-skill chain). Most requests exit immediately with no skill. Also use when the user asks which skill to use or whether a skill exists for something.
+description: Use when the user asks which skill to use or whether a skill exists for something.
 ---
 
 # Skill Router
 
-Every request passes through here once, and every path ends at an exit. Routing takes seconds and loads nothing until the exit is chosen.
+Decide which skill to use for the current user request.
 
 ## Exits
 
