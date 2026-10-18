@@ -76,7 +76,8 @@ def assignment_prompt(assignment, path):
     )
 
 
-def start(state, task_dir, oid, runtime, route, protocol, catalogs, command=None):
+def start(state, task_dir, oid, runtime, route, protocol, catalogs, command=None, instructions=None):
+    """Launch one attempt. `instructions(assignment, path) -> str` replaces the default worker prompt."""
     outcomes.require_current_goal(state)
     capabilities(runtime)
     tasks.validate_pool([route])
@@ -113,7 +114,7 @@ def start(state, task_dir, oid, runtime, route, protocol, catalogs, command=None
     state['revision'] += 1
     state['updated_at'] = tasks.now()
     tasks.save(task_dir, state)
-    prompt = assignment_prompt(assignment, assignment_file)
+    prompt = (instructions or assignment_prompt)(assignment, assignment_file)
     tasks.atomic_write(run_dir / 'prompt.txt', prompt)
     if runtime == 'native':
         attempt['status'] = 'delivery_unknown'
