@@ -24,8 +24,10 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -942,6 +944,59 @@ def advance(task_dir):
                 if not drive.get('halted'):
                     goal_phase(task_dir, drive)
         return summary(task_dir, drive)
+
+
+# --------------------------------------------------------------------------- host profile
+
+def profile_path():
+    """Same location rules as coordinator-setup's host_profile.py."""
+    explicit = os.environ.get('COORDINATOR_CONFIG_HOME')
+    if explicit:
+        root = Path(explicit)
+        if not root.is_absolute():
+            raise DriveError('COORDINATOR_CONFIG_HOME must be absolute')
+    else:
+        configured = os.environ.get('XDG_CONFIG_HOME', '')
+        root = (Path(configured) if Path(configured).is_absolute() else Path.home() / '.config') / 'coordinator'
+    return root / 'host.json'
+
+
+def profile_driver():
+    """The profile's driver entry, or {} when there is no profile or no driver yet."""
+    path = profile_path()
+    if not path.is_file():
+        return {}
+    entry = json.loads(path.read_text()).get('adapters', {}).get('driver')
+    return entry if isinstance(entry, dict) else {}
+
+
+def doctor():
+    """Is this host ready for driven tasks? Lists every problem rather than the first."""
+    path = profile_path()
+    problems = []
+    if not Path('/proc/self/stat').is_file():
+        problems.append('the driven runtime needs Linux /proc (WSL2 works)')
+    if not shutil.which('git'):
+        problems.append('git is not on PATH')
+    driver = {}
+    if not path.is_file():
+        problems.append(f'no host profile at {path}')
+    else:
+        try:
+            driver = profile_driver()
+        except (ValueError, OSError) as error:
+            problems.append(f'host profile is unreadable: {error}')
+        if not driver.get('workers'):
+            problems.append('the host profile has no adapters.driver workers')
+    for worker in driver.get('workers', []):
+        if not shutil.which(worker['argv'][0]):
+            problems.append(f"worker command {worker['argv'][0]!r} for "
+                            f"{worker['route'].get('harness')}/{worker['route'].get('model')} is not on PATH")
+    if driver.get('judge') and not shutil.which(driver['judge'][0]):
+        problems.append(f"judge command {driver['judge'][0]!r} is not on PATH")
+    return {'ready': not problems, 'profile_path': str(path), 'problems': problems,
+            'workers': [w['route'] for w in driver.get('workers', [])], 'judge': driver.get('judge'),
+            'next': None if not problems else 'Run the coordinator-setup driver interview with the user, then retry.'}
 
 
 # --------------------------------------------------------------------------- front-desk operations

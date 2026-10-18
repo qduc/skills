@@ -5,10 +5,11 @@ The front desk talks with the user and drives the runtime only through these
 commands. None of them can accept, integrate, or skip a gate; the driver does
 those in code once the evidence and typed judgments allow it.
 
-  start              submit a goal with acceptance criteria and worker commands
+  doctor             is the host set up? (missing profile or workers means: run the setup interview)
+  start              submit a goal with acceptance criteria; workers come from the host profile
   status             what the task is waiting on, per outcome
   advance            run every deterministic step available now
-  run                advance repeatedly; answer judgments with --judge-command
+  run                advance repeatedly; the profile's judge answers judgments unless --no-judge
   requests / prompt  open judgment requests and the full prompt for one
   answer             submit a typed judgment answer (validated before use)
   questions          open questions only the user can answer
@@ -117,18 +118,20 @@ def main(argv=None):
     command.add_argument('--constraint', action='append', default=[])
     command.add_argument('--authority', help='what workers may do; defaults to isolated worktrees and a task branch')
     command.add_argument('--title')
-    command.add_argument('--workers-file', required=True,
-                         help='JSON [{"route": {"harness","model",...}, "argv": [..., "{prompt}", ...]}]')
+    command.add_argument('--workers-file',
+                         help='JSON [{"route": {...}, "argv": [..., "{prompt}", ...]}]; default: the host profile')
     command.add_argument('--real-use-required', action='store_true',
                          help='the task changes a skill or workflow; completion needs a real-use pass or waiver')
     command.add_argument('--limits-file', help='JSON overrides for driver limits')
 
+    sub.add_parser('doctor')
     for name in ('status', 'advance', 'requests', 'questions', 'halt', 'resume'):
         sub.add_parser(name).add_argument('--task', required=True)
 
     command = sub.add_parser('run')
     command.add_argument('--task', required=True)
-    command.add_argument('--judge-command-file', help='JSON argv; "{prompt}" element or stdin receives the prompt')
+    command.add_argument('--judge-command-file', help='JSON argv; default: the host profile judge')
+    command.add_argument('--no-judge', action='store_true', help='stop at every judgment request instead')
     command.add_argument('--poll', type=float, default=5)
     command.add_argument('--max-seconds', type=float, default=0, help='0 waits until done or a question')
     command.add_argument('--judge-timeout', type=float, default=1800)
@@ -161,10 +164,16 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
     try:
-        if args.command == 'start':
+        if args.command == 'doctor':
+            result = drive.doctor()
+        elif args.command == 'start':
             limits = read_json(args.limits_file) if args.limits_file else None
+            workers = read_json(args.workers_file) if args.workers_file else drive.profile_driver().get('workers')
+            if not workers:
+                raise drive.DriveError('no worker commands: the host profile has no adapters.driver workers. '
+                                       'Run `coord.py doctor`, then the coordinator-setup driver interview.')
             result = drive.start(tasks.root_path(args.root), args.repo, args.goal, args.criterion,
-                                 read_json(args.workers_file), args.title, args.constraint, args.authority,
+                                 workers, args.title, args.constraint, args.authority,
                                  args.real_use_required, limits)
         else:
             directory = task_dir(args)
@@ -173,7 +182,8 @@ def main(argv=None):
             elif args.command == 'advance':
                 result = drive.advance(directory)
             elif args.command == 'run':
-                judge_argv = read_json(args.judge_command_file) if args.judge_command_file else None
+                judge_argv = None if args.no_judge else (
+                    read_json(args.judge_command_file) if args.judge_command_file else drive.profile_driver().get('judge'))
                 result = run(directory, judge_argv, args.poll, args.max_seconds, args.judge_timeout)
             elif args.command == 'requests':
                 record = drive.load_drive(directory)

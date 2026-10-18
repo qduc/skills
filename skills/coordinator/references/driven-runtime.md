@@ -8,9 +8,11 @@ nothing when `done`. Task IDs accept a unique prefix of 6+ characters.
 
 The driver needs worker commands: non-interactive harness invocations that take
 the prompt as one argv element `"{prompt}"`, run in the current directory, and
-exit when finished. Read them from the host profile's `adapters.driver.workers`
-(see [Host profile](host-profile.md)); when that entry is missing, run the
-`coordinator-setup` skill first. Write the list to a file:
+exit when finished. `start` reads them from the host profile's `adapters.driver.workers` (see
+[Host profile](host-profile.md)), and `run` uses its `adapters.driver.judge`
+unless you pass `--no-judge`. `coord.py doctor` says whether that is set up;
+when it is not, run the `coordinator-setup` driver interview with the user.
+Pass `--workers-file` only to override the profile for one task:
 
 ```json
 [{"route": {"harness": "<harness>", "model": "<model>"},

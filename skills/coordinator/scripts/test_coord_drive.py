@@ -12,6 +12,7 @@ import sys
 import tempfile
 import time
 import unittest
+import unittest.mock
 
 import coord
 import coord_drive as drive
@@ -435,6 +436,52 @@ class DriverTests(unittest.TestCase):
         self.assertEqual(coord.parse_judge_output(wrapped), {'verdict': 'accept', 'reason': 'ok'})
         self.assertEqual(coord.parse_judge_output('noise {"a": {"b": 1}} tail'), {'a': {'b': 1}})
         self.assertIsNone(coord.parse_judge_output('no json here'))
+
+
+class SetupTests(unittest.TestCase):
+    """doctor and profile defaults: the front desk knows when to run the setup interview."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.config = Path(self.tmp.name) / 'config'
+        env = unittest.mock.patch.dict(os.environ, {'COORDINATOR_CONFIG_HOME': str(self.config)})
+        env.start()
+        self.addCleanup(env.stop)
+
+    def save_profile(self, driver):
+        self.config.mkdir(parents=True, exist_ok=True)
+        (self.config / 'host.json').write_text(json.dumps({'version': 1, 'adapters': {'driver': driver},
+                                                           'catalogs': [], 'memory_sidecar': 'disabled'}))
+
+    def test_missing_profile_points_to_the_interview(self):
+        result = drive.doctor()
+        self.assertFalse(result['ready'])
+        self.assertTrue(any('no host profile' in p for p in result['problems']))
+        self.assertIn('driver interview', result['next'])
+
+    def test_uninstalled_worker_command_is_reported(self):
+        self.save_profile({'workers': [{'route': {'harness': 'ghost', 'model': 'm'},
+                                        'argv': ['definitely-not-installed-cli', '{prompt}']}]})
+        result = drive.doctor()
+        self.assertFalse(result['ready'])
+        self.assertTrue(any('definitely-not-installed-cli' in p for p in result['problems']))
+
+    def test_ready_profile_supplies_workers_and_judge(self):
+        workers = [{'route': {'harness': 'fake', 'model': 'm'}, 'argv': [sys.executable, '-c', 'pass', '{prompt}']}]
+        self.save_profile({'workers': workers, 'judge': [sys.executable, '-c', 'pass']})
+        self.assertTrue(drive.doctor()['ready'])
+        self.assertEqual(drive.profile_driver()['workers'], workers)
+
+    def test_start_without_workers_explains_setup(self):
+        repo = Path(self.tmp.name) / 'repo'
+        repo.mkdir()
+        subprocess.run(['git', '-C', str(repo), 'init', '-q'], check=True)
+        with unittest.mock.patch('sys.stderr') as stderr:
+            code = coord.main(['--root', str(Path(self.tmp.name) / 'state'), 'start', '--repo', str(repo),
+                               '--goal', 'g', '--criterion', 'c'])
+        self.assertEqual(code, 1)
+        self.assertIn('coordinator-setup driver interview', ''.join(c.args[0] for c in stderr.write.call_args_list))
 
 
 if __name__ == '__main__':

@@ -27,12 +27,16 @@ supervise directly in Herdr or through native host tools, and work outside git.
 
 ## Driven runtime
 
+0. **Check setup.** Run `scripts/coord.py doctor`. If it is not ready, tell the
+   user the coordinator needs a one-time setup, then read the `coordinator-setup`
+   skill's driver interview and run it with them before continuing.
 1. **Shape the task.** Separate what the user needs from any implementation they
    suggested. State the goal and at least one observable acceptance criterion.
    If nothing they said is checkable, ask one question: what result means done?
    Mark `--real-use-required` when the change is to a skill or workflow.
-2. **Start it** with the configured worker commands. The runtime asks for a
-   harness recommendation and then a user confirmation; nothing runs before it.
+2. **Start it.** Worker commands and the judge come from the host profile. The
+   runtime asks for a harness recommendation and then a user confirmation;
+   nothing runs before it.
 3. **Drive it** with `coord.py run`. Answer judgment requests through the
    configured judge or yourself, following the guide each prompt carries.
 4. **Relay questions.** Put each one to the user in plain words and record their
