@@ -98,6 +98,37 @@ class OutcomeTests(unittest.TestCase):
             self.call(lambda s,p: outcomes.accept(s,'config','Worker says tests passed'))
         self.assertNotIn('acceptance',self.state()['outcome_plan']['outcomes']['config'])
 
+    def summarized_candidate(self, summary):
+        assignment = self.native()
+        artifact = self.workspace / 'result.json'
+        artifact.write_text('{"version":2}')
+        report = Path(outcomes.report(assignment, artifact, summary)['report'])
+        self.call(lambda s,p: runtime.observe(s,'config',{'handle':'host-config','status':'finished'}))
+        return report
+
+    def test_unresolved_citation_in_summary_blocks_acceptance(self):
+        report = self.summarized_candidate('Wrote result.json; tests/test_version_two.py passes.')
+        verification = self.call(lambda s,p: outcomes.verify_result(s,'config',report,5))
+        self.assertEqual(verification['checks'][0]['exit_code'], 0)  # checks alone would pass
+        self.assertEqual(len(verification['claimcheck']['blockers']), 1)
+        with self.assertRaisesRegex(tasks.StateError, 'unresolved commits or tests'):
+            self.call(lambda s,p: outcomes.accept(s,'config','Inspected'))
+
+    def test_resolved_citation_in_summary_accepts(self):
+        (self.workspace / 'tests').mkdir()
+        (self.workspace / 'tests' / 'test_version_two.py').write_text('')
+        report = self.summarized_candidate('Wrote result.json; tests/test_version_two.py passes.')
+        verification = self.call(lambda s,p: outcomes.verify_result(s,'config',report,5))
+        self.assertEqual(verification['claimcheck']['blockers'], [])
+        self.call(lambda s,p: outcomes.accept(s,'config','Inspected'))
+
+    def test_verification_without_claimcheck_must_be_repeated(self):
+        artifact, report = self.candidate()
+        self.call(lambda s,p: outcomes.verify_result(s,'config',report,5))
+        self.call(lambda s,p: outcomes.outcome_of(s,'config')['verification'].pop('claimcheck'))
+        with self.assertRaisesRegex(tasks.StateError, 'predates claimcheck'):
+            self.call(lambda s,p: outcomes.accept(s,'config','Inspected'))
+
     def test_finished_and_verified_are_not_accepted(self):
         artifact,report=self.candidate()
         self.call(lambda s,p: outcomes.verify_result(s,'config',report,5))

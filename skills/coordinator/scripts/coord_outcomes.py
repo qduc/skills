@@ -257,15 +257,27 @@ def descriptor(state, oid, attempt_id, method):
             'method': method}
 
 
-def report(assignment_file, artifact):
+def report(assignment_file, artifact, summary=None):
     assignment = json.loads(Path(assignment_file).read_text())
     ref = file_ref(artifact, assignment['contract']['cwd'])
     result = {k: assignment[k] for k in ('task_id', 'outcome_id', 'assignment_id', 'attempt_id')}
     result.update(artifact=ref, dependencies=assignment['dependencies'], disposition='worker_evidence')
+    if summary is not None:
+        if not text(summary):
+            raise tasks.StateError('summary must be non-empty when supplied')
+        # Claims in the summary (cited commits, tests) are checked during verification.
+        result['summary'] = summary
     # Report publication never loads or writes the authoritative task record.
     path = Path(assignment_file).parent / ('report-' + uuid.uuid4().hex + '.json')
     tasks.atomic_write(path, json.dumps(result, indent=2) + '\n')
     return {'report': str(path), 'disposition': 'worker_evidence'}
+
+
+def claimcheck(report_path, cwd):
+    """Unresolved commit or test citations in a report; recorded as verification evidence."""
+    # Imported lazily: the reporter snapshot copied into attempts omits this module.
+    import coord_claimcheck
+    return coord_claimcheck.blockers(Path(cwd).resolve(), Path(report_path).read_text())
 
 
 def verify_result(state, oid, report_path, timeout):
@@ -290,6 +302,7 @@ def verify_result(state, oid, report_path, timeout):
     item.pop('integration', None)
     item['verification'] = {'assignment_id': item['assignment_id'], 'attempt_id': attempt['id'],
                             'artifact': actual, 'report': report_ref, 'checks': evidence,
+                            'claimcheck': {'blockers': claimcheck(report_path, item['contract']['cwd'])},
                             'dependencies': candidate['dependencies'], 'at': tasks.now()}
     plan_of(state).pop('goal_verification', None)
     return item['verification']
@@ -305,6 +318,11 @@ def accept(state, oid, decision):
         raise tasks.StateError('current independent verification is required')
     if not passed(evidence['checks'], item['contract']['checks']) or not unchanged(evidence['artifact']) or not unchanged(evidence['report']):
         raise tasks.StateError('verification failed or evidence changed')
+    blockers = evidence.get('claimcheck', {}).get('blockers')
+    if blockers is None:
+        raise tasks.StateError('verification predates claimcheck; verify the report again')
+    if blockers:
+        raise tasks.StateError('report cites unresolved commits or tests: ' + '; '.join(blockers))
     if evidence['dependencies'] != dependencies(state, item):
         raise tasks.StateError('verification dependencies changed')
     item['acceptance'] = dict(copy.deepcopy(evidence), decision=decision, owner=state['owner'], accepted_at=tasks.now())
@@ -368,6 +386,7 @@ def main():
     worker = sub.add_parser('report')
     worker.add_argument('--assignment-file', required=True)
     worker.add_argument('--artifact', required=True)
+    worker.add_argument('--summary', help='what was done and which tests ran; citations are claimchecked')
     for name in ('plan', 'replan', 'revise', 'verify', 'accept', 'integrate', 'verify-goal'):
         cmd = sub.add_parser(name)
         cmd.add_argument('--task-dir', required=True)
@@ -388,7 +407,7 @@ def main():
     args = parser.parse_args()
     try:
         if args.command == 'report':
-            result = report(args.assignment_file, args.artifact)
+            result = report(args.assignment_file, args.artifact, args.summary)
         else:
             def action(state, path):
                 if args.command == 'plan':

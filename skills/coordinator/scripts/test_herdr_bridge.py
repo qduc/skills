@@ -45,7 +45,7 @@ class BridgeTests(unittest.TestCase):
         state['workers']['w'] = dict(pane_id='opaque-pane', cwd=str(self.workspace))
         lifecycle.save_state(self.state, state)
         brief = self.root / 'brief.md'
-        brief.write_text('bounded task')
+        brief.write_text('Done when `python3 -m unittest test_feature.py` passes. Do not ask the user questions. Do not delegate to subagents.')
         def run(command, **kwargs):
             self.assertEqual(command[3:5], ['submit', 'opaque-pane'])
             body = Path(command[-1]).read_text()

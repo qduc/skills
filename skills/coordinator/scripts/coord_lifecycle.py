@@ -146,6 +146,7 @@ def bind(args):
     state["task_dir"] = str(Path(args.task_dir).resolve())
     record(state, "task_bound", task_dir=state["task_dir"])
     save_state(path, state)
+    coord_state.link_lifecycle(state["task_dir"], path)  # completion requires these workers to settle
     return state
 
 
@@ -226,6 +227,8 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
     except OSError as error:
         inbox_path.rmdir()  # Nothing has been dispatched or published yet.
         raise LifecycleError(f"could not persist lifecycle state: {error}") from error
+    if state["task_dir"]:
+        coord_state.link_lifecycle(state["task_dir"], state_path)  # completion requires these workers to settle
     return state
 
 
@@ -267,11 +270,48 @@ def inventory(_args: argparse.Namespace) -> dict[str, Any]:
         return {"available": False, "reason": str(error), "kinds": []}
 
 
+def route_matches(route: dict[str, Any], kind: str, model: str, provider: str | None, effort: str | None) -> bool:
+    """A confirmed route admits a worker when every field the user fixed agrees."""
+    return (route.get("harness") == kind and route.get("model") == model
+            and route.get("provider") in (None, provider) and route.get("effort") in (None, effort))
+
+
+def require_confirmed_route(state: dict[str, Any], kind: str, model: str,
+                            provider: str | None, effort: str | None) -> None:
+    """Enforce the user's harness/model selection before any worker launches."""
+    task_dir = state.get("task_dir")
+    if not task_dir:
+        # The CLI refuses unbound external commands in invoke(); nothing to check against here.
+        return
+    pool = coord_state.load(Path(task_dir)).get("selection") or []
+    if not any(route_matches(route, kind, model, provider, effort) for route in pool):
+        raise LifecycleError(
+            f"worker route {kind}/{model} is not in the task's user-confirmed selection; "
+            "record the user's choice with coord_state.py select --confirmed first")
+
+
+def require_brief_contract(brief: Path, args: argparse.Namespace) -> list[dict[str, Any]]:
+    """Lint the brief before dispatch; return the findings an explicit override accepted."""
+    import coord_brief_lint  # lazy: worker bundles copy this module without the linter
+    findings = [finding for finding in coord_brief_lint.findings_for(
+        brief.read_text(errors="replace"), getattr(args, "brief_kind", None) or "build",
+        getattr(args, "allow_ask_user", False), getattr(args, "allow_delegation", False))
+        # dispatch appends the return channel itself (completion_contract), so it cannot be missing
+        if finding["check"] != "return_path"]
+    override = getattr(args, "lint_override", None)
+    if findings and not (override and override.strip()):
+        problems = "; ".join(f"{f['check']}: {f['message']}" for f in findings)
+        raise LifecycleError(f"brief fails the communication contract ({problems}); "
+                             "fix the brief, or pass --lint-override '<reason>' when the gap is authorized")
+    return findings
+
+
 def start_worker(args: argparse.Namespace) -> dict[str, Any]:
     state_path = Path(args.state).resolve()
     state = load_state(state_path)
     if args.name in state["workers"]:
         raise LifecycleError(f"worker already recorded: {args.name}")
+    require_confirmed_route(state, args.kind, args.model, getattr(args, "provider", None), getattr(args, "effort", None))
     operation_id = uuid.uuid4().hex
     receipt_path = state_path.parent / "operations" / state["run_id"] / (operation_id + ".json")
     intent = dict(name=args.name, kind=args.kind, model=args.model,
@@ -506,6 +546,10 @@ def dispatch(args: argparse.Namespace) -> dict[str, Any]:
         raise LifecycleError(f"brief does not exist: {brief}")
     if not state.get("task_id") or not state.get("verify_command"):
         raise LifecycleError("dispatch requires task ID and coordinator verification argv in prepared state")
+    accepted_findings = require_brief_contract(brief, args)
+    if accepted_findings:
+        record(state, "brief_lint_overridden", worker=args.worker, reason=args.lint_override,
+               findings=[finding["check"] for finding in accepted_findings])
     existing_assignment = "inbox" in worker
     register_mailbox(state, args.worker)
     if not existing_assignment or worker.get("delivery_inbox"):
@@ -822,6 +866,7 @@ def run_task(args: argparse.Namespace) -> dict[str, Any]:
         dispatch(argparse.Namespace(
             state=str(state_path), worker=args.worker, brief=args.brief,
             timeout_ms=args.admission_timeout_ms,
+            **{key: getattr(args, key, None) for key in BRIEF_LINT_KEYS},
         ))
         state = load_state(state_path)
         accepted: dict[str, Any] | None = None
@@ -886,6 +931,18 @@ def run_task(args: argparse.Namespace) -> dict[str, Any]:
         raise LifecycleError(f"{error}; owned cleanup: {json.dumps(cleanup, sort_keys=True)}") from error
 
 
+BRIEF_LINT_KEYS = ("brief_kind", "allow_ask_user", "allow_delegation", "lint_override")
+
+
+def add_brief_lint_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument("--brief-kind", choices=["build", "research", "review"], default="build",
+                         help="communication-contract profile the brief is linted against")
+    command.add_argument("--allow-ask-user", action="store_true", help="the brief is authorized to let the worker ask the user")
+    command.add_argument("--allow-delegation", action="store_true", help="the brief is authorized to let the worker delegate")
+    command.add_argument("--lint-override", metavar="REASON",
+                         help="dispatch despite lint findings; the reason is recorded in lifecycle events")
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     sub = root.add_subparsers(dest="command", required=True)
@@ -920,6 +977,7 @@ def parser() -> argparse.ArgumentParser:
     command.add_argument("--worker", required=True)
     command.add_argument("--brief", required=True)
     command.add_argument("--timeout-ms", type=int, default=5000)
+    add_brief_lint_arguments(command)
     command.set_defaults(handler=dispatch)
 
     command = sub.add_parser("receive")
@@ -1002,6 +1060,7 @@ def parser() -> argparse.ArgumentParser:
     command.add_argument("--verify-timeout-seconds", type=float, default=300)
     command.add_argument("--min-children", type=int, default=0,
                          help="fail closed unless completion declares at least this many children")
+    add_brief_lint_arguments(command)
     command.set_defaults(handler=run_task)
     command = sub.add_parser("recover-worker", help="recover recorded resources without relaunch or resubmission")
     command.add_argument("--state", required=True)
