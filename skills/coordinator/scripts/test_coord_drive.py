@@ -31,6 +31,8 @@ log = scenario_file.parent / ("prompts-" + key + ".jsonl")
 attempt = len(log.read_text().splitlines()) if log.exists() else 0
 with log.open("a") as stream:
     stream.write(json.dumps(prompt) + "\n")
+with (scenario_file.parent / "worker-argv.jsonl").open("a") as stream:
+    stream.write(json.dumps(sys.argv) + "\n")
 steps = scenario["workers"][key]
 step = steps[min(attempt, len(steps) - 1)]
 time.sleep(step.get("sleep", 0))
@@ -387,6 +389,36 @@ class DriverTests(unittest.TestCase):
                                     [{'harness': 'other', 'model': 'x'}])
         self.assertIsNone(tasks.load(self.task)['selection'])
 
+    def test_confirmed_effort_selects_actual_worker_command(self):
+        low = {'harness': 'fake', 'model': 'scripted', 'effort': 'low', 'role': 'implementer'}
+        high = dict(low, effort='high')
+        argv = self.workers[0]['argv']
+        self.workers = [{'route': low, 'argv': argv + ['low-command']},
+                        {'route': high, 'argv': argv + ['high-command']}]
+        self.scenario({'multiplication': [{'files': {'calc.py': MUL}}]},
+                      decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
+        self.start()
+        question = self.run_until()['questions'][0]
+        drive.confirm_selection(self.task, question['id'], 'use high effort', [high])
+        self.assert_done_on_branch(self.run_until(), MUL)
+        argv = json.loads((self.base / 'worker-argv.jsonl').read_text().splitlines()[0])
+        self.assertEqual(argv[-1], 'high-command')
+
+    def test_selection_rejects_missing_or_unsupported_route_variants(self):
+        configured = {'harness': 'fake', 'model': 'scripted', 'provider': 'test',
+                      'effort': 'high', 'role': 'implementer'}
+        self.workers[0]['route'] = configured
+        self.scenario({}, decompose=[])
+        self.start()
+        question = self.run_until()['questions'][0]
+        variants = [dict(configured, effort='low'), dict(configured, role='reviewer')]
+        variants += [{k: v for k, v in configured.items() if k != field}
+                     for field in ('provider', 'effort', 'role')]
+        for route in variants:
+            with self.subTest(route=route), self.assertRaisesRegex(tasks.StateError, 'no worker command'):
+                drive.confirm_selection(self.task, question['id'], 'yes', [route])
+            self.assertIsNone(tasks.load(self.task)['selection'])
+
     def test_start_requires_checkable_criteria(self):
         with self.assertRaisesRegex(tasks.StateError, 'acceptance criterion'):
             drive.start(self.root, self.repo, 'Make it better', ['  '], self.workers)
@@ -460,6 +492,71 @@ class DriverTests(unittest.TestCase):
         self.assertIn('You changed tests that were reviewed and approved', self.prompts('multiplication')[1])
         self.assertEqual(self.git('show', f'coord/{self.task.name[:8]}:test_mul.py') + '\n', GOOD_TESTS)
 
+    def test_implementation_cannot_vacate_space_or_unicode_approved_tests(self):
+        names = ['approved test.py', 'approved_é.py']
+        checks = [check(f'approved-tests-{index}',
+                        'exec(compile(open(' + repr(name) + ').read(), ' + repr(name)
+                        + ', "exec")); unittest.main()') for index, name in enumerate(names)]
+        self.scenario({'Write the tests': [{'files': dict.fromkeys(names, GOOD_TESTS)}],
+                       'multiplication': [{'files': {'calc.py': WRONG_MUL,
+                                                    **dict.fromkeys(names, VACUOUS_TESTS)}},
+                                          {'files': {'calc.py': MUL}}]},
+                      decompose=[plan(outcome('mul', 'Add multiplication to calc', checks),
+                                      goal_checks=checks + [SUITE])])
+        self.start(limits={'checks_first': True})
+        self.confirm()
+        self.assert_done_on_branch(self.run_until(), MUL)
+        self.assertIn('You changed tests that were reviewed and approved', self.prompts('multiplication')[1])
+        for name in names:
+            self.assertEqual(self.git('show', f'coord/{self.task.name[:8]}:{name}') + '\n', GOOD_TESTS)
+
+    def test_patch_paths_use_git_decoding_in_both_directions(self):
+        names = ['space name', 'é', 'tab\tname', 'line\nname', 'quote"name', 'back\\slash',
+                 os.fsdecode(b'invalid-\xff')]
+        for index, name in enumerate(names):
+            (self.repo / name).write_bytes(b'\0binary-' + str(index).encode())
+        self.git('add', '-A')
+        self.git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'odd paths')
+        destinations = []
+        for name in names:
+            destination = 'renamed ' + name
+            (self.repo / name).rename(self.repo / destination)
+            destinations.append(destination)
+        self.git('add', '-A')
+        patch = self.base / 'paths.patch'
+        patch.write_bytes(subprocess.check_output(['git', '-C', str(self.repo), 'diff', '--cached', '--binary']))
+        self.assertEqual(drive.files_in_patch(patch), set(names + destinations))
+        patch.write_bytes(subprocess.check_output(['git', '-C', str(self.repo), '-c',
+                                                  'core.quotePath=false', 'diff', '--cached', '--binary']))
+        self.assertEqual(drive.files_in_patch(patch), set(names + destinations))
+        # Actual binary hunks, additions and deletions must also yield every name.
+        for name in destinations:
+            (self.repo / name).write_bytes(b'\0changed')
+        (self.repo / 'new binary').write_bytes(b'\0new')
+        (self.repo / destinations[0]).unlink()
+        self.git('add', '-A')
+        patch.write_bytes(subprocess.check_output(['git', '-C', str(self.repo), 'diff', '--cached', '--binary']))
+        self.assertEqual(drive.files_in_patch(patch), set(names + destinations[1:] + ['new binary']))
+
+    def test_copied_patch_includes_source_and_destination(self):
+        source, destination = 'source é', 'copy "é"'
+        (self.repo / source).write_bytes(b'\0binary')
+        self.git('add', '-A')
+        self.git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'source')
+        (self.repo / destination).write_bytes((self.repo / source).read_bytes())
+        self.git('add', '-A')
+        patch = self.base / 'copy.patch'
+        patch.write_bytes(subprocess.check_output(['git', '-C', str(self.repo), 'diff', '--cached',
+                                                  '--binary', '--find-copies-harder']))
+        self.assertIn(b'copy from', patch.read_bytes())
+        self.assertEqual(drive.files_in_patch(patch), {source, destination})
+
+    def test_malformed_patch_metadata_is_rejected(self):
+        patch = self.base / 'malformed.patch'
+        patch.write_bytes(b'diff --git "a/unterminated b/file\nrename from x\n')
+        with self.assertRaisesRegex(tasks.StateError, 'patch'):
+            drive.files_in_patch(patch)
+
     def test_plan_with_no_failing_goal_check_is_refused(self):
         already_green = plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]), goal_checks=[SUITE])
         self.scenario({'multiplication': [{'files': {'calc.py': MUL}}]},
@@ -475,6 +572,78 @@ class DriverTests(unittest.TestCase):
         self.assertEqual(coord.parse_judge_output(wrapped), {'verdict': 'accept', 'reason': 'ok'})
         self.assertEqual(coord.parse_judge_output('noise {"a": {"b": 1}} tail'), {'a': {'b': 1}})
         self.assertIsNone(coord.parse_judge_output('no json here'))
+
+
+class RedProcessTests(unittest.TestCase):
+    """Exercise the actual _red command behind the outer verification boundary."""
+
+    def exercise_nested_check(self, *, timeout, leader_exits=False, inner_timeout=None):
+        import signal
+        import coord_outcomes as outcomes
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            marker = root / 'late-write'
+            identities = root / 'children.json'
+            parent_identity = root / 'parent.pid'
+            descendant = ("import os,time,pathlib;"
+                          f"pathlib.Path({str(identities)!r}).write_text(str(os.getpid()));"
+                          "time.sleep(1.2);"
+                          f"pathlib.Path({str(marker)!r}).write_text('late')")
+            parent = ("import os,pathlib,subprocess,sys,time;"
+                      f"pathlib.Path({str(parent_identity)!r}).write_text(str(os.getpid()));"
+                      f"subprocess.Popen([sys.executable,'-c',{descendant!r}]);"
+                      + ("time.sleep(0.15)" if leader_exits else "time.sleep(30)"))
+            spec = drive.red_check([check('spawns-grandchild', parent)])
+            try:
+                if inner_timeout is None:
+                    evidence = outcomes.run_checks([spec], root, timeout)
+                else:
+                    self.assertEqual(drive.red([check('inner-timeout', parent)], root, inner_timeout), 0)
+                    evidence = [{'exit_code': None}]
+                self.assertTrue(identities.exists(), 'grandchild must start to test settlement')
+                if leader_exits:
+                    self.assertEqual(evidence[0]['exit_code'], 1)
+                else:
+                    self.assertIsNone(evidence[0]['exit_code'])
+                # Zombies have stopped executing; check both the leader and grandchild.
+                stats = [Path(f'/proc/{int(identity.read_text())}/stat')
+                         for identity in (parent_identity, identities)]
+                live = any(stat.exists() and stat.read_text().rsplit(')', 1)[1].split()[0] != 'Z'
+                           for stat in stats)
+                time.sleep(1.3)
+                self.assertEqual((live, marker.exists()), (False, False),
+                                 'terminal verification left a live/writing grandchild')
+            finally:
+                # Baseline failures must also settle the deliberately exposed orphan.
+                for identity in (parent_identity, identities):
+                    if identity.exists():
+                        try:
+                            os.kill(int(identity.read_text()), signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+
+    def test_inner_timeout_before_group_creation_settles_wrapper(self):
+        import coord_process
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            marker = root / 'startup-write'
+            # Delay Python startup before the nested wrapper calls setpgrp().
+            (root / 'sitecustomize.py').write_text('import time; time.sleep(0.4)')
+            command = [sys.executable, '-c', f'from pathlib import Path; Path({str(marker)!r}).touch()']
+            with unittest.mock.patch.dict(os.environ, {'PYTHONPATH': str(root)}):
+                with self.assertRaises(subprocess.TimeoutExpired):
+                    coord_process.run(command, root, 0.05, new_session=False)
+            time.sleep(0.5)
+            self.assertFalse(marker.exists(), 'timed-out startup wrapper still executed its check')
+
+    def test_outer_timeout_settles_nested_red_check_and_grandchild(self):
+        self.exercise_nested_check(timeout=0.6)
+
+    def test_inner_red_timeout_settles_grandchild(self):
+        self.exercise_nested_check(timeout=5, inner_timeout=0.6)
+
+    def test_nested_red_check_leader_exit_settles_grandchild(self):
+        self.exercise_nested_check(timeout=5, leader_exits=True)
 
 
 class SetupTests(unittest.TestCase):

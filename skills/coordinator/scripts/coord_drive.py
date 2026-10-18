@@ -48,7 +48,6 @@ DEFAULT_LIMITS = {'attempts_per_outcome': 3, 'goal_rounds': 3, 'judgment_retries
                   'checks_first': True}
 OUTCOME_ID = re.compile(r'[a-z0-9][a-z0-9-]{0,31}')
 CHECKS_SUFFIX = '-checks'
-DIFF_HEADER = re.compile(r'^diff --git a/(\S+) b/(\S+)$', re.M)
 TAIL = 4000
 
 
@@ -148,8 +147,9 @@ def command_for(drive, route):
 
 
 def route_matches(configured, route):
-    return all(configured.get(key) == route.get(key) for key in ('harness', 'model', 'provider')
-               if configured.get(key) or route.get(key))
+    # The confirmed route includes optional effort and role, and must not silently
+    # select another configured command that shares only harness/model/provider.
+    return configured == route
 
 
 def limit(drive, name):
@@ -803,7 +803,25 @@ def failure_signature(failing):
 
 
 def files_in_patch(path):
-    return {name for pair in DIFF_HEADER.findall(Path(path).read_text(errors='replace')) for name in pair}
+    """Let Git decode its patch protocol, including both sides of renames/copies."""
+    patch = Path(path).read_bytes()
+    if not patch.strip():
+        return set()
+    names = set()
+    for direction in ([], ['--reverse']):
+        # Run outside the repository: apply otherwise filters paths relative to
+        # the caller's current subdirectory. -z preserves all filename bytes.
+        result = subprocess.run(['git', 'apply', '--numstat', '-z', *direction, '-'],
+                                input=patch, capture_output=True, cwd='/')
+        if result.returncode:
+            raise DriveError('cannot read patch paths: ' + os.fsdecode(result.stderr).strip())
+        for record in result.stdout.split(b'\0'):
+            if record:
+                fields = record.split(b'\t', 2)
+                if len(fields) != 3 or not fields[2]:
+                    raise DriveError('invalid patch path metadata')
+                names.add(os.fsdecode(fields[2]))
+    return names
 
 
 def frozen_tests_touched(state, drive, oid, report):
@@ -823,7 +841,7 @@ def red(checks, cwd, timeout=600):
     failing = []
     for check in checks:
         try:
-            code, _, _ = coord_process.run(check['argv'], cwd, timeout)
+            code, _, _ = coord_process.run(check['argv'], cwd, timeout, new_session=False)
         except (subprocess.TimeoutExpired, OSError):
             code = None
         state = 'fails (good: it needs the implementation)' if code != 0 else 'passes already (guards regressions only)'
