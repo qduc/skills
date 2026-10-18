@@ -1,6 +1,6 @@
 # Coordinator phase details
 
-This file holds the full text of each coordinator phase, moved verbatim from SKILL.md. SKILL.md tells you which section to read at each phase. Links below are relative to this file.
+This file holds the full text of each manual coordination phase. [Manual coordination](manual-coordination.md) tells you which section to read at each phase. Links below are relative to this file.
 
 
 
