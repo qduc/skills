@@ -4,6 +4,14 @@ Use the selected harness's native assignments, worker identities, and result
 channels. A separate inbox, file, or transport is needed only when that harness
 cannot carry the required result.
 
+## Contents
+
+- [Verification coverage](#verification-coverage)
+- [Receipt ladder](#receipt-ladder)
+- [Native assignments and results](#native-assignments-and-results)
+- [Independent review](#independent-review)
+- [External transport](#external-transport)
+
 ## Verification coverage
 
 Compare intended coverage with the tests actually discovered: directory and glob

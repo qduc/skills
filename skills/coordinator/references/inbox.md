@@ -6,6 +6,14 @@ result channel. Source scripts live in this skill. Durable inboxes live alongsid
 outside skill packages and worker workspaces. New assignments also receive a
 workspace-local delivery bundle so sandboxed workers can publish.
 
+## Contents
+
+- [Layout and ownership](#layout-and-ownership)
+- [Publish, inspect, process](#publish-inspect-process)
+- [Preserve before cleanup](#preserve-before-cleanup)
+- [Wake the main agent](#wake-the-main-agent)
+- [Retiring the old transport](#retiring-the-old-transport)
+
 ## Layout and ownership
 
 Prepare a lifecycle run at `<task-dir>/lifecycle.json`. Its default inbox root is
@@ -185,5 +193,4 @@ assignment or restart it to migrate the transport.
 New runs use file inboxes exclusively. Old named-inbox lifecycle state is not
 silently converted: first recover any outstanding reports and reconcile workers,
 then prepare a new file run and give any retained worker its new assignment
-contract. Old unread transport messages are not imported automatically. The
-helper no longer invokes or configures the retired transport.
+contract. Old unread transport messages are not imported automatically.

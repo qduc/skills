@@ -12,6 +12,14 @@ assume a sibling install path. If that skill or a required adapter is absent,
 use a verified native route or work directly; preserve unresolved external
 requirements as blockers.
 
+## Contents
+
+- [Keep the topology shallow](#keep-the-topology-shallow)
+- [Preflight and selection](#preflight-and-selection)
+- [Dispatch and supervise](#dispatch-and-supervise)
+- [Preserve context and accept](#preserve-context-and-accept)
+- [Manual verification commands](#manual-verification-commands)
+
 ## Keep the topology shallow
 
 Use the smallest structure that fits the work:

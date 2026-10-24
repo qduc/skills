@@ -34,7 +34,7 @@ ignore, a result you re-derived by hand.
      watch commands), and keep the old form working or migrate them first.
      <!-- lesson: live-consumer-compat promoted 2026-09-29 -->
    - *Behavior rule* (changes planning, delegation, routing, verification, or
-     stop behavior): record it in [Candidate experiments](experiments.md).
+     stop behavior): record it in the repository's `docs/coordinator/experiments.md`.
      It is an experiment, not a heal.
 3. **Gate:** the owning skill's tests pass
    (`python3 -m unittest discover -s <skill-dir>/scripts`), and a changed

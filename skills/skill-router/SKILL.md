@@ -46,7 +46,7 @@ Go top to bottom. Take the first row that matches.
 | What to build is unclear and the human must react to examples first | `risk-first-build` → `agentic-loop` | `agentic-loop` assumes the goal is clear |
 | The user wants it built, the goal is clear, no design exists yet, and its structure is costly to redo (new subsystem, data model, persistent format, public API) | `simplicity-architect` → `agentic-loop` | going straight to `agentic-loop` builds on the first design that comes to mind |
 | The goal is clear and needs several steps (find out, change, verify) carried by one agent to verified done, in any domain | `agentic-loop` | `coordinator` adds overhead one agent doesn't need; `implementation` for one change that is already decided |
-| Substantial independent pieces should run in parallel | `coordinator` (first run on a machine: `coordinator-setup` → `coordinator`) | `agentic-loop` runs one agent |
+| Substantial independent pieces should run in parallel | `agentic-loop` (it branches the independent pieces itself) | `coordinator` is user-invoked only (`/coordinator`, which runs `coordinator-setup` on first use); never route to it |
 
 ### 3. One-step gap
 
@@ -87,7 +87,7 @@ Substantial work exits to `agentic-loop`: it is domain-generic and, when no skil
 
 ## After the exit
 
-The router runs once per user request. An owner (`agentic-loop`, `coordinator`, `risk-first-build`) picks its own primitives as it works; do not come back here mid-task. Route again only when the user starts a different request.
+The router runs once per user request. An owner (`agentic-loop`, `risk-first-build`) picks its own primitives as it works; do not come back here mid-task. Route again only when the user starts a different request.
 
 For any exit except `none`, put one line before starting work:
 

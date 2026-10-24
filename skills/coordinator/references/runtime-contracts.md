@@ -7,6 +7,12 @@ The existing [external lifecycle](external-agents.md) remains the terminal/Herdr
 implementation for established tasks; do not restart an existing task in a new
 runtime merely to use this interface.
 
+## Contents
+
+- [Selection and dispatch](#selection-and-dispatch)
+- [Native host](#native-host)
+- [Non-interactive process](#non-interactive-process)
+
 ## Selection and dispatch
 
 `coord_runtime.py discover --runtime native|process` returns explicit capabilities.
