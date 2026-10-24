@@ -1,22 +1,18 @@
-# Manual coordination
+---
+name: supervise-panes
+description: Coordinates hand-supervised workers, such as agents in Herdr terminal panes, through a phased procedure with a durable task record, and resumes coordinator task records started before the driven runtime. Use when the user wants to run or supervise agents in Herdr or terminal panes, or to continue an older manual coordinator task. Headless or native-agent delegation is the delegate skill's driven runtime, which the user starts with /delegate.
+compatibility: Runs the delegate skill's scripts, so the delegate skill must be installed alongside it. Needs Python 3, git, and Unix file locking.
+---
 
-The phase procedure for work the [driven runtime](../SKILL.md#driven-runtime)
-does not cover: provisioning, task records started before the driven runtime,
-and interactive Herdr workers. Every reference this path uses is linked from
-[References](#references) below; read each one when its row says so.
+# Supervise panes
 
-## Contents
+Coordinate workers you supervise by hand: interactive Herdr or terminal-pane
+agents, and task records started before the delegate skill's driven runtime. For
+headless or native-agent delegation, the user runs `/delegate` instead.
 
-- [Goal and stop rules](#goal-and-stop-rules)
-- [0. Entry and durable state](#0-entry-and-durable-state)
-- [1. Establish the goal and decision policy](#1-establish-the-goal-and-decision-policy)
-- [2. Understand, then decompose](#2-understand-then-decompose)
-- [3. Assign bounded work](#3-assign-bounded-work)
-- [4. Supervise and inspect](#4-supervise-and-inspect)
-- [5. Accept and integrate](#5-accept-and-integrate)
-- [Heal as you drive](#heal-as-you-drive)
-- [References](#references)
-- [Output](#output)
+`<delegate-dir>` below is the installed delegate skill directory; this
+skill runs its scripts. Every reference is linked from [References](#references);
+read each one when its row says so.
 
 ## Goal and stop rules
 
@@ -66,12 +62,12 @@ Stop rules:
 
 ## 0. Entry and durable state
 
-Read [Host profile](host-profile.md). If it is missing or a required capability
+Read [Host profile](../delegate/references/host-profile.md). If it is missing or a required capability
 changed, run the `coordinator-setup` skill before using host helpers. Bundled task
 state needs Unix locking; the process runtime is Linux-only.
 
-Read [Task state](task-state.md), then create and own a record with
-`../scripts/coord_state.py`, or load, reconcile, and claim the existing one. Keep a
+Read [Task state](references/task-state.md), then create and own a record with
+`<delegate-dir>/scripts/coord_state.py`, or load, reconcile, and claim the existing one. Keep a
 concise snapshot of the goal, rationale, acceptance criteria, authority,
 decisions, owned work, blockers, evidence, and next action; link reports rather
 than copying a narrative.
@@ -82,11 +78,11 @@ goal and unfinished work, and reconcile saved workers and background resources
 before dispatching replacements. Finishing the saved action is not finishing the task.
 
 New delivery work with runnable acceptance checks follows
-[Outcome contracts](outcome-contracts.md). Existing records keep their workflow.
+[Outcome contracts](references/outcome-contracts.md). Existing records keep their workflow.
 
 Checkpoint before dispatch, on material state change, right after integration
 before dependent work starts, and before ending a session. Capture coordination
-hiccups at the next checkpoint per [Retro](retro.md).
+hiccups at the next checkpoint per [Retro](references/retro.md).
 
 *Check:* the record exists and is claimed.
 
@@ -101,14 +97,14 @@ implementation. Classify the work:
 - **Provisioning** sets up workspaces, panes, or sessions for human use; do it
   directly with the relevant tools or tool skill, with no further phases.
 
-Before a new coordinated task, read [Choice history](choice-history.md), verify
+Before a new coordinated task, read [Choice history](references/choice-history.md), verify
 the available harness/model options, recommend one, and wait for the user's
 selection. An explicit current-task choice, including an unambiguous reuse
 request, satisfies this gate. Keep the selection for same-task follow-ups; ask
 before replacing an unavailable choice or adding a role it does not cover.
 Read-only discovery and bookkeeping may proceed while it is pending.
 
-Read [Decision policy](decision-policy.md) and record the goal and policy in task state.
+Read [Decision policy](references/decision-policy.md) and record the goal and policy in task state.
 
 *Check:* goal, criteria, authority, and policy recorded; choice confirmed.
 
@@ -130,15 +126,15 @@ Delegate when parallel speed, specialization, or independent validation
 outweighs startup and integration cost. Work directly for small tasks,
 unavailable workers, or dominant shared-state risk, and own glue and final
 synthesis. Prefer suitable native workers within the authorized pool. Read
-[Routing](routing.md), [External agents](external-agents.md),
-[Large work](large-work.md), or [Execution protocols](execution-protocols.md)
+[Routing](references/routing.md), [External agents](references/external-agents.md),
+[Large work](references/large-work.md), or [Execution protocols](references/execution-protocols.md)
 when their row in [References](#references) applies.
 
 *Check:* owned outcomes, explicit dependencies, settled shared decisions.
 
 ## 3. Assign bounded work
 
-Read [Communication](communication.md) before the first dispatch and use its
+Read [Communication](references/communication.md) before the first dispatch and use its
 brief and result contract for builders, scouts, and reviewers. Modifying work
 needs a runnable focused verification command. Use files for long briefs; keep
 completion inboxes and upstream callers out of the worker pool.
@@ -152,7 +148,7 @@ IDs and explicit dependency edges, leaving independent nodes unchained.
 
 Record assignments, ownership, contracts, and dependencies before dispatch, then
 capture returned identities. Outcome-plan work follows
-[Runtime contracts](runtime-contracts.md), binding native handles immediately.
+[Runtime contracts](references/runtime-contracts.md), binding native handles immediately.
 Verify receipt through supported evidence or later worker activity. Dispatch is
 complete only with an attributable owner, bounded outcome, decision policy,
 supported result channel, and confirmed admission.
@@ -161,7 +157,7 @@ supported result channel, and confirmed admission.
 
 ## 4. Supervise and inspect
 
-Read [Worker observation](worker-observation.md) before supervising terminal
+Read [Worker observation](references/worker-observation.md) before supervising terminal
 panes or report watchers. Reconcile saved attempt handles before any replacement
 dispatch.
 
@@ -189,7 +185,7 @@ change the method when repeated passes fail the same criterion.
 ## 5. Accept and integrate
 
 Accept only after required checks pass, evidence is inspected, and blocking
-findings are resolved. Run `../scripts/coord_claimcheck.py --cwd <assigned-cwd>
+findings are resolved. Run `<delegate-dir>/scripts/coord_claimcheck.py --cwd <assigned-cwd>
 --report <report>` first; unresolved cited commits or test paths block acceptance.
 Outcome-plan work follows Outcome contracts for acceptance and integration;
 workers and protocol reports cannot make those decisions. Protocol output is
@@ -202,7 +198,7 @@ and repeat the loop.
 
 Remove a worker's worktree only after it stops and its reports and inboxes are
 harvested; reuse a tree by fast-forwarding from the base branch. New or changed
-skills and orchestration workflows need [Real-use verification](real-use-verification.md)
+skills and orchestration workflows need [Real-use verification](references/real-use-verification.md)
 before closing, unless the user explicitly waives it.
 
 Before closing, confirm owned workers and background processes have exited (stop
@@ -212,7 +208,7 @@ only task-owned resources), then checkpoint the outcome or exact next action.
 
 ## Heal as you drive
 
-When coordination exposes a skill or helper defect, follow [Healing](healing.md):
+When coordination exposes a skill or helper defect, follow [Healing](references/healing.md):
 capture evidence, apply an authorized narrow heal, verify it, record its
 disposition, and announce it. Behavior changes are experiments, not heals.
 
@@ -220,24 +216,23 @@ disposition, and announce it. Behavior changes are experiments, not heals.
 
 | Read | When |
 |---|---|
-| [Host profile](host-profile.md) | At entry, and before using any host helper or adapter |
-| [Operational status](operational-status.md) | Before enabling an optional integration or healing host state |
-| [Task state](task-state.md) | At entry; whenever you create, claim, resume, or checkpoint a record |
-| [Outcome contracts](outcome-contracts.md) | New delivery work with runnable acceptance checks |
-| [Runtime contracts](runtime-contracts.md) | Dispatching or observing outcome-plan attempts |
-| [Choice history](choice-history.md) | Before recommending a harness/model choice |
-| [Decision policy](decision-policy.md) | Before work begins; when a decision may exceed authority |
-| [Routing](routing.md) | Choosing models or harnesses, rotating dispatches, reusing workers, or handling acceptance risk |
-| [External agents](external-agents.md) | Presenting or dispatching a distinct harness, persistent terminal, or Herdr lane |
-| [Inbox](inbox.md) | Setting up or reading file inboxes and wakeups for external workers |
-| [Large work](large-work.md) | Staged dependent outcomes, milestones, or ongoing lane supervision |
-| [Execution protocols](execution-protocols.md) | Before selecting an engineering method or playbook |
-| [Communication](communication.md) | Before the first dispatch; writing briefs and verification asks |
-| [Worker observation](worker-observation.md) | Before supervising panes or report watchers |
-| [Real-use verification](real-use-verification.md) | Closing a task that changed a skill or workflow |
-| [Retro](retro.md) | Recording a coordination hiccup at a checkpoint |
-| [Healing](healing.md) | A skill or helper defect surfaced while coordinating |
-| [Architecture](architecture.md) | Changing coordination boundaries or validating a new runtime |
+| [Host profile](../delegate/references/host-profile.md) | At entry, and before using any host helper or adapter |
+| [Operational status](references/operational-status.md) | Before enabling an optional integration or healing host state |
+| [Task state](references/task-state.md) | At entry; whenever you create, claim, resume, or checkpoint a record |
+| [Outcome contracts](references/outcome-contracts.md) | New delivery work with runnable acceptance checks |
+| [Runtime contracts](references/runtime-contracts.md) | Dispatching or observing outcome-plan attempts |
+| [Choice history](references/choice-history.md) | Before recommending a harness/model choice |
+| [Decision policy](references/decision-policy.md) | Before work begins; when a decision may exceed authority |
+| [Routing](references/routing.md) | Choosing models or harnesses, rotating dispatches, reusing workers, or handling acceptance risk |
+| [External agents](references/external-agents.md) | Presenting or dispatching a distinct harness, persistent terminal, or Herdr lane |
+| [Inbox](references/inbox.md) | Setting up or reading file inboxes and wakeups for external workers |
+| [Large work](references/large-work.md) | Staged dependent outcomes, milestones, or ongoing lane supervision |
+| [Execution protocols](references/execution-protocols.md) | Before selecting an engineering method or playbook |
+| [Communication](references/communication.md) | Before the first dispatch; writing briefs and verification asks |
+| [Worker observation](references/worker-observation.md) | Before supervising panes or report watchers |
+| [Real-use verification](references/real-use-verification.md) | Closing a task that changed a skill or workflow |
+| [Retro](references/retro.md) | Recording a coordination hiccup at a checkpoint |
+| [Healing](references/healing.md) | A skill or helper defect surfaced while coordinating |
 
 ## Output
 

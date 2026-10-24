@@ -40,7 +40,7 @@ in the task state. A separate resume diary is unnecessary.
 ## Harvest
 
 ```bash
-python3 <skill-dir>/scripts/coord_retro.py [--memory-dir <feedback-memory-dir>] > <task-dir>/artifacts/retro.md
+python3 <delegate-dir>/scripts/coord_retro.py [--memory-dir <feedback-memory-dir>] > <task-dir>/artifacts/retro.md
 ```
 
 It reads task notes (kinds `incident`, `lesson`, `coordination_failure`,
@@ -58,7 +58,7 @@ idle workers). Everything else stays in its task record.
 
 | Lesson | Destination |
 | --- | --- |
-| Host fact: a tool's quirk, a model's profile, a path, a quota | The local host profile (see [Host profile](host-profile.md)) or a memory; correct stale entries in place |
+| Host fact: a tool's quirk, a model's profile, a path, a quota | The local host profile (see [Host profile](../../delegate/references/host-profile.md)) or a memory; correct stale entries in place |
 | General coordination rule that fixes an unclear or missing instruction | The instruction-defect lane in [Healing](healing.md) |
 | Rule that changes planning, delegation, routing, verification, or stop behavior | A candidate for a `workflow-evolution` experiment against `evals/evals.json`; record it in the repository's `docs/coordinator/experiments.md` and leave it unapplied unless an experiment is authorized |
 | Tool or helper defect | The helper-defect lane in [Healing](healing.md); for a tool outside the skills, a bug report, with the rule as a workaround until it is fixed |

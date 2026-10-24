@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Lint a worker brief against the communication contract. Read-only.
 
-The contract in references/communication.md requires every brief to carry a
-checkable done criterion, a return path, no-ask_user and no-delegation
-clauses, and (for build work) a runnable verification command. Briefs that
+The contract in the supervise-panes skill's references/communication.md
+requires every brief to carry a checkable done criterion, a return path,
+no-ask_user and no-delegation clauses, and (for build work) a runnable verification command. Briefs that
 drop one of these are how docs-only deliveries and question-asking workers
 happen, so this lint rejects them before dispatch instead of trusting the
 coordinator to remember. It is a heuristic gate on the contract's clauses,

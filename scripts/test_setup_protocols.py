@@ -11,7 +11,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/setup-protocols.sh"
-RESOLVER = ROOT / "skills/coordinator/scripts/coord_protocol.py"
+RESOLVER = ROOT / "skills/delegate/scripts/coord_protocol.py"
 
 
 class SetupProtocolsTests(unittest.TestCase):
