@@ -160,7 +160,7 @@ def artifact_delivery(drive):
 
 
 def route_matches(configured, route):
-    # The confirmed route includes optional effort and role, and must not silently
+    # The selected route includes optional effort and role, and must not silently
     # select another configured command that shares only harness/model/provider.
     return configured == route
 
@@ -406,7 +406,7 @@ def start_attempt(task_dir, drive, state, oid):
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(outcomes.integrated(state, dependency)['artifact']['path'], target)
     pool = state['selection']
-    route = pool[record['attempts'] % len(pool)]  # rotate across the confirmed pool on retries
+    route = pool[record['attempts'] % len(pool)]  # rotate across the selected pool on retries
     command = [sys.executable, str(SELF), '_work', '--assignment', '{assignment}', '--cwd', '{cwd}',
                '--base', head or 'artifact', '--', *(command_for(drive, route) or [])]
     partner = drive.get('checks_for', {}).get(oid)
@@ -584,18 +584,21 @@ def selection_phase(task_dir, drive, state):
         details = state['details']
         open_request(drive, 'harness', 'harness', {
             'goal': details['objective'], 'acceptance_criteria': details['acceptance_criteria'],
+            'constraints': details['constraints'], 'authority': details['authority'],
             'routes': [w['route'] for w in drive['workers']],
             'recent_choices': recent_choices(task_dir, drive['repo'])})
     elif request['status'] == 'answered':
         value = request['answer']
-        open_question(drive, 'confirm_selection', 'confirm_selection',
-                      'Workers would run on ' + ', '.join(f"{r['harness']}/{r['model']}" for r in value['pool'])
-                      + f". Why: {value['rationale']} OK to use these?", {'pool': value['pool']})
+        pool_file = Path(task_dir) / '.drive-pool.json'
+        tasks.atomic_write(pool_file, json.dumps(value['pool']) + '\n')
+        state_mutate(task_dir, drive, 'select', pool_file=str(pool_file), confirmed=False,
+                     source='coordinator recommendation: ' + value['rationale'])
+        log(drive, 'selection_applied', pool=value['pool'], rationale=value['rationale'])
         request['status'] = 'applied'
 
 
 def recent_choices(task_dir, repo):
-    """Confirmed choices for the same repository, whether its tasks were driven or manual."""
+    """Recorded choices for the same repository, whether its tasks were driven or manual."""
     root = Path(task_dir).parents[1]
     try:
         lines = (root / 'choices.jsonl').read_text().splitlines()[-50:]
@@ -1200,12 +1203,14 @@ def advance(task_dir):
             consume_questions(task_dir, drive)
             if not state['selection']:
                 selection_phase(task_dir, drive, state)
-            elif 'outcome_plan' not in state:
-                plan_phase(task_dir, drive, state)
-            else:
-                outcomes_phase(task_dir, drive)
-                if not drive.get('halted'):
-                    goal_phase(task_dir, drive)
+                state = tasks.load(task_dir)
+            if state['selection']:
+                if 'outcome_plan' not in state:
+                    plan_phase(task_dir, drive, state)
+                else:
+                    outcomes_phase(task_dir, drive)
+                    if not drive.get('halted'):
+                        goal_phase(task_dir, drive)
         return summary(task_dir, drive)
 
 
@@ -1423,7 +1428,7 @@ def start(root, repo, goal, criteria, workers, title=None, constraints=(), autho
                                      'No edits to the source, external mutations, pushing, or publishing.') if delivery == 'artifact'
                                     else (f'Change files only in this task\'s isolated worktrees; results land on branch '
                                           f'{branch}. No pushing, publishing, merging, or edits to the original checkout.')),
-            phase='selection', next_action='Choose and confirm worker harness/model')
+            phase='selection', next_action='Choose configured worker harness/model')
         state['revision'] += 1
         state['updated_at'] = tasks.now()
         tasks.save(task_dir, state)

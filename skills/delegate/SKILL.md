@@ -49,9 +49,10 @@ can pass `--workers-file` instead; check it with
 
 Process argv takes the prompt as one `"{prompt}"` element, then edits files and
 runs checks unattended in the assigned directory and exits; find the real flags
-in the CLI's help. Use `host-inherited` only when the user chose native agents
-that inherit this chat's settings; otherwise record the model they chose and
-never substitute one silently. Each route must match exactly one entry.
+in the CLI's help. Use `host-inherited` only for native agents that inherit
+this chat's settings; otherwise record the concrete selected model. Honor explicit
+user route constraints and never substitute a different route silently. Each
+route must match exactly one entry.
 
 ### 1. Shape the task
 
@@ -81,8 +82,10 @@ coord.py start --repo <git root> --goal "<desired outcome>" \
   `unknown_grace_seconds` (120), and `checks_first` (`auto`: the plan decides per
   outcome; `true` or `false` forces it for every outcome).
 
-The runtime then asks for a harness recommendation and the user's confirmation.
-Nothing runs before it.
+The runtime asks for a harness/model recommendation, then records and applies
+the selected configured pool automatically. Tell the user which routes were
+selected and why; do not pause for model-selection confirmation. Honor explicit
+user constraints when choosing routes.
 
 ### 3. Drive it
 
@@ -100,13 +103,13 @@ judgment). Process workers take time: run it in the background and check
 
   | Kind | Record with (also `--task <id>`) |
   |---|---|
-  | `confirm_selection` | `confirm-selection --question <qid> --user-message "..."` (add `--pool-file` for different routes) |
+  | `confirm_selection` (older tasks only) | `confirm-selection --question <qid> --user-message "..."` (add `--pool-file` for different routes) |
   | `escalation`, `goal_unmet`, `judgment_failed` | `reply --question <qid> --user-message "..."` |
   | `completion_blocked` (real-use) | `real-use --status passed --evidence <file> [--source "<verifier>"]`, or `--status waived --source 'user: "..."'` |
 
 - **`host`**: run `host-next --task <id>` and execute that exact request with the
   host's agent tool. For `spawn`, use its `message`, its `label` as the worker
-  name, and the confirmed `route`. For `observe`, wait for or inspect the named
+  name, and the selected `route`. For `observe`, wait for or inspect the named
   `handle`. For `stop`, stop it and establish its resulting status; asking is not
   proof of exit. Then `host-result --task <id> --action <request-id> --file
   observation.json` (or `--file -`) and continue `run`.

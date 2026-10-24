@@ -176,9 +176,16 @@ class TaskStateTests(unittest.TestCase):
         self.assertTrue(recovered['warnings'])
         self.assertEqual(self.cli('show', '--task', self.task)['state']['selection'], self.pool)
 
-    def test_selection_requires_confirmation_and_concrete_identifiers(self):
+    def test_selection_records_recommendation_without_confirmation(self):
+        self.cli('select', '--task', self.task, '--owner', self.owner, '--revision', '1',
+                 '--pool-file', str(self.pool_path), '--source', 'coordinator recommendation')
+        state = self.cli('show', '--task', self.task)['state']
+        self.assertEqual(state['selection'], self.pool)
+        self.assertEqual(state['choice_events'][-1]['source'], 'coordinator recommendation')
+
+    def test_selection_requires_source_and_concrete_identifiers(self):
         result = self.run_cli('select', '--task', self.task, '--owner', self.owner, '--revision', '1',
-                              '--pool-file', str(self.pool_path), '--source', 'guess')
+                              '--pool-file', str(self.pool_path), '--source', '')
         self.assertNotEqual(result.returncode, 0)
         self.pool_path.write_text(json.dumps([{'harness': 'native', 'model': 'previous'}]))
         result = self.run_cli('select', '--task', self.task, '--owner', self.owner, '--revision', '1',

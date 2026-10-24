@@ -1,8 +1,9 @@
 # Judgment: recommend the worker harness and model
 
 You are recommending which configured worker routes should run this task's
-outcomes. Your answer is a recommendation only: the user confirms it before any
-worker starts, so explain the choice in a sentence they can judge quickly.
+outcomes. The runtime records and applies your recommendation without a user-confirmation
+pause. Honor explicit user route constraints and explain the choice in a sentence
+the front desk can report.
 
 Choose only from `routes`; those are the routes with a working command on this
 host. Recent choices for the same project are in `recent_choices`. Reusing a

@@ -35,7 +35,7 @@ The helpers enforce several rules, so a refusal is the rule working, not a bug
 to route around:
 
 - `coord_lifecycle.py start-worker` refuses a route outside the task's
-  user-confirmed selection.
+  recorded selection.
 - `coord_lifecycle.py dispatch` lints the brief and refuses contract gaps unless
   `--lint-override '<reason>'` records an authorized exception.
 - `coord_outcomes.py verify` runs claimcheck on the report; `accept` refuses
@@ -46,8 +46,8 @@ to route around:
 
 Stop rules:
 
-- Wait for the user's harness/model selection before execution or dispatch.
-  History, defaults, and running workers alone do not satisfy this gate.
+- Choose and record a concrete configured harness/model pool before dispatch.
+  Honor explicit user constraints; report the choice without waiting for confirmation.
 - Discovering a solution does not authorize implementation. Host configuration
   never grants task authority. A heal does not widen task authority or weaken
   acceptance. Replanning never authorizes weaker success criteria.
@@ -98,15 +98,15 @@ implementation. Classify the work:
   directly with the relevant tools or tool skill, with no further phases.
 
 Before a new coordinated task, read [Choice history](references/choice-history.md), verify
-the available harness/model options, recommend one, and wait for the user's
-selection. An explicit current-task choice, including an unambiguous reuse
-request, satisfies this gate. Keep the selection for same-task follow-ups; ask
-before replacing an unavailable choice or adding a role it does not cover.
-Read-only discovery and bookkeeping may proceed while it is pending.
+the available harness/model options, choose a configured pool within explicit
+user constraints, and record the selection and its actual source. Report the
+choice and rationale without waiting for user confirmation. Keep the selection
+for same-task follow-ups unless the work calls for a different configured route;
+respect role restrictions and never silently replace an explicit user choice.
 
 Read [Decision policy](references/decision-policy.md) and record the goal and policy in task state.
 
-*Check:* goal, criteria, authority, and policy recorded; choice confirmed.
+*Check:* goal, criteria, authority, and policy recorded; choice recorded.
 
 ## 2. Understand, then decompose
 

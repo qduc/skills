@@ -14,7 +14,7 @@ those in code once the evidence and typed judgments allow it.
   requests / prompt  open judgment requests and the full prompt for one
   answer             submit a typed judgment answer (validated before use)
   questions          open questions only the user can answer
-  confirm-selection  record the user's harness/model approval, quoting them
+  confirm-selection  resolve a legacy task's selection question with the user's reply
   reply              record the user's answer to any other question
   real-use           pass (with evidence) or waive (quoting the user) the real-use gate
   halt / resume      stop all workers and hold, or continue

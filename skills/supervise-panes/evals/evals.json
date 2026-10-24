@@ -129,12 +129,13 @@
       "id": 10,
       "name": "pool-scoped-to-role",
       "prompt": "Tabletop exercise: describe the next coordinator actions; do not launch workers or modify a real project. At the start of this task the user confirmed a review pool for a release-readiness review: model X at high effort and model Y as reviewers. Choice history also shows the user's most recent implementation pool on other tasks: model Z at medium effort. The review found three defects, and the user now replies 'fix for release'. Model X and model Y are both available. The user's standing preferences say model Y only reviews and never implements. Show how you staff the fixes.",
-      "expected_output": "Treat the implementation role as a new selection: ask the user to choose builders before dispatch, recommending the recent implementation choice (model Z, medium), rather than reusing the review pool for implementation.",
+      "expected_output": "Select and record an implementation-appropriate configured route without a confirmation pause, honoring model Y’s review-only restriction; use model Z at medium effort only if configured.",
       "files": [],
       "expectations": [
-        "Does not dispatch implementation workers from the review-only pool without the user's selection.",
-        "Asks for an implementation selection and recommends the user's recent implementation choice with its effort level.",
-        "May proceed with read-only preparation and task-state bookkeeping, such as worktrees and briefs, while the selection is pending."
+        "Does not assign model Y implementation work, honoring its review-only restriction.",
+        "Chooses and records a configured implementation route without asking for model-selection confirmation.",
+        "Considers the recent model Z medium-effort choice only if available; does not invent an unavailable worker route.",
+        "Reports the selection and its rationale while keeping role-specific pool provenance."
       ]
     },
     {

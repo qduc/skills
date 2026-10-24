@@ -71,7 +71,7 @@ class GateTests(unittest.TestCase):
     # Selection: stop rule 1 enforced on the Herdr path.
     def test_worker_without_confirmed_selection_never_launches(self):
         with patch.object(lifecycle, 'run') as run:
-            with self.assertRaisesRegex(lifecycle.LifecycleError, 'user-confirmed selection'):
+            with self.assertRaisesRegex(lifecycle.LifecycleError, 'recorded selection'):
                 self.start()
             run.assert_not_called()
         self.assertEqual(lifecycle.load_state(self.state_path)['workers'], {})

@@ -83,7 +83,7 @@ def start(state, task_dir, oid, runtime, route, protocol, catalogs, command=None
     tasks.validate_pool([route])
     selection = state.get('selection')
     if not selection or route not in selection:
-        raise tasks.StateError('runtime route must be in the task confirmed selection pool')
+        raise tasks.StateError('runtime route must be in the task selected route pool')
     item = outcomes.outcome_of(state, oid)
     if item.get('attempt'):
         raise tasks.StateError('attempt already recorded; reconcile it before an explicit revision')

@@ -301,7 +301,7 @@ class OutcomeTests(unittest.TestCase):
             outcomes.report(assignment,outside)
         self.call(lambda s,p:runtime.observe(s,'config',{'handle':'host-config','status':'finished'}))
         self.call(lambda s,p:outcomes.revise(s,'config',self.spec_for('config')))
-        with self.assertRaisesRegex(tasks.StateError,'confirmed selection'):
+        with self.assertRaisesRegex(tasks.StateError,'selected route pool'):
             self.call(lambda s,p:runtime.start(s,p,'config','native',{'harness':'other','model':'other'},'bounded_worker',[]))
 
     def test_goal_or_authority_change_requires_replanning(self):

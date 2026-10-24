@@ -271,14 +271,14 @@ def inventory(_args: argparse.Namespace) -> dict[str, Any]:
 
 
 def route_matches(route: dict[str, Any], kind: str, model: str, provider: str | None, effort: str | None) -> bool:
-    """A confirmed route admits a worker when every field the user fixed agrees."""
+    """A selected route admits a worker when every recorded field agrees."""
     return (route.get("harness") == kind and route.get("model") == model
             and route.get("provider") in (None, provider) and route.get("effort") in (None, effort))
 
 
 def require_confirmed_route(state: dict[str, Any], kind: str, model: str,
                             provider: str | None, effort: str | None) -> None:
-    """Enforce the user's harness/model selection before any worker launches."""
+    """Enforce the recorded harness/model selection before any worker launches."""
     task_dir = state.get("task_dir")
     if not task_dir:
         # The CLI refuses unbound external commands in invoke(); nothing to check against here.
@@ -286,8 +286,8 @@ def require_confirmed_route(state: dict[str, Any], kind: str, model: str,
     pool = coord_state.load(Path(task_dir)).get("selection") or []
     if not any(route_matches(route, kind, model, provider, effort) for route in pool):
         raise LifecycleError(
-            f"worker route {kind}/{model} is not in the task's user-confirmed selection; "
-            "record the user's choice with coord_state.py select --confirmed first")
+            f"worker route {kind}/{model} is not in the task's recorded selection; "
+            "record the route with coord_state.py select first")
 
 
 def require_brief_contract(brief: Path, args: argparse.Namespace) -> list[dict[str, Any]]:

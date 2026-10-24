@@ -20,8 +20,8 @@ Select engineering method separately with `--protocol` and supplied `--catalog`
 paths. Missing optional methods fall back to the bounded-worker workflow; a missing
 supplied catalog is an error. Selected skill text is snapshotted into the attempt.
 
-Create a route JSON matching one entry in the task's confirmed selection pool:
-`{"harness":"term2","model":"<confirmed-model>","provider":"<confirmed-provider>"}`.
+Create a route JSON matching one entry in the task's selected route pool:
+`{"harness":"term2","model":"<selected-model>","provider":"<selected-provider>"}`.
 Start with:
 
 ```text
@@ -33,7 +33,7 @@ coord_runtime.py start --task-dir <task-dir> --owner <owner> --revision <revisio
 Only process runs require `--command-file <argv.json>`. Exact argv elements
 `{prompt}`, `{assignment}`, and `{cwd}` are substituted. The command is executed
 without a shell in the contract's working directory. Supply explicit harness flags
-matching the confirmed route; discover CLI syntax from its installed help. This
+matching the selected route; discover CLI syntax from its installed help. This
 runtime does not infer models or providers from argv or rotate the selected pool.
 
 For Term2's non-interactive branch, use its selected provider/model, `--auto-approve`

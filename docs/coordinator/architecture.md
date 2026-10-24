@@ -79,7 +79,7 @@ CLI sessions, interruption windows, and completion/archive paths. Run:
 
 The runtime matrix gate requires twelve successful deliveries: two runtimes × two methods
 × three repetitions. `evals/live_delivery.py` prepares isolated compatibility
-tasks, emits native host requests, launches Term2 with the confirmed configured
+tasks, emits native host requests, launches Term2 with the selected configured
 route, and runs local and independent integrated checks. Coordinator inspects
 the returned source before acceptance. The installed `architect` skill in this
 gate is a representative evaluation protocol, not a pstack installation.
