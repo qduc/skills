@@ -85,8 +85,6 @@ class DeliveryTests(unittest.TestCase):
                           '--workers-file', self.workers, '--limits-file', self.data({'checks_first': False}))
         self.task = status['task']
         status = self.answer(status, {'pool': [ROUTE], 'rationale': 'Controlled native fixture'}, 'harness')
-        status = self.cli('confirm-selection', '--task', self.task, '--question', status['questions'][0]['id'],
-                          '--user-message', 'Use the fixture model for this synthetic test.')
         self.entries = entries or [item()]
         goal_checks = ([file_check('notes.txt', 'Verified finding')] if patch else
                        [dict(file_check(f"artifacts/{e['id']}/{e['artifact']}",
@@ -255,8 +253,6 @@ class DeliveryTests(unittest.TestCase):
                           '--workers-file', self.workers)
         self.task = status['task']
         status = self.answer(status, {'pool': [ROUTE], 'rationale': 'Binary fixture'}, 'harness')
-        status = self.cli('confirm-selection', '--task', self.task, '--question', status['questions'][0]['id'],
-                          '--user-message', 'Use this fixture route.')
         goal = check('binary-goal', "from pathlib import Path; assert Path('artifacts/report/image.bin').read_bytes() == b'\\x00\\xff'")
         self.answer(status, {'outcomes': [entry], 'goal_checks': [goal], 'rationale': 'One binary'}, 'decompose')
         spawn, cwd = self.spawn()
@@ -282,8 +278,6 @@ class DeliveryTests(unittest.TestCase):
                                   '--workers-file', self.workers)
                 self.task = status['task']
                 status = self.answer(status, {'pool': [ROUTE], 'rationale': 'Fixture'}, 'harness')
-                status = self.cli('confirm-selection', '--task', self.task, '--question', status['questions'][0]['id'],
-                                  '--user-message', 'Use this fixture route.')
                 rid = status['requests'][0]['id']
                 error = self.cli('answer', '--task', self.task, '--request', rid, '--file', self.data(
                     {'outcomes': [item(artifact=name)], 'goal_checks': [check('fail', 'raise SystemExit(1)')],

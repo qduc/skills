@@ -204,7 +204,7 @@ delegated or consequential work.
 New delivery tasks with runnable acceptance checks use the protected `outcome_plan` described in
 [Outcome contracts](outcome-contracts.md). Generic checkpoints cannot replace
 that plan or its acceptance records. `resume` retains its goal, authority,
-confirmed pool, contracts, attempts, evidence, and integration state; reconcile
+selected pool, contracts, attempts, evidence, and integration state; reconcile
 runtime resources before acting on a saved next action. Completion and archival
 also require its current artifact hashes and successful independent goal gate.
 

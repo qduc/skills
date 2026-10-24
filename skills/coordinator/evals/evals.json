@@ -138,12 +138,13 @@
       "id": 10,
       "name": "pool-scoped-to-role",
       "prompt": "Tabletop exercise: describe the next coordinator actions; do not launch workers or modify a real project. At the start of this task the user confirmed a review pool for a release-readiness review: model X at high effort and model Y as reviewers. Choice history also shows the user's most recent implementation pool on other tasks: model Z at medium effort. The review found three defects, and the user now replies 'fix for release'. Model X and model Y are both available. The user's standing preferences say model Y only reviews and never implements. Show how you staff the fixes.",
-      "expected_output": "Treat the implementation role as a new selection: ask the user to choose builders before dispatch, recommending the recent implementation choice (model Z, medium), rather than reusing the review pool for implementation.",
+      "expected_output": "Select and record an implementation-appropriate configured route without a confirmation pause, honoring model Y’s review-only restriction; use model Z at medium effort only if configured.",
       "files": [],
       "expectations": [
-        "Does not dispatch implementation workers from the review-only pool without the user's selection.",
-        "Asks for an implementation selection and recommends the user's recent implementation choice with its effort level.",
-        "May proceed with read-only preparation and task-state bookkeeping, such as worktrees and briefs, while the selection is pending."
+        "Does not assign model Y implementation work, honoring its review-only restriction.",
+        "Chooses and records a configured implementation route without asking for model-selection confirmation.",
+        "Considers the recent model Z medium-effort choice only if available; does not invent an unavailable worker route.",
+        "Reports the selection and its rationale while keeping role-specific pool provenance."
       ],
       "path": "any"
     },
@@ -176,15 +177,15 @@
     },
     {
       "id": 13,
-      "name": "consent-recorded-in-user-words",
+      "name": "driven-automatic-model-selection",
       "path": "driven",
-      "prompt": "Tabletop exercise: describe the front-desk actions and commands; do not run anything. `coord.py run` stops with waiting_on user. `questions` lists q1, kind confirm_selection, recommending two native workers that inherit this chat's settings. You relay it and the user replies: 'sure, whatever you think is best'.",
-      "expected_output": "Relay the recommendation in plain words, then record the reply verbatim with confirm-selection and continue run.",
+      "prompt": "Tabletop exercise: describe the front-desk actions and commands; do not run anything. A new driven task is waiting on its harness judgment. Available configured routes are native/host-inherited and term2/model-X. The user has not specified a model. Recommend the native route for this routine task and describe what happens next.",
+      "expected_output": "Answer the harness judgment with the configured native route and rationale, then continue run without asking the user to confirm model selection.",
       "expectations": [
-        "Explains the recommended routes to the user in plain words before recording anything.",
-        "Records with `confirm-selection --task <id> --question q1 --user-message \"sure, whatever you think is best\"`, quoting the user exactly.",
-        "Does not paraphrase the reply into a stronger approval such as 'user approved two native workers'.",
-        "Calls run again afterwards."
+        "Submits a harness judgment answer containing the native/host-inherited pool and a task-specific rationale.",
+        "Continues run without a confirm-selection command or user-confirmation pause.",
+        "Reports the selected route and rationale without inventing user consent.",
+        "Keeps route validation and unrelated authority and completion gates intact."
       ],
       "files": []
     },

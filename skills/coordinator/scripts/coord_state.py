@@ -1290,8 +1290,8 @@ def mutate(args, root):
             elif args.command == 'real-use':
                 set_real_use(state, args.status, args.source, args.evidence)
             elif args.command == 'select':
-                if not args.confirmed or not args.source.strip():
-                    raise StateError('record only a user-confirmed selection with its source')
+                if not args.source.strip():
+                    raise StateError('record a selection with its source')
                 pool = json.loads(Path(args.pool_file).read_text())
                 validate_pool(pool)
                 event = {'id': uuid.uuid4().hex, 'at': now(), 'task_id': state['id'],
@@ -1521,7 +1521,7 @@ def parser():
             command.add_argument('--patch-file', required=True)
         elif name == 'select':
             command.add_argument('--pool-file', required=True)
-            command.add_argument('--confirmed', action='store_true')
+            command.add_argument('--confirmed', action='store_true', help='legacy compatibility flag; confirmation is not required')
             command.add_argument('--source', required=True)
         elif name == 'memory-apply':
             command.add_argument('--actions-file', required=True)

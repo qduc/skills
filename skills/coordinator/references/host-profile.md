@@ -20,7 +20,8 @@ The optional `adapters.driver` entry configures the [driven runtime](../SKILL.md
 `workers` lists `{"route": {...}, "argv": [...]}` pairs whose argv runs one
 non-interactive attempt with a `"{prompt}"` element, and `judge`, when present,
 is the argv that answers judgment requests headlessly. Listing a route records
-that it can run here; the per-task user confirmation still decides which run.
+that it can run here; the coordinator selects and records the per-task pool
+without a confirmation pause, respecting explicit user route constraints.
 `catalogs` contains absolute directories. Recheck paths and required capabilities
 before use; saved native tool observations do not survive a harness change.
 

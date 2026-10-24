@@ -151,11 +151,12 @@ class DriverTests(unittest.TestCase):
             if time.monotonic() > deadline:
                 self.fail(f'driver did not settle: {json.dumps(status, indent=2)}')
 
-    def confirm(self):
-        status = self.run_until()
-        question = status['questions'][0]
-        self.assertEqual(question['kind'], 'confirm_selection')
-        return drive.confirm_selection(self.task, question['id'], 'yes, use the scripted worker')
+    def select(self, pool=None):
+        status = drive.advance(self.task)
+        request = next(r for r in status['requests'] if r['kind'] == 'harness')
+        drive.answer(self.task, request['id'], {
+            'pool': pool or [self.workers[0]['route']], 'rationale': 'Configured fixture route'})
+        return drive.advance(self.task)
 
     def prompts(self, key):
         return [json.loads(line) for line in (self.base / f'prompts-{key}.jsonl').read_text().splitlines()]
@@ -182,10 +183,11 @@ class DriverTests(unittest.TestCase):
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
         started = self.start()
         self.assertEqual(started['waiting_on'], 'judgment')
-        self.assertIsNone(tasks.load(self.task)['selection'])  # nothing runs before the user confirms
-        status = self.confirm()
-        self.assertIn('user, via front desk', tasks.load(self.task)['choice_events'][-1]['source'])
+        self.assertIsNone(tasks.load(self.task)['selection'])  # recommendation is still required
+        status = self.select()
+        self.assertIn('coordinator recommendation:', tasks.load(self.task)['choice_events'][-1]['source'])
         self.assertEqual(status['waiting_on'], 'judgment')
+        self.assertFalse(status['questions'])
         status = self.run_until()
         self.assert_done_on_branch(status, MUL)
         inspected = self.judged('inspect')[0]
@@ -197,7 +199,7 @@ class DriverTests(unittest.TestCase):
                                           {'files': {'calc.py': MUL}, 'summary': 'Fixed mul.'}]},
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
         self.start()
-        self.confirm()
+        self.select()
         status = self.run_until()
         self.assert_done_on_branch(status, MUL)
         prompts = self.prompts('multiplication')
@@ -210,7 +212,7 @@ class DriverTests(unittest.TestCase):
                                           {'files': {'calc.py': MUL}, 'summary': 'test_calc.py passes.'}]},
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
         self.start()
-        self.confirm()
+        self.select()
         status = self.run_until()
         self.assert_done_on_branch(status, MUL)
         self.assertIn('does not exist', self.prompts('multiplication')[1])
@@ -222,7 +224,7 @@ class DriverTests(unittest.TestCase):
                                 'feedback': 'Add a docstring to mul explaining the arguments.'},
                                {'verdict': 'accept', 'reason': 'fine'}])
         self.start()
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertIn('Add a docstring to mul', self.prompts('multiplication')[1])
 
@@ -234,7 +236,7 @@ class DriverTests(unittest.TestCase):
         self.scenario({'multiplication': [{'files': {'calc.py': MUL}}], 'division': [{'files': {'calc.py': DIV}}]},
                       decompose=[first, second])
         self.start()
-        self.confirm()
+        self.select()
         status = self.run_until()
         self.assert_done_on_branch(status, DIV)
         replan = self.judged('decompose')[1]
@@ -251,7 +253,7 @@ class DriverTests(unittest.TestCase):
     def test_unusable_judgments_escalate_to_the_user(self):
         self.scenario({}, decompose=['I think we should add mul.'])
         self.start(limits={'judgment_retries': 1})
-        self.confirm()
+        self.select()
         status = self.run_until()
         self.assertEqual(status['questions'][0]['kind'], 'judgment_failed')
         self.assertEqual(len(self.judged('decompose')), 2)
@@ -261,7 +263,7 @@ class DriverTests(unittest.TestCase):
         self.scenario({'multiplication': [{'files': {'calc.py': MUL}}]},
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
         self.start(real_use_required=True)
-        self.confirm()
+        self.select()
         status = self.run_until()
         self.assertFalse(status['done'])
         self.assertEqual(status['questions'][0]['kind'], 'completion_blocked')
@@ -276,7 +278,7 @@ class DriverTests(unittest.TestCase):
                       assess=[{'action': 'escalate', 'reason': 'two attempts added instead of multiplying',
                                'question': 'Should mul multiply, or is addition intended?'}])
         self.start(limits={'attempts_per_outcome': 2})
-        self.confirm()
+        self.select()
         status = self.run_until()
         question = status['questions'][0]
         self.assertEqual(question['kind'], 'escalation')
@@ -305,7 +307,7 @@ class DriverTests(unittest.TestCase):
                                  plan(outcome('product', 'Add the product function to calc', [MUL_CHECK]))],
                       assess=[{'action': 'replan', 'reason': 'the contract needs a different approach'}])
         self.start(limits={'attempts_per_outcome': 1})
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertEqual(len(self.prompts('multiplication')), 1)
         self.assertEqual(len(self.judged('assess')), 1)  # no second judgment about the abandoned plan
@@ -316,7 +318,7 @@ class DriverTests(unittest.TestCase):
                       assess=[{'action': 'escalate', 'reason': 'same failure twice',
                                'question': 'Is the mul check right?'}])
         self.start(limits={'attempts_per_outcome': 5})
-        self.confirm()
+        self.select()
         status = self.run_until()
         self.assertEqual(status['questions'][0]['kind'], 'escalation')
         assessed = self.judged('assess')[0]
@@ -331,7 +333,7 @@ class DriverTests(unittest.TestCase):
                       assess=[{'action': 'retry', 'reason': 'integers only; no rounding needed',
                                'guidance': 'Inputs are integers; no rounding is involved.'}])
         self.start()
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertEqual(self.judged('assess')[0]['event'], 'blocked')
         self.assertIn('rounding mode', self.judged('assess')[0]['blocker'])
@@ -342,7 +344,7 @@ class DriverTests(unittest.TestCase):
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))],
                       assess=[{'action': 'continue', 'reason': 'short sleep, still plausible'}])
         self.start(limits={'stall_seconds': 1})
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertEqual(self.judged('assess')[0]['event'], 'no_progress')
 
@@ -350,7 +352,7 @@ class DriverTests(unittest.TestCase):
         self.scenario({'multiplication': [{'sleep': 30, 'files': {'calc.py': MUL}}, {'files': {'calc.py': MUL}}]},
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
         self.start(limits={'attempts_per_outcome': 1})
-        self.confirm()
+        self.select()
         deadline = time.monotonic() + 30
         while not (self.base / 'prompts-multiplication.jsonl').exists():  # first worker is running
             coord.run(self.task, self.judge, poll=0.1, max_seconds=0.5, judge_timeout=60)
@@ -371,25 +373,23 @@ class DriverTests(unittest.TestCase):
         self.scenario({'multiplication': [{'files': {'calc.py': MUL}}]},
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
         self.start()
-        self.confirm()
+        self.select()
         first = self.task
         self.start()
         self.run_until()
         harness = self.judged('harness')[-1]
         self.assertNotEqual(self.task, first)
         self.assertEqual(harness['recent_choices'][0]['pool'], [{'harness': 'fake', 'model': 'scripted'}])
-        self.assertIn('yes, use the scripted worker', harness['recent_choices'][0]['source'])
+        self.assertIn('coordinator recommendation:', harness['recent_choices'][0]['source'])
 
     def test_selection_must_name_configured_routes(self):
         self.scenario({}, decompose=[])
         self.start()
-        status = self.run_until()
         with self.assertRaisesRegex(tasks.StateError, 'no worker command'):
-            drive.confirm_selection(self.task, status['questions'][0]['id'], 'yes',
-                                    [{'harness': 'other', 'model': 'x'}])
+            self.select([{'harness': 'other', 'model': 'x'}])
         self.assertIsNone(tasks.load(self.task)['selection'])
 
-    def test_confirmed_effort_selects_actual_worker_command(self):
+    def test_selected_effort_selects_actual_worker_command(self):
         low = {'harness': 'fake', 'model': 'scripted', 'effort': 'low', 'role': 'implementer'}
         high = dict(low, effort='high')
         argv = self.workers[0]['argv']
@@ -398,8 +398,8 @@ class DriverTests(unittest.TestCase):
         self.scenario({'multiplication': [{'files': {'calc.py': MUL}}]},
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
         self.start()
-        question = self.run_until()['questions'][0]
-        drive.confirm_selection(self.task, question['id'], 'use high effort', [high])
+        status = self.select([high])
+        self.assertFalse(status['questions'])
         self.assert_done_on_branch(self.run_until(), MUL)
         argv = json.loads((self.base / 'worker-argv.jsonl').read_text().splitlines()[0])
         self.assertEqual(argv[-1], 'high-command')
@@ -409,14 +409,13 @@ class DriverTests(unittest.TestCase):
                       'effort': 'high', 'role': 'implementer'}
         self.workers[0]['route'] = configured
         self.scenario({}, decompose=[])
-        self.start()
-        question = self.run_until()['questions'][0]
+        self.start(limits={'judgment_retries': 10})
         variants = [dict(configured, effort='low'), dict(configured, role='reviewer')]
         variants += [{k: v for k, v in configured.items() if k != field}
                      for field in ('provider', 'effort', 'role')]
         for route in variants:
             with self.subTest(route=route), self.assertRaisesRegex(tasks.StateError, 'no worker command'):
-                drive.confirm_selection(self.task, question['id'], 'yes', [route])
+                self.select([route])
             self.assertIsNone(tasks.load(self.task)['selection'])
 
     def test_start_requires_checkable_criteria(self):
@@ -433,7 +432,7 @@ class DriverTests(unittest.TestCase):
                                       outcome('sub', 'Add subtraction to calc', [sub]),
                                       goal_checks=[MUL_CHECK, sub, SUITE])])
         self.start()
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), both)
         self.assertIn('no longer applies', self.prompts('subtraction')[1])
 
@@ -446,7 +445,7 @@ class DriverTests(unittest.TestCase):
                        'multiplication': [{'files': {'calc.py': MUL}}]},
                       decompose=[self.checks_first_plan()])
         self.start(limits={'checks_first': True})
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertEqual(self.git('show', f'coord/{self.task.name[:8]}:test_mul.py') + '\n', GOOD_TESTS)
         subjects = self.git('log', '--format=%s', f'main..coord/{self.task.name[:8]}').splitlines()
@@ -468,7 +467,7 @@ class DriverTests(unittest.TestCase):
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_TESTS]), skip,
                                       goal_checks=[MUL_CHECK, sub, SUITE])])
         self.start(limits={'checks_first': 'auto'})
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), both)
         self.assertEqual([r['implements']['id'] for r in self.judged('review_checks')], ['mul'])
         self.assertEqual(len(self.prompts('Write the tests')), 1)  # only mul, which left tests_first unset
@@ -489,7 +488,7 @@ class DriverTests(unittest.TestCase):
                        'multiplication': [{'files': {'calc.py': MUL}}]},
                       decompose=[self.checks_first_plan()])
         self.start(limits={'checks_first': True})
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertIn('Every check passes before any implementation', self.prompts('Write the tests')[1])
         self.assertEqual(len(self.judged('review_checks')), 1)  # the vacuous tests never reached review
@@ -502,7 +501,7 @@ class DriverTests(unittest.TestCase):
                                       'feedback': 'Add a case: mul(-2, 3) must be -6.'},
                                      {'verdict': 'accept', 'reason': 'covers zero and negatives'}])
         self.start(limits={'checks_first': True})
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertIn('mul(-2, 3) must be -6', self.prompts('Write the tests')[1])
         self.assertEqual(self.git('show', f'coord/{self.task.name[:8]}:test_mul.py') + '\n', MORE_TESTS)
@@ -513,7 +512,7 @@ class DriverTests(unittest.TestCase):
                                           {'files': {'calc.py': MUL}}]},
                       decompose=[self.checks_first_plan()])
         self.start(limits={'checks_first': True})
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertIn('You changed tests that were reviewed and approved', self.prompts('multiplication')[1])
         self.assertEqual(self.git('show', f'coord/{self.task.name[:8]}:test_mul.py') + '\n', GOOD_TESTS)
@@ -530,7 +529,7 @@ class DriverTests(unittest.TestCase):
                       decompose=[plan(outcome('mul', 'Add multiplication to calc', checks),
                                       goal_checks=checks + [SUITE])])
         self.start(limits={'checks_first': True})
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         self.assertIn('You changed tests that were reviewed and approved', self.prompts('multiplication')[1])
         for name in names:
@@ -588,7 +587,7 @@ class DriverTests(unittest.TestCase):
         self.scenario({'multiplication': [{'files': {'calc.py': MUL}}]},
                       decompose=[already_green, plan(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]))])
         self.start()
-        self.confirm()
+        self.select()
         self.assert_done_on_branch(self.run_until(), MUL)
         request = next(r for r in drive.load_drive(self.task)['requests'].values() if r['kind'] == 'decompose')
         self.assertIn('already passes on the current code', request['errors'][0])

@@ -14,7 +14,7 @@ delivery, observation, recovery, and cleanup. A worker returns claims and artifa
 ## Initialize new delivery work
 
 Create the task with `coord_state.py`; record authority, constraints, observable
-acceptance criteria, and the confirmed harness/model pool before dispatch. Write
+acceptance criteria, and the selected harness/model pool before dispatch. Write
 a plan JSON containing `outcomes` and `goal_checks`:
 
 ```json

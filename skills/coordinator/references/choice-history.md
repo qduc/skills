@@ -2,24 +2,24 @@
 
 Use `python3 <skill-dir>/scripts/coord_state.py` for recording and retrieving
 choices. It uses the [task-state directory](task-state.md), outside the skill
-package and repositories. A confirmed selection is saved in the task's JSON
+package and repositories. A recorded selection is saved in the task's JSON
 record and exported to `<state-root>/choices.jsonl`.
 
 ## Read and reuse
 
 Run `choices` before presenting options; it returns the ten most recent choices.
 Filter with `--task <id>` or `--project <path>`; use `--limit` to inspect more.
-“Previous,” “last time,” or “same as before” means the latest confirmed choice
+“Previous,” “last time,” or “same as before” means the latest recorded choice
 across tasks unless the user names a task or project.
 
 Show the resolved pool briefly and verify availability. An unambiguous explicit
 reuse request is the user's choice for a new task, without another confirmation.
 History alone never chooses automatically. Missing or ambiguous history requires
 a selection. If the command reports malformed/missing records that could affect
-which choice is latest, disclose the uncertainty and confirm the recovered choice.
+which choice is latest, disclose the uncertainty and report the recovered choice and its uncertainty.
 If the selected pool is unavailable, present alternatives for the user to choose.
 
-## Record a confirmed choice
+## Record a choice
 
 Write a pool JSON file with concrete harness/model identifiers, for example:
 
@@ -28,14 +28,14 @@ Write a pool JSON file with concrete harness/model identifiers, for example:
 ```
 
 `harness` and `model` are required; `provider`, `effort`, and `role` are optional.
-Record `role` whenever the pool serves a specific role; a pool confirmed for one
+Record `role` whenever the pool serves a specific role; a pool selected for one
 role does not authorize dispatch for another.
 Use the actual selected identifiers, not these example placeholders. Multiple
 routes represent a mixed pool. Record it with:
 
 ```text
 select --task <id> --owner <owner-id> --revision <observed-revision>
-       --pool-file <absolute-json-path> --confirmed --source <short-selection-source>
+       --pool-file <absolute-json-path> --source <short-selection-source>
 ```
 
 Use `--confirmed` only after the user's selection or explicit reuse request.
@@ -48,4 +48,4 @@ Task JSON is saved first. If history export fails, the command reports that
 limitation; `choices` merges task-saved events with the log and deduplicates by
 ID, recovering choices without a successful export. Corrupt log lines are
 reported. Selection history does not grant execution authority or replace the
-current task's confirmed pool.
+current task's selected pool.
