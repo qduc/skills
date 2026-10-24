@@ -1,6 +1,6 @@
 # Durable task state
 
-The main agent owns the task record. Use the bundled `scripts/coord_state.py`
+The main agent owns the task record. Use the coordinator skill's `<coordinator-dir>/scripts/coord_state.py`
 for persistence, ownership, and discovery. Workers return evidence and reports;
 they do not edit task state. Keep the snapshot concise and link detailed evidence.
 
@@ -27,7 +27,7 @@ Local persistence does not transfer tasks to another machine automatically.
 
 ## Create, discover, and own
 
-Invoke `python3 <skill-dir>/scripts/coord_state.py` with:
+Invoke `python3 <coordinator-dir>/scripts/coord_state.py` with:
 
 - `create --title <title> --objective <objective> --project <absolute-path>`:
   creates a task, unique ID, revision, and unique owner ID. Add `--conversation`

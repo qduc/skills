@@ -62,7 +62,7 @@ a shell under a hard timeout. File artifacts must remain under the assigned `--c
 `--min-children 1` only when the assigned role must delegate; otherwise direct
 execution by that worker is valid. Lower-level commands support recovery.
 
-Use `python3 <skill-dir>/scripts/coord_lifecycle.py` from any working directory
+Use `python3 <coordinator-dir>/scripts/coord_lifecycle.py` from any working directory
 for lifecycle mechanics. Bind lifecycle state to the durable task and pass the
 current owner/revision as described in [Task state](task-state.md#bind-lifecycle-actions-to-ownership). Set `COORDINATOR_HERDR_HELPER` to the absolute path of
 `scripts/herdr_worker.py` in the installed Herdr skill (or install it as

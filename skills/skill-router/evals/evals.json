@@ -32,7 +32,8 @@
   {"id": 28, "kind": "task", "prompt": "The reviewer left 14 comments on my PR, which ones do I actually need to fix?", "expected_exit": "finding-triage", "expected_output": "Findings arrived, decide which to fix; Not: code-review."},
   {"id": 29, "kind": "task", "prompt": "Poke holes in this migration plan before we schedule it.", "expected_exit": "adversarial-review", "expected_output": "A plan reviewed for any defect, no narrower judging row fits; reached even though it sits last."},
   {"id": 30, "kind": "task", "prompt": "Start a term2 session in a new tmux pane pointed at the ledger repo.", "expected_exit": "term2", "expected_output": "Run term2; tool row."},
-  {"id": 31, "kind": "task", "prompt": "Show me which herdr panes have agents still running.", "expected_exit": "herdr", "expected_output": "Inspect Herdr panes; Not: coordinator."},
-  {"id": 32, "kind": "task", "prompt": "Run the benchmark tasks against the new model and compare its solve rate to last month.", "expected_exit": "model-benchmark", "expected_output": "Benchmark models; Not: workflow-evolution."}
+  {"id": 31, "kind": "task", "prompt": "Show me which herdr panes have agents still running.", "expected_exit": "herdr", "expected_output": "Inspect Herdr panes; Not: manual-coordination, nothing is being coordinated."},
+  {"id": 32, "kind": "task", "prompt": "Run the benchmark tasks against the new model and compare its solve rate to last month.", "expected_exit": "model-benchmark", "expected_output": "Benchmark models; Not: workflow-evolution."},
+  {"id": 34, "kind": "task", "prompt": "Open three Codex agents in Herdr panes for the auth, billing and search refactors, and keep watch on them until each branch is merged.", "expected_exit": "manual-coordination", "expected_output": "Several pane agents supervised by hand on one task; Not: herdr, which runs one-off pane commands."}
  ]
 }

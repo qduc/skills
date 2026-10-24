@@ -33,7 +33,7 @@ a plan JSON containing `outcomes` and `goal_checks`:
 }
 ```
 
-Use `python3 <skill-dir>/scripts/coord_outcomes.py plan --task-dir <task-dir>
+Use `python3 <coordinator-dir>/scripts/coord_outcomes.py plan --task-dir <task-dir>
 --owner <owner> --revision <revision> --spec-file <plan.json>`. The plan has one
 current assignment per outcome; dependencies must name existing IDs and be acyclic.
 Existing incompatible work items require explicit reconciliation before adoption.

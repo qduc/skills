@@ -2,7 +2,7 @@
 
 **Status: proposal.** [Memory sidecar](memory-sidecar.md) now documents this
 watcher design, but the integration stays disabled per
-[Operational status](../../skills/coordinator/references/operational-status.md) until the work below is implemented
+[Operational status](../../skills/manual-coordination/references/operational-status.md) until the work below is implemented
 and independently verified. Nothing here changes that policy.
 
 **Implemented so far** (branch `sidecar-v2`): the deterministic, profile-driven
@@ -265,8 +265,8 @@ first. This is why Term2 ships a hand-written profile rather than an induced one
 Nothing here is claimed until it has evidence. This is a high-risk change: it
 writes into authoritative task state, it is a security boundary, and it adds a
 long-lived process. So it needs tests plus an independent verifier plus the
-[Real-use verification](../../skills/coordinator/references/real-use-verification.md) gate before the sidecar is
-enabled. The policy in [Operational status](../../skills/coordinator/references/operational-status.md) stands until
+[Real-use verification](../../skills/manual-coordination/references/real-use-verification.md) gate before the sidecar is
+enabled. The policy in [Operational status](../../skills/manual-coordination/references/operational-status.md) stands until
 then.
 
 ### Claims and their evidence
@@ -324,7 +324,7 @@ the injection test and the frozen profiles rather than trusting the report.
 
 ### Real-use gate
 
-Before enabling, satisfy [Real-use verification](../../skills/coordinator/references/real-use-verification.md): a
+Before enabling, satisfy [Real-use verification](../../skills/manual-coordination/references/real-use-verification.md): a
 fresh agent, the shipped skill, a representative real task, retained evidence,
 and independent inspection of the captured memory. The user may waive this;
 record the waiver and its limits with the result.

@@ -53,6 +53,7 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **[implementation](skills/implementation/SKILL.md)** — Makes controlled code changes while preserving contracts, surrounding conventions, and existing user work.
 - **invariant-reviewer** — Looks for reachable failures and broken invariants in a design or implementation, and weighs how much complexity a proposed fix would add.
 - **[investigation](skills/investigation/SKILL.md)** — Gathers traceable evidence to answer bounded engineering questions and reduce uncertainty.
+- **manual-coordination** — Runs and supervises hand-watched workers, such as agents in Herdr panes, through a phased procedure with a durable task record; also resumes older manual coordinator tasks. Uses the coordinator skill's scripts.
 - **model-benchmark** — Measures coding models and agent harnesses on real engineering tasks from the term2 repository, including solve rates and blind grading of candidate diffs.
 - **playwright-cli** — Drives a browser to interact with web pages and to run or work with Playwright tests.
 - **[profiling](skills/profiling/SKILL.md)** — Measures representative workloads, locates limiting mechanisms, and verifies optimizations with comparable evidence.

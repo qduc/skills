@@ -17,15 +17,12 @@ and completion. It asks for AI judgment only at fixed points, as typed requests.
 on which branch or at which artifact paths, with the goal-check evidence; or the
 task is halted or blocked and the user knows exactly what decision or input it needs.
 
-## Choose the path
+## Scope
 
-Use the driven runtime below for Git changes and for report or file deliverables,
-including research outside Git, with native host agents or non-interactive
-process workers. That is the default.
-
-Use [Manual coordination](references/manual-coordination.md) only for
-provisioning, task records started before the driven runtime, and interactive
-Herdr workers.
+This runtime covers Git changes and report or file deliverables, including
+research outside Git, with native host agents or non-interactive process workers.
+Interactive Herdr or terminal-pane workers, and task records started before this
+runtime, belong to the `manual-coordination` skill.
 
 ## Driven runtime
 
