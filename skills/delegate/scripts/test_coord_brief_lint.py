@@ -100,10 +100,10 @@ class BriefLintTests(unittest.TestCase):
     def test_common_rules_wording_passes(self):
         text = """Outcome: heal brief lint
 Mode: build
-Gate: `python3 -m unittest discover -s skills/coordinator/scripts`, run from your worktree. It must pass.
+Gate: `python3 -m unittest discover -s skills/delegate/scripts`, run from your worktree. It must pass.
 Do not spawn subagents or ask the user questions.
 Write the report to /tmp/heal-brieflint-report.md when finished.
-`python3 -m unittest discover -s skills/coordinator/scripts`
+`python3 -m unittest discover -s skills/delegate/scripts`
 """
         code, findings = self.lint(text, '--kind', 'build')
         self.assertEqual(code, 1)

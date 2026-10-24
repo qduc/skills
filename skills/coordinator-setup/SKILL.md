@@ -1,6 +1,6 @@
 ---
 name: coordinator-setup
-description: Discover and configure the host for the coordinator skill. Use on first coordinator use, when its host profile is missing, or when changing machines, harnesses, adapters, or installed method catalogs.
+description: Discover and configure the host for the delegate skill. Use on first /delegate use, when its host profile is missing, or when changing machines, harnesses, adapters, or installed method catalogs.
 ---
 
 # Coordinator setup
@@ -77,7 +77,7 @@ rest of this skill still applies to the other adapters.
 
 ## 3. Save and verify
 
-Read [Host profile](../coordinator/references/host-profile.md) for the location and
+Read [Host profile](../delegate/references/host-profile.md) for the location and
 schema. Construct a JSON profile from the discovery result, adding verified
 adapters and catalogs. Write it through the editing tool outside the skill package.
 Review an existing profile before replacing it; preserve valid unrelated adapter

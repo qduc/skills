@@ -3,7 +3,7 @@
 **Passed on 2026-10-04.** A fresh agent read the shipped Coordinator skill and
 completed a genuine repair in this repository. The parent independently inspected
 the deliverable, exercised its actual workflow, and audited protected completion.
-This satisfies the default real-use gate (the manual-coordination skill's `references/real-use-verification.md`)
+This satisfies the default real-use gate (the supervise-panes skill's `references/real-use-verification.md`)
 for the representative native Coordinator workflow.
 
 ## Task and authority

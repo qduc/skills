@@ -51,7 +51,7 @@ this design does not promise network-filesystem semantics.
 
 ## Publish, inspect, process
 
-Run commands through `python3 <coordinator-dir>/scripts/coord_lifecycle.py`.
+Run commands through `python3 <delegate-dir>/scripts/coord_lifecycle.py`.
 All bound mutations, including `mark-read`, `ack`, and `preserve`, require
 `--owner <session-token> --revision <number|latest>`. Supply your session's owner
 token explicitly. `latest` checks the current revision under the task lock and
@@ -139,7 +139,7 @@ Start one background Bash job per lifecycle run through the harness's normal
 background shell facility:
 
 ```bash
-bash <coordinator-dir>/scripts/watch_inbox.sh <task-dir>/lifecycle.json
+bash <delegate-dir>/scripts/watch_inbox.sh <task-dir>/lifecycle.json
 ```
 
 The script stays quiet while waiting. When unread messages exist, it prints a

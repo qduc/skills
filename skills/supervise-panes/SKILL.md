@@ -1,16 +1,16 @@
 ---
-name: manual-coordination
-description: Coordinates hand-supervised workers, such as agents in Herdr terminal panes, through a phased procedure with a durable task record, and resumes coordinator task records started before the driven runtime. Use when the user wants to run or supervise agents in Herdr or terminal panes, or to continue an older manual coordinator task. Headless or native-agent delegation is the coordinator skill's driven runtime, which the user starts with /coordinator.
-compatibility: Runs the coordinator skill's scripts, so the coordinator skill must be installed alongside it. Needs Python 3, git, and Unix file locking.
+name: supervise-panes
+description: Coordinates hand-supervised workers, such as agents in Herdr terminal panes, through a phased procedure with a durable task record, and resumes coordinator task records started before the driven runtime. Use when the user wants to run or supervise agents in Herdr or terminal panes, or to continue an older manual coordinator task. Headless or native-agent delegation is the delegate skill's driven runtime, which the user starts with /delegate.
+compatibility: Runs the delegate skill's scripts, so the delegate skill must be installed alongside it. Needs Python 3, git, and Unix file locking.
 ---
 
-# Manual coordination
+# Supervise panes
 
 Coordinate workers you supervise by hand: interactive Herdr or terminal-pane
-agents, and task records started before the coordinator's driven runtime. For
-headless or native-agent delegation, the user runs `/coordinator` instead.
+agents, and task records started before the delegate skill's driven runtime. For
+headless or native-agent delegation, the user runs `/delegate` instead.
 
-`<coordinator-dir>` below is the installed coordinator skill directory; this
+`<delegate-dir>` below is the installed delegate skill directory; this
 skill runs its scripts. Every reference is linked from [References](#references);
 read each one when its row says so.
 
@@ -62,12 +62,12 @@ Stop rules:
 
 ## 0. Entry and durable state
 
-Read [Host profile](../coordinator/references/host-profile.md). If it is missing or a required capability
+Read [Host profile](../delegate/references/host-profile.md). If it is missing or a required capability
 changed, run the `coordinator-setup` skill before using host helpers. Bundled task
 state needs Unix locking; the process runtime is Linux-only.
 
 Read [Task state](references/task-state.md), then create and own a record with
-`<coordinator-dir>/scripts/coord_state.py`, or load, reconcile, and claim the existing one. Keep a
+`<delegate-dir>/scripts/coord_state.py`, or load, reconcile, and claim the existing one. Keep a
 concise snapshot of the goal, rationale, acceptance criteria, authority,
 decisions, owned work, blockers, evidence, and next action; link reports rather
 than copying a narrative.
@@ -185,7 +185,7 @@ change the method when repeated passes fail the same criterion.
 ## 5. Accept and integrate
 
 Accept only after required checks pass, evidence is inspected, and blocking
-findings are resolved. Run `<coordinator-dir>/scripts/coord_claimcheck.py --cwd <assigned-cwd>
+findings are resolved. Run `<delegate-dir>/scripts/coord_claimcheck.py --cwd <assigned-cwd>
 --report <report>` first; unresolved cited commits or test paths block acceptance.
 Outcome-plan work follows Outcome contracts for acceptance and integration;
 workers and protocol reports cannot make those decisions. Protocol output is
@@ -216,7 +216,7 @@ disposition, and announce it. Behavior changes are experiments, not heals.
 
 | Read | When |
 |---|---|
-| [Host profile](../coordinator/references/host-profile.md) | At entry, and before using any host helper or adapter |
+| [Host profile](../delegate/references/host-profile.md) | At entry, and before using any host helper or adapter |
 | [Operational status](references/operational-status.md) | Before enabling an optional integration or healing host state |
 | [Task state](references/task-state.md) | At entry; whenever you create, claim, resume, or checkpoint a record |
 | [Outcome contracts](references/outcome-contracts.md) | New delivery work with runnable acceptance checks |

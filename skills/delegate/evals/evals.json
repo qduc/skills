@@ -1,10 +1,10 @@
 {
-  "skill_name": "coordinator",
+  "skill_name": "delegate",
   "evals": [
     {
       "id": 1,
       "name": "vague-ask-gets-one-question",
-      "prompt": "Tabletop exercise: describe the next front-desk actions and exact coord.py commands; do not run anything. The user typed `/coordinator make the dashboard faster, maybe add caching`. `coord.py doctor` reports ready. The repo has no performance benchmark and no latency target anywhere.",
+      "prompt": "Tabletop exercise: describe the next front-desk actions and exact coord.py commands; do not run anything. The user typed `/delegate make the dashboard faster, maybe add caching`. `coord.py doctor` reports ready. The repo has no performance benchmark and no latency target anywhere.",
       "expected_output": "Separate the need (faster dashboard) from the suggested caching, ask exactly one question about what result means done, and start nothing until a checkable criterion exists.",
       "expectations": [
         "Treats caching as a suggestion, not the goal.",

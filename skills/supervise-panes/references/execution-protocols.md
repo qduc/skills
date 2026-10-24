@@ -16,7 +16,7 @@ owns only the task-specific engineering method and local verification.
 Resolve the matching method before using it or dispatching:
 
 ```sh
-python3 <coordinator-dir>/scripts/coord_protocol.py resolve --protocol <name> --catalog <installed-skill-dir>
+python3 <delegate-dir>/scripts/coord_protocol.py resolve --protocol <name> --catalog <installed-skill-dir>
 ```
 
 The catalog is supplied by the host, as repeated `--catalog` flags or through
@@ -92,7 +92,7 @@ does not exist is an error, not a fallback.
 Whatever the protocol prints, admit it before inspection:
 
 ```sh
-python3 <coordinator-dir>/scripts/coord_protocol.py admit --protocol <name> --report <report>
+python3 <delegate-dir>/scripts/coord_protocol.py admit --protocol <name> --report <report>
 ```
 
 Or treat the report the same way without the helper. `admit` records the

@@ -3,7 +3,7 @@
 Not applied. Each item is one workflow-evolution candidate: freeze the
 incumbent skill, change one behavior, run the same tasks, and promote only on
 an external signal. Coordinator prose is not the score. Preservation gate:
-the manual-coordination skill's `evals/evals.json` entries 1–3 still pass. The wake-sweep, live-worktree, and
+the supervise-panes skill's `evals/evals.json` entries 1–3 still pass. The wake-sweep, live-worktree, and
 pre-existing-gate evals are preservation checks for rules already in the skill,
 not scores for the mutations below.
 

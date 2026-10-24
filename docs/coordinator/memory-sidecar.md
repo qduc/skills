@@ -1,6 +1,6 @@
 # Memory sidecar
 
-Read [Operational status](../../skills/manual-coordination/references/operational-status.md) before using this integration.
+Read [Operational status](../../skills/supervise-panes/references/operational-status.md) before using this integration.
 Keep it disabled unless that status explicitly authorizes use. The watcher,
 binding, and flush instructions below apply only when enabled; otherwise write
 task-state `notes` by hand. Read-only `coord_state.py resume` is independent.

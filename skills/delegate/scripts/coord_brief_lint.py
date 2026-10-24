@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Lint a worker brief against the communication contract. Read-only.
 
-The contract in the manual-coordination skill's references/communication.md
+The contract in the supervise-panes skill's references/communication.md
 requires every brief to carry a checkable done criterion, a return path,
 no-ask_user and no-delegation clauses, and (for build work) a runnable verification command. Briefs that
 drop one of these are how docs-only deliveries and question-asking workers

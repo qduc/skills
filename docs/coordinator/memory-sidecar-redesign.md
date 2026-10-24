@@ -2,7 +2,7 @@
 
 **Status: proposal.** [Memory sidecar](memory-sidecar.md) now documents this
 watcher design, but the integration stays disabled per
-[Operational status](../../skills/manual-coordination/references/operational-status.md) until the work below is implemented
+[Operational status](../../skills/supervise-panes/references/operational-status.md) until the work below is implemented
 and independently verified. Nothing here changes that policy.
 
 **Implemented so far** (branch `sidecar-v2`): the deterministic, profile-driven
@@ -13,7 +13,7 @@ census, profile shape and reduction gates, and an induction entry point); and
 removal of the hook path (`install_memory_hooks.py`, `capture()`, `session_nonce`,
 `_find_transcript`, the `session-nonce` command, and the PreCompact/SessionEnd
 triggers). The efficacy eval is recorded in
-[the efficacy result](../../skills/coordinator/evals/memory-sidecar-efficacy.md).
+[the efficacy result](../../skills/delegate/evals/memory-sidecar-efficacy.md).
 
 Sources are harness-agnostic through the profile seam. A profile names the path
 to the record's type token and maps each conversational record type to a channel
@@ -29,7 +29,7 @@ Independent verification is recorded below. The real-use gate remains. The judge
 is no longer driven by a hook.
 
 **Verification status (2026-10-09).** Corpus measurement recorded; efficacy
-eval recorded in [the efficacy result](../../skills/coordinator/evals/memory-sidecar-efficacy.md)
+eval recorded in [the efficacy result](../../skills/delegate/evals/memory-sidecar-efficacy.md)
 (5/5 labeled decisions captured, 0 noise). The full skill suite passes (284
 tests). An independent verifier inspected claims 1, 2, 5, 6, and 8 against the
 artifact; it confirmed claims 6 and 8 by inspection and found claim 2 had no
@@ -265,8 +265,8 @@ first. This is why Term2 ships a hand-written profile rather than an induced one
 Nothing here is claimed until it has evidence. This is a high-risk change: it
 writes into authoritative task state, it is a security boundary, and it adds a
 long-lived process. So it needs tests plus an independent verifier plus the
-[Real-use verification](../../skills/manual-coordination/references/real-use-verification.md) gate before the sidecar is
-enabled. The policy in [Operational status](../../skills/manual-coordination/references/operational-status.md) stands until
+[Real-use verification](../../skills/supervise-panes/references/real-use-verification.md) gate before the sidecar is
+enabled. The policy in [Operational status](../../skills/supervise-panes/references/operational-status.md) stands until
 then.
 
 ### Claims and their evidence
@@ -324,7 +324,7 @@ the injection test and the frozen profiles rather than trusting the report.
 
 ### Real-use gate
 
-Before enabling, satisfy [Real-use verification](../../skills/manual-coordination/references/real-use-verification.md): a
+Before enabling, satisfy [Real-use verification](../../skills/supervise-panes/references/real-use-verification.md): a
 fresh agent, the shipped skill, a representative real task, retained evidence,
 and independent inspection of the captured memory. The user may waive this;
 record the waiver and its limits with the result.

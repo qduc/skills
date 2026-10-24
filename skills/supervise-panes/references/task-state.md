@@ -1,6 +1,6 @@
 # Durable task state
 
-The main agent owns the task record. Use the coordinator skill's `<coordinator-dir>/scripts/coord_state.py`
+The main agent owns the task record. Use the delegate skill's `<delegate-dir>/scripts/coord_state.py`
 for persistence, ownership, and discovery. Workers return evidence and reports;
 they do not edit task state. Keep the snapshot concise and link detailed evidence.
 
@@ -15,8 +15,8 @@ they do not edit task state. Keep the snapshot concise and link detailed evidenc
 
 ## Storage
 
-The helper resolves `${XDG_STATE_HOME}/coordinator` when `XDG_STATE_HOME` is
-absolute, otherwise `~/.local/state/coordinator`. An explicit `--root <directory>`
+The helper resolves `${XDG_STATE_HOME}/delegate` when `XDG_STATE_HOME` is
+absolute, otherwise `~/.local/state/delegate`. An explicit `--root <directory>`
 before the subcommand overrides it; retain that root when resuming.
 
 Each task gets `tasks/<task-id>/state.json` as its authoritative record and a
@@ -27,7 +27,7 @@ Local persistence does not transfer tasks to another machine automatically.
 
 ## Create, discover, and own
 
-Invoke `python3 <coordinator-dir>/scripts/coord_state.py` with:
+Invoke `python3 <delegate-dir>/scripts/coord_state.py` with:
 
 - `create --title <title> --objective <objective> --project <absolute-path>`:
   creates a task, unique ID, revision, and unique owner ID. Add `--conversation`

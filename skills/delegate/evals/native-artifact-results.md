@@ -17,7 +17,7 @@ interactive Herdr and old-record adoption still use manual coordination.
 | Fresh skill-guided native report delivery | Actual native worker, public completion, independent semantic inspection and parent rerun of checks | Pass |
 | Public interface hides lifecycle internals | New trace: 26 public coord.py commands; no private lifecycle calls. Independent instruction/code review agrees | Pass |
 
-Final full command: `python3 -m unittest discover -s skills/coordinator/scripts`.
+Final full command: `python3 -m unittest discover -s skills/delegate/scripts`.
 Compilation and `git diff --check` also passed. Generic skill-creator validation
 rejects the existing `disable-model-invocation` frontmatter key on both HEAD's old
 skill and the changed skill; it is not a new failure and that host-specific key

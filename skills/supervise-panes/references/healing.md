@@ -22,7 +22,7 @@ ignore, a result you re-derived by hand.
    output, and the workaround you used.
 2. **Heal by lane:**
    - *Host fact* (a tool quirk, model profile, path, or quota): correct its
-     entry in the [host profile](../../coordinator/references/host-profile.md).
+     entry in the [host profile](../../delegate/references/host-profile.md).
    - *Instruction defect* (wording in this skill or a helper skill that is
      unclear, missing, or contradicted): make a small edit and mark it
      `<!-- lesson: <key> promoted <date> -->`.

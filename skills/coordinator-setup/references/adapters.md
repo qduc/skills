@@ -13,7 +13,7 @@ the coordinator executes them through these tools. No CLI pretends to invoke the
 
 ## Linux process
 
-Require Linux `/proc`, Unix locking, and Python. Read the `manual-coordination` skill's
+Require Linux `/proc`, Unix locking, and Python. Read the `supervise-panes` skill's
 `references/runtime-contracts.md`. Discover the chosen harness CLI syntax from
 installed help. Process commands cannot accept mid-flight corrections. Keep
 provider/model selection in the task's confirmed route, not this profile.
