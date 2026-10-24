@@ -1,6 +1,6 @@
 # Harness/model choice history
 
-Use `python3 <skill-dir>/scripts/coord_state.py` for recording and retrieving
+Use `python3 <delegate-dir>/scripts/coord_state.py` for recording and retrieving
 choices. It uses the [task-state directory](task-state.md), outside the skill
 package and repositories. A recorded selection is saved in the task's JSON
 record and exported to `<state-root>/choices.jsonl`.

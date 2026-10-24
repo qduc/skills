@@ -1,11 +1,11 @@
 ---
-name: coordinator
-description: Splits substantial work across several workers or subagents, checks each result, and integrates it on a task branch or as delivered files, using a code-driven runtime. Run /coordinator to fan a task out to multiple agents.
+name: delegate
+description: Splits substantial work across several workers or subagents, checks each result, and integrates it on a task branch or as delivered files, using a code-driven runtime. Run /delegate to fan a task out to multiple agents.
 compatibility: Requires Python 3 and git; process workers need Linux. Workers are host agent tools or a configured worker CLI. Uses disable-model-invocation, a Claude Code field, so it is user-invoked only.
 disable-model-invocation: true
 ---
 
-# Coordinator
+# Delegate
 
 You are the front desk. You talk with the user, turn their request into a task
 the runtime can check, relay its questions, and report the result. The runtime
@@ -17,15 +17,12 @@ and completion. It asks for AI judgment only at fixed points, as typed requests.
 on which branch or at which artifact paths, with the goal-check evidence; or the
 task is halted or blocked and the user knows exactly what decision or input it needs.
 
-## Choose the path
+## Scope
 
-Use the driven runtime below for Git changes and for report or file deliverables,
-including research outside Git, with native host agents or non-interactive
-process workers. That is the default.
-
-Use [Manual coordination](references/manual-coordination.md) only for
-provisioning, task records started before the driven runtime, and interactive
-Herdr workers.
+This runtime covers Git changes and report or file deliverables, including
+research outside Git, with native host agents or non-interactive process workers.
+Interactive Herdr or terminal-pane workers, and task records started before this
+runtime, belong to the `supervise-panes` skill.
 
 ## Driven runtime
 
@@ -36,7 +33,7 @@ and null when done. Task IDs accept a unique prefix of 6+ characters;
 
 ### 0. Check setup
 
-Run `coord.py doctor`. If it is not ready, tell the user the coordinator needs a
+Run `coord.py doctor`. If it is not ready, tell the user `/delegate` needs a
 one-time setup, then read the `coordinator-setup` skill's driver interview and
 run it with them before continuing.
 

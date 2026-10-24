@@ -8,7 +8,7 @@ Arm one background wait on a report file or process exit, debounced across
 status flips such as a brief `done` between tool calls, and confirm that wake
 fires before relying on it. For Herdr workers, the wait must also watch
 lifecycle status, because a worker can end its turn without writing the
-report: run `python3 <skill-dir>/scripts/watch_workers.py watch --state
+report: run `python3 <delegate-dir>/scripts/watch_workers.py watch --state
 <task-dir>/watch-state.json --worker <pane>=<report> --worker-progress
 <pane>=<worktree> --worker-progress <pane>=<report-or-output> ...` in the
 background. Associate each worktree and report/output path only with its
@@ -51,7 +51,7 @@ finished one: steer `/retry-turn` + Enter at the idle prompt to resume it,
 confirm the turn restarts, and re-dispatch only if the retry fails again.
 <!-- lesson: upstream-error-retry-turn promoted 2026-09-29 -->
 After each checkpoint publish an observer snapshot with
-`python3 <skill-dir>/scripts/coord_progress.py --state <task-dir>/state.json`;
+`python3 <delegate-dir>/scripts/coord_progress.py --state <task-dir>/state.json`;
 it exposes phase, next_action, worker locators/status/progress time with
 dispatch→report and report→merge durations, merges, and done/total.
 

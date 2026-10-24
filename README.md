@@ -17,7 +17,7 @@ That downloads two public collections into `.external/`, which git ignores. They
 - [mattpocock/skills](https://github.com/mattpocock/skills) lands in `.external/mattpocock-skills/skills`
 - [cursor/plugins](https://github.com/cursor/plugins) (`pstack/skills`) lands in `.external/cursor-plugins/pstack/skills`
 
-The script records both directories in `.external/catalog.env`. Load them into the shell that launches the coordinator:
+The script records both directories in `.external/catalog.env`. Load them into the shell that launches `/delegate`:
 
 ```sh
 . ./.external/catalog.env
@@ -29,7 +29,7 @@ Run the setup script again to fetch updates and fast-forward clean checkouts. Be
 
 To use different sources, set `MATT_SKILLS_URL` and `CURSOR_PLUGINS_URL` to Git repository URLs or local repository paths before running setup. Relative local paths are resolved from the directory where you run setup; quote values containing spaces. Existing clones must still match the selected sources. The plugins source must contain `pstack/skills`, and the mattpocock source must contain `skills`.
 
-If you skip setup, the coordinator uses its normal fallback without external skills. To stop using downloaded catalogs in a shell that loaded them, run `unset COORDINATOR_PROTOCOL_CATALOG` before removing `.external/`.
+If you skip setup, `/delegate` uses its normal fallback without external skills. To stop using downloaded catalogs in a shell that loaded them, run `unset COORDINATOR_PROTOCOL_CATALOG` before removing `.external/`.
 
 The setup integration tests create real local Git repositories, run the actual script, source the catalog with POSIX `sh`, and invoke the existing Coordinator resolver. They block Git network protocols and do not change global Git configuration:
 
@@ -44,10 +44,10 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **[browser-qa](skills/browser-qa/SKILL.md)** — Verifies scoped user journeys and rendered behavior in a real browser, with reproducible evidence and explicit coverage limits.
 - **bug-retro** — After a bug is fixed, turns that single fix into a lasting improvement for the whole class of bug.
 - **[code-review](skills/code-review/SKILL.md)** — Inspects code changes for evidence-backed correctness, security, and compatibility risks.
-- **coordinator** — User-invoked (`/coordinator`). Splits substantial work across bounded workers, then tracks dependencies, checks the results, and integrates them. Handles process or native workers and Git patches or report/file artifacts. Code owns the flow and gates; the agent answers typed judgments and performs requested native host calls.
 - **coordinator-setup** — Discovers host capabilities and configures optional coordinator adapters in an external host profile without rewriting the base skill.
 - **[debugging](skills/debugging/SKILL.md)** — Tests causal explanations through hypotheses, discriminating experiments, and model updates.
 - **deep-module-review** — Judges one module or API for cohesion, what it hides, how heavy its interface is, what leaks out, and how much callers have to carry.
+- **delegate** — User-invoked (`/delegate`). Splits substantial work across headless or native workers through a code-driven runtime that owns the flow and gates, and delivers Git changes or report/file artifacts. The agent answers typed judgments and performs requested native host calls.
 - **finding-triage** — Decides which review findings must be fixed, what each fix would cost, and whether to route, narrow, accept, or reject it.
 - **herdr** — Inspects and coordinates Herdr workspaces, tabs, panes, terminals, and agents from the command line without disrupting work already running.
 - **[implementation](skills/implementation/SKILL.md)** — Makes controlled code changes while preserving contracts, surrounding conventions, and existing user work.
@@ -63,6 +63,7 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **skill-creator** — Creates and revises agent skills, and measures how well they perform, including tests and how accurately a description gets the skill selected.
 - **skill-router** — Entry point for every request. Routes to exactly one exit: no skill (most requests), one skill, or a two-skill chain. `scripts/check_router.py` fails if a skill is missing from it, an eval expects an exit that doesn't exist, or a route exit has no eval; `scripts/run_router_evals.py` routes every eval through a model to catch rows shadowing each other.
 - **slop-audit** — Surveys a whole repository for piled-up problems in design, correctness, tests, duplication, security, dependencies, and overbuilding, then ranks what to repair.
+- **supervise-panes** — Runs and supervises hand-watched workers, such as agents in Herdr panes, through a phased procedure with a durable task record; also resumes older manual coordinator tasks. Uses the delegate skill's scripts.
 - **term2** — Starts, configures, and runs term2 for interactive coding sessions or one-shot command-line tasks.
 - **[testing](skills/testing/SKILL.md)** — Establishes proportionate behavioral evidence through meaningful assertions, isolated execution, and explicit test limits.
 - **workflow-evolution** — Improves an agent workflow by revising its skills through experiments backed by evidence, leaving the harness unchanged.

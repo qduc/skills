@@ -32,7 +32,7 @@ process and native workers, and for Git patches and file artifacts. Native host
 tools remain a transport bridge (`host-next` / `host-result`); the front desk
 executes the requested call and records actual observations. It does not manage
 assignment revisions, packaging, acceptance, or integration through helper APIs.
-See [Driven runtime](../SKILL.md#driven-runtime) for this public interface.
+See [Driven runtime](../../skills/delegate/SKILL.md#driven-runtime) for this public interface.
 
 `coord_state.py` remains the authoritative owner/revision store and completion
 entry point. `coord_outcomes.py` owns protected contracts, assignment identity,
@@ -75,7 +75,7 @@ acting, including incorporation that happened before its checkpoint.
 
 The deterministic gate exercises the negative cases, real subprocesses, fresh
 CLI sessions, interruption windows, and completion/archive paths. Run:
-`python3 -m unittest discover -s skills/coordinator/scripts -p 'test_*.py'`.
+`python3 -m unittest discover -s skills/delegate/scripts -p 'test_*.py'`.
 
 The runtime matrix gate requires twelve successful deliveries: two runtimes × two methods
 × three repetitions. `evals/live_delivery.py` prepares isolated compatibility
@@ -90,7 +90,7 @@ the boundary works on the exercised task; they do not establish a production
 reliability rate or equivalence across arbitrary models and protocols.
 
 Overall completion additionally requires
-[Real-use verification](real-use-verification.md). Launch a fresh agent with the
+[Real-use verification](../../skills/supervise-panes/references/real-use-verification.md). Launch a fresh agent with the
 shipped skill and a genuine authorized repository task. Inspect its actual
 coordination, durable state, integration, and final deliverable, and independently
 verify the original goal. Record the skill version, task, trace, checks, acceptance,

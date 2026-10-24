@@ -1,5 +1,7 @@
 # Automatic model selection verification
 
+> Paths: this evidence predates the coordinator split. `shipped.sha256` and the logs name the old `skills/coordinator/` paths, which now live under `skills/delegate/` (runtime) and `skills/supervise-panes/` (manual procedure).
+
 Request: remove the coordinator gate requiring user confirmation of model selection.
 
 ## Acceptance criteria
@@ -19,7 +21,7 @@ Automated fixtures use temporary repositories/workspaces, local scripted workers
 and judges, and bounded waits; they do not exercise real model providers. Run:
 
 ```sh
-python3 -m unittest discover -s skills/coordinator/scripts -p 'test_coord*.py'
+python3 -m unittest discover -s skills/delegate/scripts -p 'test_coord*.py'
 git diff --check
 ```
 
@@ -42,7 +44,7 @@ The scripted-worker fixtures are supporting evidence only, not the full-skill
 real-use gate. Needed handoff: an authorized representative repository task and
 fresh agent execution through the shipped coordinator, followed by independent
 inspection and retained execution/task records per
-`skills/coordinator/references/real-use-verification.md`. Do not treat automated
+`skills/supervise-panes/references/real-use-verification.md`. Do not treat automated
 passes as overall real-use acceptance. No independent real-use inspection exists.
 
 Compatibility: legacy `confirm-selection` questions/commands and `--confirmed`

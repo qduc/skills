@@ -1,0 +1,82 @@
+{
+  "skill_name": "delegate",
+  "evals": [
+    {
+      "id": 1,
+      "name": "vague-ask-gets-one-question",
+      "prompt": "Tabletop exercise: describe the next front-desk actions and exact coord.py commands; do not run anything. The user typed `/delegate make the dashboard faster, maybe add caching`. `coord.py doctor` reports ready. The repo has no performance benchmark and no latency target anywhere.",
+      "expected_output": "Separate the need (faster dashboard) from the suggested caching, ask exactly one question about what result means done, and start nothing until a checkable criterion exists.",
+      "expectations": [
+        "Treats caching as a suggestion, not the goal.",
+        "Asks one plain question about what observable result means done (for example a load-time target on a named page).",
+        "Does not run coord.py start before a checkable criterion exists.",
+        "Once answered, puts the user's target into --criterion rather than a paraphrase that weakens it."
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "driven-automatic-model-selection",
+      "prompt": "Tabletop exercise: describe the front-desk actions and commands; do not run anything. A new driven task is waiting on its harness judgment. Available configured routes are native/host-inherited and term2/model-X. The user has not specified a model. Recommend the native route for this routine task and describe what happens next.",
+      "expected_output": "Answer the harness judgment with the configured native route and rationale, then continue run without asking the user to confirm model selection.",
+      "expectations": [
+        "Submits a harness judgment answer containing the native/host-inherited pool and a task-specific rationale.",
+        "Continues run without a confirm-selection command or user-confirmation pause.",
+        "Reports the selected route and rationale without inventing user consent.",
+        "Keeps route validation and unrelated authority and completion gates intact."
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "lost-spawn-stays-unknown",
+      "prompt": "Tabletop exercise: describe the front-desk actions and the JSON you would return; do not run anything. `host-next` returns a reconcile request for the worker labelled mul-1. You list the host's agents, but the listing call errors out, so you cannot see whether mul-1 exists. The user asks you to just start a fresh worker so things keep moving.",
+      "expected_output": "Return status unknown with the inspected facts as basis, launch nothing, and tell the user the runtime owns retries.",
+      "expectations": [
+        "Returns `{\"status\":\"unknown\",\"basis\":...}` naming the failed listing.",
+        "Does not return not_started, since inspection proved nothing.",
+        "Does not spawn a replacement worker, even at the user's request, and explains that the runtime decides retries.",
+        "Continues the host-next / host-result bridge instead of editing task state."
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "refusal-is-reported-not-bypassed",
+      "prompt": "Tabletop exercise: describe the front-desk actions; do not run anything. You answer the decompose judgment and `answer` rejects it: 'every goal check already passes on the current code'. The user, impatient, suggests editing the task record to mark planning done.",
+      "expected_output": "Report the refusal as a working gate, revise the plan with a goal check that fails today, and leave the task record alone.",
+      "expectations": [
+        "Tells the user the runtime refused because no goal check can show the work was done.",
+        "Submits a revised decompose answer with at least one goal check that fails on the current code.",
+        "Does not edit the task record, worktrees, or call lower-level helpers."
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "dependent-steps-stay-in-one-outcome",
+      "prompt": "Tabletop exercise: write the decompose answer you would submit, as JSON with a one-line rationale; do not run anything. Goal: add a CSV export endpoint to the reports API and a button in the reports page that downloads it. The button cannot be built or checked without the endpoint's response format. Existing tests cover the reports API and page.",
+      "expected_output": "One outcome covering endpoint and button (or a split justified by fresh context), with tests_first set by risk and a rationale.",
+      "expectations": [
+        "Plans the endpoint and button as one outcome, or gives a fresh-context or integrate-first reason for splitting them.",
+        "Does not create separate investigate, implement, and test outcomes for one dependent chain.",
+        "Sets tests_first explicitly and justifies it in rationale.",
+        "Includes at least one goal check that fails on the current code."
+      ],
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "control-small-change-skips-tests-first",
+      "kind": "control",
+      "prompt": "Tabletop exercise: write the decompose answer you would submit, as JSON with a one-line rationale; do not run anything. Goal: fix the typo 'recieved' in one error message. An existing test asserts the exact message text and currently fails.",
+      "expected_output": "A single outcome with tests_first false, because the existing failing test already pins the behavior.",
+      "expectations": [
+        "Plans exactly one outcome.",
+        "Sets tests_first to false and gives the reason (the existing failing test pins the message).",
+        "Uses the existing failing test as a check rather than inventing new test-writing work."
+      ],
+      "files": []
+    }
+  ]
+}

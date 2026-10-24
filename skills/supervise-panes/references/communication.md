@@ -66,7 +66,7 @@ Write the report file last; its existence and mtime are the completion signal
 ```
 
 For file-transport briefs, put the brief in a file and lint it before dispatch:
-`python3 <skill-dir>/scripts/coord_brief_lint.py lint --brief <path> --kind build`
+`python3 <delegate-dir>/scripts/coord_brief_lint.py lint --brief <path> --kind build`
 rejects a brief that drops a required clause above (done criteria, return
 channel, no-ask_user/no-delegation, or a runnable verification command for build
 work). The lint is required for file-transport briefs and advisory for native

@@ -1,7 +1,7 @@
 # Memory sidecar efficacy eval
 
 **Status: result (2026-10-09, branch `sidecar-v2`).** The sidecar remains disabled
-per [Operational status](../references/operational-status.md); this measures the
+per Operational status (the supervise-panes skill's `references/operational-status.md`); this measures the
 judge offline, it does not enable anything.
 
 ## Question

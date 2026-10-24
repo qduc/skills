@@ -26,7 +26,7 @@ labeled compact Coordinator IDs no longer become false commit citations.
 | Instruction preservation | Old/current skill handle surprises and missed parent goals | Each passed 11/11 assertions across two paired tabletop cases |
 | Independent review | No remaining routed must-fix issue | Six initial review lenses; recovery/adversary closure checks clean after fixes |
 | Saved evidence audit | Completion gates still pass; checks/artifacts unchanged; process resources settled | All 18 successful deliveries rechecked with current completion guard; 19 attempts accounted for |
-| Skill structure | Valid skill metadata | `quick_validate.py skills/coordinator` passed |
+| Skill structure | Valid skill metadata | `quick_validate.py skills/delegate` passed |
 
 The final live matrix uses these successful runs:
 
@@ -98,7 +98,7 @@ All raw execution/review evidence is retained under
 From the repository root, run the deterministic gate:
 
 ```sh
-python3 -m unittest discover -s skills/coordinator/scripts -p 'test_*.py'
+python3 -m unittest discover -s skills/delegate/scripts -p 'test_*.py'
 ```
 
 Live worker runs are explicit, provider-backed evaluations. Use
