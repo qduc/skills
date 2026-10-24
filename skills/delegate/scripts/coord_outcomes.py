@@ -283,14 +283,16 @@ def report(assignment_file, artifact, summary=None):
     return {'report': str(path), 'disposition': 'worker_evidence'}
 
 
-def claimcheck(report_path, cwd):
-    """Unresolved commit or test citations in a report; recorded as verification evidence."""
+def claimcheck(report_path, cwd, sources=()):
+    """Unresolved and uncheckable commit or test citations in a report; recorded as verification evidence."""
     # Imported lazily: the reporter snapshot copied into attempts omits this module.
     import coord_claimcheck
-    return coord_claimcheck.blockers(Path(cwd).resolve(), Path(report_path).read_text())
+    found, unverified = coord_claimcheck.check(Path(cwd).resolve(), Path(report_path).read_text(),
+                                               [Path(source).resolve() for source in sources])
+    return {'blockers': found, 'unverified': unverified}
 
 
-def verify_result(state, oid, report_path, timeout):
+def verify_result(state, oid, report_path, timeout, sources=()):
     require_current_goal(state)
     item = outcome_of(state, oid)
     report_ref = file_ref(report_path)
@@ -312,7 +314,7 @@ def verify_result(state, oid, report_path, timeout):
     item.pop('integration', None)
     item['verification'] = {'assignment_id': item['assignment_id'], 'attempt_id': attempt['id'],
                             'artifact': actual, 'report': report_ref, 'checks': evidence,
-                            'claimcheck': {'blockers': claimcheck(report_path, item['contract']['cwd'])},
+                            'claimcheck': claimcheck(report_path, item['contract']['cwd'], sources),
                             'dependencies': candidate['dependencies'], 'at': tasks.now()}
     plan_of(state).pop('goal_verification', None)
     return item['verification']

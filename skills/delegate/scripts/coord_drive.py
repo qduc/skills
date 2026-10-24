@@ -159,6 +159,11 @@ def artifact_delivery(drive):
     return drive.get('delivery', 'patch') == 'artifact'
 
 
+def citation_sources(drive):
+    """Read-only repositories an artifact report may cite; a patch's citations stay in its own worktree."""
+    return [drive['repo'], *drive.get('sources', [])] if artifact_delivery(drive) else []
+
+
 def route_matches(configured, route):
     # The selected route includes optional effort and role, and must not silently
     # select another configured command that shares only harness/model/provider.
@@ -372,6 +377,9 @@ def worker_instructions(feedback, frozen=(), drive=None):
             lines[9] = (f"- Deliver the file {contract['artifact']} inside your working directory. "
                         'The runtime publishes it after independent checks and inspection.')
             lines += [f"Source material: {drive['repo']} (read-only; do not edit the source directory).",
+                      *(f'Source repository: {source} (read-only).' for source in drive.get('sources', [])),
+                      'Cited commits and tests are checked against your working directory and the source '
+                      'material above; cite only revisions that exist there.',
                       'Accepted dependencies are in inputs/<outcome-id>/<artifact-name> (read-only).']
         if feedback:
             lines += ['Earlier attempts at this outcome did not pass. Address this feedback:',
@@ -948,7 +956,7 @@ def settled(task_dir, drive, oid, observation):
         return
     try:
         verification = mutate(task_dir, drive, lambda s, p: outcomes.verify_result(
-            s, oid, result['report'], limit(drive, 'check_timeout')))
+            s, oid, result['report'], limit(drive, 'check_timeout'), citation_sources(drive)))
     except tasks.StateError as error:
         retry(task_dir, drive, tasks.load(task_dir), oid, f'Independent verification refused the result: {error}')
         return
@@ -957,7 +965,7 @@ def settled(task_dir, drive, oid, observation):
     if failing or blockers:
         lines = [f"Check {c['id']} failed (exit {c['exit_code']}).\nstdout:\n{tail(c['stdout'], 1500)}\n"
                  f"stderr:\n{tail(c['stderr'], 1500)}" for c in failing]
-        lines += [f'Your summary cites something that does not exist: {b}' for b in blockers]
+        lines += [f'Your summary cites something the runtime could not find: {b}' for b in blockers]
         signature = failure_signature(failing)
         previous = record.get('last_failure')
         record['last_failure'] = signature
@@ -992,6 +1000,7 @@ def settled(task_dir, drive, oid, observation):
         'outcome': oid, 'contract': item['contract'], 'attempt': record['attempts'],
         'delivery': drive.get('delivery', 'patch'), 'source': drive['repo'],
         'artifact': verification['artifact'],
+        'unverified_citations': verification['claimcheck'].get('unverified', []),
         'summary': json.loads(Path(result['report']).read_text()).get('summary'),
         'patch': patch if len(patch) <= 60000 else patch[:60000] + '\n[patch truncated; read the artifact file]',
         'patch_file': verification['artifact']['path'],
@@ -1373,12 +1382,18 @@ def halt(task_dir, resume=False):
 
 
 def start(root, repo, goal, criteria, workers, title=None, constraints=(), authority=None,
-          real_use_required=False, limits=None, delivery='patch'):
+          real_use_required=False, limits=None, delivery='patch', sources=()):
     repo = Path(repo).expanduser().resolve()
     if delivery not in {'patch', 'artifact'}:
         raise DriveError('delivery must be patch or artifact')
     if not repo.is_dir():
         raise DriveError('source workspace must be an existing directory')
+    sources = list(dict.fromkeys(str(Path(source).expanduser().resolve()) for source in sources))
+    if sources and delivery != 'artifact':
+        raise DriveError('source repositories are for artifact delivery; a patch cites its own repository')
+    for source in sources:
+        if git(source, 'rev-parse', '--git-dir', check=False).returncode:
+            raise DriveError(f'source repository must be a git checkout: {source}')
     if delivery == 'patch' and git(repo, 'rev-parse', '--show-toplevel', check=False).stdout.strip() != str(repo):
         raise DriveError('repo must be the root of a git repository')
     nonempty(goal, 'goal')
@@ -1433,7 +1448,7 @@ def start(root, repo, goal, criteria, workers, title=None, constraints=(), autho
         state['updated_at'] = tasks.now()
         tasks.save(task_dir, state)
     drive = {'version': 1, 'owner': created['state']['owner'], 'repo': str(repo), 'base': base, 'branch': branch,
-             'delivery': delivery,
+             'delivery': delivery, 'sources': sources,
              'integration': str(integration), 'workers': workers, 'limits': dict(DEFAULT_LIMITS, **(limits or {})),
              'requests': {}, 'questions': {}, 'outcomes': {}, 'goal_rounds': 0, 'log': []}
     log(drive, 'task_started', base=base, branch=branch)

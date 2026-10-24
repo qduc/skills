@@ -215,7 +215,7 @@ class DriverTests(unittest.TestCase):
         self.select()
         status = self.run_until()
         self.assert_done_on_branch(status, MUL)
-        self.assertIn('does not exist', self.prompts('multiplication')[1])
+        self.assertIn('could not find: test path', self.prompts('multiplication')[1])
 
     def test_inspection_reject_feeds_the_next_attempt(self):
         self.scenario({'multiplication': [{'files': {'calc.py': MUL}}]},
