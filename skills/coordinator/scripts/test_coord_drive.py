@@ -458,6 +458,32 @@ class DriverTests(unittest.TestCase):
         self.assertEqual(len(self.judged('inspect')), 1)  # the implementation still gets its own inspection
         self.assertIn('test_mul.py', self.prompts('multiplication')[0])  # the implementer is told its checks
 
+    def test_auto_checks_first_follows_each_outcomes_choice(self):
+        sub = check('sub-works', 'import calc; assert calc.sub(5, 3) == 2')
+        both = MUL + '\n\ndef sub(a, b):\n    return a - b\n'
+        skip = dict(outcome('sub', 'Add subtraction to calc', [sub], needs=['mul']), tests_first=False)
+        self.scenario({'Write the tests': [{'files': {'test_mul.py': GOOD_TESTS}}],
+                       'multiplication': [{'files': {'calc.py': MUL}}],
+                       'subtraction': [{'files': {'calc.py': both}}]},
+                      decompose=[plan(outcome('mul', 'Add multiplication to calc', [MUL_TESTS]), skip,
+                                      goal_checks=[MUL_CHECK, sub, SUITE])])
+        self.start(limits={'checks_first': 'auto'})
+        self.confirm()
+        self.assert_done_on_branch(self.run_until(), both)
+        self.assertEqual([r['implements']['id'] for r in self.judged('review_checks')], ['mul'])
+        self.assertEqual(len(self.prompts('Write the tests')), 1)  # only mul, which left tests_first unset
+
+    def test_checks_first_limit_rejects_unknown_modes(self):
+        with self.assertRaisesRegex(drive.DriveError, 'checks_first must be'):
+            self.start(limits={'checks_first': 'sometimes'})
+
+    def test_tests_first_must_be_a_boolean(self):
+        request, state = {'kind': 'decompose', 'context': {}}, {'delivery': 'patch'}
+        chosen = dict(outcome('mul', 'Add multiplication to calc', [MUL_CHECK]), tests_first=False)
+        drive.validate_answer(state, request, plan(chosen))
+        with self.assertRaisesRegex(drive.DriveError, 'tests_first must be true or false'):
+            drive.validate_answer(state, request, plan(dict(chosen, tests_first='no')))
+
     def test_tests_that_already_pass_are_sent_back(self):
         self.scenario({'Write the tests': [{'files': {'test_mul.py': VACUOUS_TESTS}}, {'files': {'test_mul.py': GOOD_TESTS}}],
                        'multiplication': [{'files': {'calc.py': MUL}}]},

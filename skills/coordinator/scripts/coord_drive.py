@@ -49,7 +49,8 @@ PACKAGE_DIR = '.coord'
 EXCLUDE_PACKAGE = ':(exclude)' + PACKAGE_DIR
 DEFAULT_LIMITS = {'attempts_per_outcome': 3, 'goal_rounds': 3, 'judgment_retries': 2,
                   'stall_seconds': 900, 'check_timeout': 300, 'unknown_grace_seconds': 120,
-                  'checks_first': True}
+                  'checks_first': 'auto'}  # 'auto': each outcome's tests_first decides; True/False forces it
+CHECKS_FIRST_MODES = ('auto', True, False)
 OUTCOME_ID = re.compile(r'[a-z0-9][a-z0-9-]{0,31}')
 CHECKS_SUFFIX = '-checks'
 TAIL = 4000
@@ -218,7 +219,7 @@ SCHEMAS = {
     'harness': '{"pool": [{"harness": str, "model": str, "provider"?: str}], "rationale": str}',
     'decompose': ('{"outcomes": [{"id": "lowercase-slug", "objective": str, "rationale": str, "scope": str, '
                   '"authority": str, "needs": [outcome ids], "checks": [{"id": str, "argv": [str]}], '
-                  '"artifact"?: "relative/file.ext"}], '
+                  '"tests_first"?: bool, "artifact"?: "relative/file.ext"}], '
                   '"goal_checks": [{"id": str, "argv": [str]}], "rationale": str}'),
     'assess': '{"action": one of context.actions, "reason": str, "guidance"?: str, "question"?: str}',
     'inspect': '{"verdict": "accept" | "reject", "reason": str, "feedback"?: str}',
@@ -252,8 +253,11 @@ def validate_answer(drive, request, answer):
             raise DriveError('outcomes must be a non-empty list')
         for entry in answer['outcomes']:
             expected = OUTCOME_FIELDS | ({'artifact'} if artifact_delivery(drive) else set())
-            if not isinstance(entry, dict) or set(entry) != expected:
-                raise DriveError('each outcome needs exactly ' + ', '.join(sorted(expected)))
+            if not isinstance(entry, dict) or set(entry) - {'tests_first'} != expected:
+                raise DriveError('each outcome needs exactly ' + ', '.join(sorted(expected))
+                                 + ' (tests_first is optional)')
+            if not isinstance(entry.get('tests_first', True), bool):
+                raise DriveError(f"outcome {entry['id']!r}: tests_first must be true or false")
             if artifact_delivery(drive):
                 outcomes.artifact_name(entry['artifact'])
             if not isinstance(entry['id'], str) or not OUTCOME_ID.fullmatch(entry['id']):
@@ -658,12 +662,19 @@ def red_check(checks):
     return {'id': 'red-before-green', 'argv': [sys.executable, str(SELF), '_red', '--checks', json.dumps(checks)]}
 
 
+def tests_first(drive, entry):
+    """Whether an outcome gets a checks phase. A plan that omits tests_first keeps the safer default."""
+    mode = limit(drive, 'checks_first')
+    return entry.get('tests_first', True) if mode == 'auto' else mode
+
+
 def expand(drive, entries):
-    """Give each outcome a checks phase that writes its tests first; the outcome then needs it."""
-    if not limit(drive, 'checks_first'):
-        return entries, {}
+    """Give each outcome that wants it a checks phase that writes its tests first; the outcome then needs it."""
     expanded, partners = [], {}
     for entry in entries:
+        if not tests_first(drive, entry):
+            expanded.append(entry)
+            continue
         checks_id = entry['id'] + CHECKS_SUFFIX
         expanded.append({
             'id': checks_id,
@@ -688,6 +699,7 @@ def apply_plan(task_dir, drive, request, replan):
             raise DriveError('every goal check already passes on the current code, so none of them can show '
                              'whether the work was done; include at least one check that fails until the goal is met')
         entries, partners = (value['outcomes'], {}) if artifact_delivery(drive) else expand(drive, value['outcomes'])
+        entries = [{k: v for k, v in entry.items() if k != 'tests_first'} for entry in entries]  # a plan choice, not a contract field
         spec = {'outcomes': [], 'goal_checks': value['goal_checks']}
         for entry in entries:
             if artifact_delivery(drive):
@@ -1387,6 +1399,8 @@ def start(root, repo, goal, criteria, workers, title=None, constraints=(), autho
     unknown = set(limits or {}) - set(DEFAULT_LIMITS)
     if unknown:
         raise DriveError('unknown limits: ' + ', '.join(sorted(unknown)))
+    if (limits or {}).get('checks_first', 'auto') not in CHECKS_FIRST_MODES:
+        raise DriveError('checks_first must be "auto", true, or false')
     base = git(repo, 'rev-parse', 'HEAD') if delivery == 'patch' else None
     dirty = bool(git(repo, 'status', '--porcelain')) if delivery == 'patch' else False
     created = tasks.create(argparse.Namespace(title=title or goal[:80], objective=goal, project=str(repo),

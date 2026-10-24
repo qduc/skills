@@ -91,6 +91,21 @@ class CheckRouterTest(unittest.TestCase):
         self.assertEqual(self.run_check(["debugging"], "`debugging`", evals),
                          ["eval 1: invalid also_ok: 'debuging'"])
 
+    def test_fails_when_route_or_eval_exits_to_user_only_skill(self):
+        with tempfile.TemporaryDirectory() as d:
+            body = "\n## Route\n\n| Situation | Exit |\n| --- | --- |\n| parallel | `coordinator` |\n"
+            make(Path(d), ["coordinator"], body, [{"id": 1, "expected_exit": "coordinator"}])
+            (Path(d) / "coordinator" / "SKILL.md").write_text("---\nname: coordinator\ndisable-model-invocation: true\n---\n")
+            self.assertEqual(check(Path(d)), ["route exits to user-only skill: coordinator",
+                                              "eval 1: expected_exit is user-only: coordinator"])
+
+    def test_user_only_skill_may_be_named_outside_an_exit(self):
+        with tempfile.TemporaryDirectory() as d:
+            body = "\n## Route\n\n| Situation | Exit | Not this |\n| --- | --- | --- |\n| x | `debugging` | `coordinator` is user-only |\n"
+            make(Path(d), ["coordinator", "debugging"], body, [{"id": 1, "expected_exit": "debugging"}])
+            (Path(d) / "coordinator" / "SKILL.md").write_text("---\nname: coordinator\ndisable-model-invocation: true\n---\n")
+            self.assertEqual(check(Path(d)), [])
+
     def test_repository_router_is_current(self):
         self.assertEqual(check(Path(__file__).resolve().parents[2]), [])
 

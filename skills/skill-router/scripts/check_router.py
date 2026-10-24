@@ -14,6 +14,9 @@ Fails (exit 1, problems listed) when:
   - an eval's expected_exit or also_ok entry is not `none`, a skill, or
     `a → b` of skills;
   - the evals have no `none` case (the fast exit must stay tested);
+  - a route row or an eval exits to a user-only skill (frontmatter
+    `disable-model-invocation: true`): the model cannot load it, so the route
+    dead-ends;
   - a route row's exit has no eval expecting it. Untested rows are where
     shadowing hides: a row whose case is answered by an earlier, more general
     row. Whether rows actually shadow each other needs a model reading them in
@@ -38,12 +41,23 @@ def skills_in(skills_dir: Path) -> set[str]:
     return {p.parent.name for p in skills_dir.glob("*/SKILL.md")}
 
 
+def user_only(skills_dir: Path) -> set[str]:
+    """Skills only the user can invoke: the harness never lets the model load them."""
+    flag = re.compile(r"^disable-model-invocation:\s*(true|yes|on|1)\s*$", re.M | re.I)
+    found = set()
+    for md in skills_dir.glob("*/SKILL.md"):
+        front = re.match(r"---\n(.*?)\n---", md.read_text(encoding="utf-8"), re.S)
+        if front and flag.search(front.group(1)):
+            found.add(md.parent.name)
+    return found
+
+
 def named_in(router_md: Path) -> set[str]:
     return set(SLUG.findall(router_md.read_text(encoding="utf-8")))
 
 
-def route_exits(router_md: Path) -> list[str]:
-    """Primary exit of each table row in the Route section, in order."""
+def route_exits(router_md: Path, every: bool = False) -> list[str]:
+    """Primary exit of each table row in the Route section, in order; with every, all skills in the exit cell."""
     text = router_md.read_text(encoding="utf-8")
     section = re.search(r"^## Route\b.*?(?=^## |\Z)", text, re.M | re.S)
     if not section:
@@ -54,12 +68,14 @@ def route_exits(router_md: Path) -> list[str]:
         if not line.lstrip().startswith("|") or len(cells) < 2:
             continue
         found = SLUG.findall(cells[1])
-        if found and found[0] not in exits:
-            exits.append(found[0])
+        for slug in found if every else found[:1]:
+            if slug not in exits:
+                exits.append(slug)
     return exits
 
 
-def check_evals(evals_path: Path, existing: set[str], routed: list[str] = ()) -> list[str]:
+def check_evals(evals_path: Path, existing: set[str], routed: list[str] = (),
+                manual: set[str] = frozenset()) -> list[str]:
     if not evals_path.is_file():
         return [f"evals not found: {evals_path}"]
     problems, exits = [], []
@@ -72,6 +88,7 @@ def check_evals(evals_path: Path, existing: set[str], routed: list[str] = ()) ->
                 continue
             if len(parts) > 2 or not all(p in existing for p in parts):
                 problems.append(f"eval {case.get('id')}: invalid {field}: {value!r}")
+            problems += [f"eval {case.get('id')}: {field} is user-only: {p}" for p in parts if p in manual]
     if "none" not in exits:
         problems.append("evals have no `none` case")
     tested = {p for e in exits for p in CHAIN.split(e.strip())}
@@ -91,7 +108,9 @@ def check(skills_dir: Path) -> list[str]:
     problems += [f"router names unknown skill: {s}"
                  for s in sorted(named - existing - BUILTIN_EXITS)]
     problems += [f"router does not define exit: {e}" for e in sorted(BUILTIN_EXITS - named)]
-    problems += check_evals(router_dir / "evals" / "evals.json", existing, route_exits(router_md))
+    manual = user_only(skills_dir)
+    problems += [f"route exits to user-only skill: {s}" for s in route_exits(router_md, every=True) if s in manual]
+    problems += check_evals(router_dir / "evals" / "evals.json", existing, route_exits(router_md), manual)
     return problems
 
 

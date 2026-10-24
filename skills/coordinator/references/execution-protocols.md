@@ -5,6 +5,12 @@ generic execution protocol. The coordinator still owns outcome, scope,
 ownership, dependencies, authority, acceptance, and integration. A protocol
 owns only the task-specific engineering method and local verification.
 
+## Contents
+
+- [Resolve before dispatch](#resolve-before-dispatch)
+- [Task-to-playbook routing](#task-to-playbook-routing)
+- [Evidence, not acceptance](#evidence-not-acceptance)
+
 ## Resolve before dispatch
 
 Resolve the matching method before using it or dispatching:

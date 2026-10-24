@@ -4,6 +4,15 @@ The main agent owns the task record. Use the bundled `scripts/coord_state.py`
 for persistence, ownership, and discovery. Workers return evidence and reports;
 they do not edit task state. Keep the snapshot concise and link detailed evidence.
 
+## Contents
+
+- [Storage](#storage)
+- [Create, discover, and own](#create-discover-and-own)
+- [Bind lifecycle actions to ownership](#bind-lifecycle-actions-to-ownership)
+- [Recover interrupted operations](#recover-interrupted-operations)
+- [Checkpoint decisions](#checkpoint-decisions)
+- [Resume and archive](#resume-and-archive)
+
 ## Storage
 
 The helper resolves `${XDG_STATE_HOME}/coordinator` when `XDG_STATE_HOME` is

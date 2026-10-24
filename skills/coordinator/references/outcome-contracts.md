@@ -4,6 +4,13 @@ Coordinator owns the authorized goal, decomposition, decisions, acceptance, and
 integration. A protocol owns engineering method and local checks. A runtime owns
 delivery, observation, recovery, and cleanup. A worker returns claims and artifacts.
 
+## Contents
+
+- [Initialize new delivery work](#initialize-new-delivery-work)
+- [Execute and inspect](#execute-and-inspect)
+- [Replan without losing the goal](#replan-without-losing-the-goal)
+- [Ownership and trust](#ownership-and-trust)
+
 ## Initialize new delivery work
 
 Create the task with `coord_state.py`; record authority, constraints, observable

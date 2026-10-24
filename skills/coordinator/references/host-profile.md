@@ -16,7 +16,7 @@ supported operations, paths where applicable, verification date, and evidence.
 Record limitations, unresolved required capabilities, and revalidation triggers
 in the same entry. Distinguish capabilities established by interface inspection
 from those exercised in a live probe; `verified` never implies untested operations.
-The optional `adapters.driver` entry configures the [driven runtime](driven-runtime.md):
+The optional `adapters.driver` entry configures the [driven runtime](../SKILL.md#driven-runtime):
 `workers` lists `{"route": {...}, "argv": [...]}` pairs whose argv runs one
 non-interactive attempt with a `"{prompt}"` element, and `judge`, when present,
 is the argv that answers judgment requests headlessly. Listing a route records
