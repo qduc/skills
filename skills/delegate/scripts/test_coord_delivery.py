@@ -73,7 +73,7 @@ class DeliveryTests(unittest.TestCase):
         return self.cli('answer', '--task', self.task, '--request', request['id'],
                         '--file', self.data(value))['next']
 
-    def start(self, entries=None, patch=False, workers=None, launch=True):
+    def start(self, entries=None, patch=False, workers=None, launch=True, extra=()):
         if workers:
             self.workers.write_text(json.dumps(workers))
         if patch:
@@ -82,7 +82,8 @@ class DeliveryTests(unittest.TestCase):
                 subprocess.run(['git', '-C', str(self.source), *argv], check=True)
         status = self.cli('start', '--repo' if patch else '--workspace', self.source,
                           '--goal', 'Deliver a verified finding', '--criterion', 'The deliverable contains the finding',
-                          '--workers-file', self.workers, '--limits-file', self.data({'checks_first': False}))
+                          '--workers-file', self.workers, '--limits-file', self.data({'checks_first': False}),
+                          *extra)
         self.task = status['task']
         status = self.answer(status, {'pool': [ROUTE], 'rationale': 'Controlled native fixture'}, 'harness')
         self.entries = entries or [item()]
@@ -298,6 +299,58 @@ class DeliveryTests(unittest.TestCase):
             time.sleep(0.05)
         self.assertFalse(status['host_actions'])
         self.assertTrue(self.accept(status)['done'])
+
+    def source_checkout(self):
+        checkout = self.base / 'source checkout'
+        checkout.mkdir()
+        (checkout / 'app.py').write_text('retry = 3\n')
+        for argv in (['init', '-q', '-b', 'main'], ['add', '-A'],
+                     ['-c', 'user.name=fixture', '-c', 'user.email=fixture@localhost', 'commit', '-qm', 'initial']):
+            subprocess.run(['git', '-C', str(checkout), *argv], check=True)
+        return checkout, subprocess.run(['git', '-C', str(checkout), 'rev-parse', 'HEAD'], check=True,
+                                        capture_output=True, text=True).stdout.strip()
+
+    def deliver_with_summary(self, summary):
+        spawn, cwd = self.spawn()
+        (cwd / 'report.md').write_text('Verified finding')
+        Path(re.search(r'write a short summary to (.*?): ', spawn['message']).group(1)).write_text(summary)
+        return spawn, self.finish(spawn)
+
+    def test_report_cites_source_revision_from_declared_source_repository(self):
+        checkout, sha = self.source_checkout()
+        self.start(extra=['--source-repo', checkout])
+        spawn, status = self.deliver_with_summary(f'Inspected source revision {sha[:8]} of {checkout}.')
+        self.assertIn(f'Source repository: {checkout}', spawn['message'])
+        request = next(r for r in status['requests'] if r['kind'] == 'inspect')
+        prompt = self.cli('prompt', '--task', self.task, '--request', request['id'])['prompt']
+        self.assertIn('"unverified_citations": []', prompt)
+        self.assertTrue(self.accept(status)['done'])
+
+    def test_report_citing_unknown_source_revision_is_retried(self):
+        checkout, _ = self.source_checkout()
+        self.start(extra=['--source-repo', checkout])
+        _, status = self.deliver_with_summary('Inspected source revision cafebabe1234.')
+        self.assertFalse(any(r['kind'] == 'inspect' for r in status['requests']))
+        retry, _ = self.spawn()
+        self.assertIn(f'commit cafebabe1234 does not resolve in', retry['message'])
+        self.assertIn(str(checkout), retry['message'])
+
+    def test_report_revision_without_any_source_repository_reaches_inspection_as_unverified(self):
+        _, sha = self.source_checkout()
+        self.start()
+        _, status = self.deliver_with_summary(f'Inspected source revision {sha} of the external checkout.')
+        request = next(r for r in status['requests'] if r['kind'] == 'inspect')
+        prompt = self.cli('prompt', '--task', self.task, '--request', request['id'])['prompt']
+        self.assertIn(f'commit {sha} was not checked: no Git repository', prompt)
+
+    def test_source_repository_must_be_git_and_artifact_delivery(self):
+        self.assertIn('must be a git checkout', self.cli(
+            'start', '--workspace', self.source, '--source-repo', self.source, '--goal', 'g', '--criterion', 'c',
+            '--workers-file', self.workers, ok=False))
+        checkout, _ = self.source_checkout()
+        self.assertIn('for artifact delivery', self.cli(
+            'start', '--repo', checkout, '--source-repo', checkout, '--goal', 'g', '--criterion', 'c',
+            '--workers-file', self.workers, ok=False))
 
     def test_doctor_accepts_native_configuration_without_profile(self):
         status = self.cli('doctor', '--workers-file', self.workers, '--delivery', 'artifact')

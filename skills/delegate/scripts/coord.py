@@ -118,6 +118,8 @@ def main(argv=None):
     source.add_argument('--workspace', help='source directory for report/artifact delivery; never modified')
     command.add_argument('--delivery', choices=['patch', 'artifact'],
                          help='default: patch for --repo, artifact for --workspace')
+    command.add_argument('--source-repo', action='append', default=[],
+                         help='artifact delivery: another read-only git checkout reports may cite; repeatable')
     command.add_argument('--goal', required=True)
     command.add_argument('--criterion', action='append', default=[], help='observable done condition; repeatable')
     command.add_argument('--constraint', action='append', default=[])
@@ -189,7 +191,7 @@ def main(argv=None):
                 raise drive.DriveError('--workspace requires artifact delivery; use --repo for patches')
             result = drive.start(tasks.root_path(args.root), args.repo or args.workspace, args.goal, args.criterion,
                                  workers, args.title, args.constraint, args.authority,
-                                 args.real_use_required, limits, delivery)
+                                 args.real_use_required, limits, delivery, args.source_repo)
         else:
             directory = task_dir(args)
             if args.command == 'status':

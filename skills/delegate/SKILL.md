@@ -66,7 +66,7 @@ checkable, ask one question: what result means done?
 coord.py start --repo <git root> --goal "<desired outcome>" \
   --criterion "<observable done condition>" [--criterion ...] \
   [--constraint "..."] [--authority "..."] [--workers-file workers.json] \
-  [--real-use-required] [--limits-file limits.json]
+  [--real-use-required] [--limits-file limits.json] [--source-repo <path> ...]
 ```
 
 - `--repo` for Git changes. Work starts from the current commit (tell the user
@@ -75,7 +75,10 @@ coord.py start --repo <git root> --goal "<desired outcome>" \
 - `--workspace <source-dir>` instead for research, reports, or other files: the
   source stays read-only and need not be Git. `--repo ... --delivery artifact`
   delivers a report about a repository. Accepted files land under
-  `<integration>/artifacts/<outcome-id>/`.
+  `<integration>/artifacts/<outcome-id>/`. When workers read a separate Git
+  checkout, add `--source-repo <path>` (repeatable) so the commits and tests
+  they cite are checked there; with no Git source at all, cited commits reach
+  inspection marked unverified instead of failing the attempt.
 - `--real-use-required` when the change is to a skill or orchestration capability.
 - `--limits-file` overrides `attempts_per_outcome` (3), `goal_rounds` (3),
   `judgment_retries` (2), `stall_seconds` (900), `check_timeout` (300),

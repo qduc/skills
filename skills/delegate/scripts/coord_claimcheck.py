@@ -2,10 +2,12 @@
 """Check commit hashes and test paths cited in a worker report. Read-only.
 
 A commit citation is a 7–40 hex token. It blocks when `git rev-parse --verify`
-cannot resolve it to a commit in --cwd. Labeled compact Coordinator task,
+cannot resolve it to a commit in --cwd or in any --source repository. When none
+of those is a Git repository the citation cannot be checked either way: it is
+reported as unverified, not as a blocker. Labeled compact Coordinator task,
 assignment, attempt, and owner IDs are data, not commit citations.
 A test citation is a path that looks like a test file. A path with a directory component must exist at that path
-under --cwd. A bare basename resolves when `git ls-files` lists a tracked file
+under --cwd or a --source directory. A bare basename resolves when `git ls-files` lists a tracked file
 of that name, or, when --cwd is not a git repo, when a filesystem walk finds
 one. A dotted unittest ID is checked only when at least one segment starts
 with `test`; module candidates end at the last such segment before the class
@@ -145,35 +147,63 @@ def resolves_test(cwd, cited, basenames=None):
     return (cwd / candidate).is_file()
 
 
-def blockers(cwd, text):
-    found = []
+def is_git(cwd):
+    try:
+        result = subprocess.run(["git", "-C", str(cwd), "rev-parse", "--git-dir"], capture_output=True)
+    except OSError:
+        return False
+    return result.returncode == 0
+
+
+def where(roots):
+    return str(roots[0]) if len(roots) == 1 else str(roots[0]) + " or " + ", ".join(map(str, roots[1:]))
+
+
+def check(cwd, text, sources=()):
+    """(blockers, unverified). Sources are read-only repositories the report may cite as provenance."""
+    roots = list(dict.fromkeys([cwd, *sources]))
+    repositories = [root for root in roots if is_git(root)]
+    found, unverified = [], []
     for token in commits(text):
-        if not resolves_commit(cwd, token):
-            found.append(f"commit {token} does not resolve in {cwd}")
-    basenames = git_tracked_basenames(cwd)
-    if basenames is None:
-        basenames = walked_basenames(cwd)
+        if not repositories:
+            unverified.append(f"commit {token} was not checked: no Git repository among {where(roots)}")
+        elif not any(resolves_commit(root, token) for root in repositories):
+            found.append(f"commit {token} does not resolve in {where(repositories)}")
+    indexes = []
+    for root in roots:
+        basenames = git_tracked_basenames(root)
+        indexes.append((root, walked_basenames(root) if basenames is None else basenames))
     for path in test_paths(text):
-        if not resolves_test(cwd, path, basenames):
-            found.append(f"test path {path} is not a file under {cwd}")
-    return found
+        if not any(resolves_test(root, path, basenames) for root, basenames in indexes):
+            found.append(f"test path {path} is not a file under {where(roots)}")
+    return found, unverified
+
+
+def blockers(cwd, text, sources=()):
+    return check(cwd, text, sources)[0]
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cwd", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--source", type=Path, action="append", default=[],
+                        help="read-only repository the report may cite; repeatable")
     args = parser.parse_args(argv)
     cwd = args.cwd.expanduser().resolve()
-    if not cwd.is_dir():
-        print(f"claimcheck: cwd is not a directory: {cwd}", file=sys.stderr)
-        return 2
+    sources = [source.expanduser().resolve() for source in args.source]
+    for directory in (cwd, *sources):
+        if not directory.is_dir():
+            print(f"claimcheck: not a directory: {directory}", file=sys.stderr)
+            return 2
     try:
         text = args.report.read_text()
     except OSError as error:
         print(f"claimcheck: {error}", file=sys.stderr)
         return 2
-    found = blockers(cwd, text)
+    found, unverified = check(cwd, text, sources)
+    for item in unverified:
+        print(f"unverified: {item}")
     if found:
         for item in found:
             print(f"blocker: {item}")

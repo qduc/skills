@@ -223,6 +223,40 @@ class ClaimcheckTests(unittest.TestCase):
         self.assertEqual(blocked.returncode, 1)
         self.assertIn("test path test_absent.py", blocked.stdout)
 
+    def run_artifact_check(self, text, *sources):
+        workspace = Path(self.temporary.name) / "artifact workspace"
+        workspace.mkdir(exist_ok=True)
+        argv = [sys.executable, str(SCRIPT), "--cwd", str(workspace), "--report", str(self.report(text))]
+        for source in sources:
+            argv += ["--source", str(source)]
+        return subprocess.run(argv, capture_output=True, text=True, timeout=10)
+
+    def test_artifact_report_resolves_commits_and_tests_in_source_repository(self):
+        result = self.run_artifact_check(
+            f"Inspected source revision {self.sha[:8]} (commit {self.sha}); see tests/test_export.py.\n", self.repo)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(result.stdout.strip(), "ok")
+
+    def test_artifact_report_with_unknown_source_commit_still_blocks(self):
+        result = self.run_artifact_check("Inspected source commit cafebabe1234.\n", self.repo)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("blocker: commit cafebabe1234 does not resolve in", result.stdout)
+        self.assertIn(str(self.repo), result.stdout)
+
+    def test_artifact_report_without_any_git_source_marks_commits_unverified(self):
+        notes = Path(self.temporary.name) / "notes"
+        notes.mkdir()
+        result = self.run_artifact_check(f"Source revision {self.sha} of the external checkout.\n", notes)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"unverified: commit {self.sha} was not checked: no Git repository", result.stdout)
+        missing = self.run_artifact_check("See tests/test_export.py.\n", notes)
+        self.assertEqual(missing.returncode, 1, missing.stdout)
+        self.assertIn("test path tests/test_export.py is not a file under", missing.stdout)
+
+    def test_sources_do_not_widen_a_patch_check(self):
+        self.assertEqual(claimcheck.check(self.repo, "commit cafebabe1234"),
+                         ([f"commit cafebabe1234 does not resolve in {self.repo}"], []))
+
     def test_usage_errors(self):
         missing = subprocess.run(
             [sys.executable, str(SCRIPT), "--cwd", str(self.repo), "--report", str(self.repo / "nope.md")],
