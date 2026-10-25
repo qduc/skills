@@ -357,13 +357,14 @@ def worker_instructions(feedback, frozen=(), drive=None):
             f"Why it matters: {contract['rationale']}",
             f"Scope: {contract['scope']}",
             f"Authority: {contract['authority']}",
-            f'Working directory: {cwd} (an isolated git worktree; change files only here).',
+            f'Working directory: {cwd} (an isolated git worktree; change files only here, unless Authority names more).',
             'These checks will be run independently after you finish, from the working directory:',
             checks,
             'Rules:',
             '- Make the change in place. You do not need to commit; the runtime packages your changes as a patch.',
             f'- Do not modify anything under {PACKAGE_DIR}/ except your summary file.',
-            '- Do not ask the user questions, spawn other agents, or start background jobs.',
+            '- Do not ask the user questions. Do not spawn agents or start background jobs unless Scope or '
+            'Authority above explicitly asks you to; then they are your job.',
             f'- When finished, write a short summary to {summary}: what you changed and which tests you ran, '
             'citing real file paths. Cited tests and commits are checked against the repository.',
             f'- If you cannot proceed without a decision outside your authority, write {{"decision": "<exact '
@@ -375,7 +376,8 @@ def worker_instructions(feedback, frozen=(), drive=None):
             lines += ['These tests were written and reviewed before you started; make them pass without '
                       'modifying them (write a blocker if one is wrong):', *(f'- {name}' for name in frozen)]
         if drive and artifact_delivery(drive):
-            lines[5] = f'Working directory: {cwd} (an isolated artifact workspace; write only here).'
+            lines[5] = (f'Working directory: {cwd} (an isolated artifact workspace; write only here, '
+                        'unless Authority names more).')
             lines[9] = (f"- Deliver the file {contract['artifact']} inside your working directory. "
                         'The runtime publishes it after independent checks and inspection.')
             lines += [f"Source material: {drive['repo']} (read-only; do not edit the source directory).",

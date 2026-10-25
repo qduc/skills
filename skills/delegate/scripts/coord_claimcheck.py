@@ -5,7 +5,9 @@ A commit citation is a 7–40 hex token. It blocks when `git rev-parse --verify`
 cannot resolve it to a commit in --cwd or in any --source repository. When none
 of those is a Git repository the citation cannot be checked either way: it is
 reported as unverified, not as a blocker. Labeled compact Coordinator task,
-assignment, attempt, and owner IDs are data, not commit citations.
+assignment, attempt, and owner IDs are data, not commit citations, and so is
+any token that is a prefix of a runtime ID the caller passes (a task branch
+like coord/<task prefix>, an attempt directory).
 A test citation is a path that looks like a test file. A path with a directory component must exist at that path
 under --cwd or a --source directory. A bare basename resolves when `git ls-files` lists a tracked file
 of that name, or, when --cwd is not a git repo, when a filesystem walk finds
@@ -43,7 +45,7 @@ TEST_PATH = re.compile(
 )
 
 
-def commits(text):
+def commits(text, known_ids=()):
     uuid_spans = [match.span() for match in UUID.finditer(text)]
     filename_spans = [match.span() for match in FILENAME_TOKEN.finditer(text)]
     found = []
@@ -58,6 +60,9 @@ def commits(text):
         inside_filename = any(start >= file_start and end <= file_end
                               for file_start, file_end in filename_spans)
         if (inside_uuid or inside_filename) and not citation:
+            continue
+        token = match.group(1).lower()
+        if any(known.startswith(token) for known in known_ids):
             continue
         found.append(match.group(1))
     return list(dict.fromkeys(found))
@@ -159,12 +164,13 @@ def where(roots):
     return str(roots[0]) if len(roots) == 1 else str(roots[0]) + " or " + ", ".join(map(str, roots[1:]))
 
 
-def check(cwd, text, sources=()):
-    """(blockers, unverified). Sources are read-only repositories the report may cite as provenance."""
+def check(cwd, text, sources=(), known_ids=()):
+    """(blockers, unverified). Sources are read-only repositories the report may cite as provenance;
+    known_ids are the runtime's own hex identifiers, never commit citations."""
     roots = list(dict.fromkeys([cwd, *sources]))
     repositories = [root for root in roots if is_git(root)]
     found, unverified = [], []
-    for token in commits(text):
+    for token in commits(text, [known.lower() for known in known_ids]):
         if not repositories:
             unverified.append(f"commit {token} was not checked: no Git repository among {where(roots)}")
         elif not any(resolves_commit(root, token) for root in repositories):

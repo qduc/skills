@@ -119,6 +119,9 @@ class DeliveryTests(unittest.TestCase):
         self.assertEqual(status['waiting_on'], 'host')
         spawn, cwd = self.spawn()
         self.assertIn('Source material:', Path(spawn['brief']).read_text())
+        # Generic leaf rules yield to a contract that makes supervision or extra paths the job.
+        self.assertIn('unless Scope or Authority above explicitly asks you to', Path(spawn['brief']).read_text())
+        self.assertLess(len(spawn['message']), 400)
         (cwd / 'report.md').write_text('Verified finding')
         status = self.accept(self.finish(spawn))
         self.assertTrue(status['done'])
