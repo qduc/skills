@@ -20,7 +20,7 @@ def create(target, project, source_checkout, today=None, git=True):
     source = Path(source_checkout).expanduser()
     if not source.is_absolute():
         raise ValueError("--source-checkout must be an absolute path")
-    if target.exists() and any(target.iterdir()):
+    if target.exists() and (not target.is_dir() or any(target.iterdir())):
         raise ValueError(f"{target} exists and is not empty; refusing to overwrite")
     values = {
         "{{PROJECT}}": project,
@@ -38,14 +38,15 @@ def create(target, project, source_checkout, today=None, git=True):
     if git:
         run = lambda *args: subprocess.run(["git", *args], cwd=target, check=True,
                                            capture_output=True, text=True)
-        run("init", "-q")
-        run("add", "-A")
         try:
+            run("init", "-q")
+            run("add", "-A")
             run("commit", "-q", "-m", f"Initialize {project} coordination workspace")
             committed = True
-        except subprocess.CalledProcessError as error:
-            print(f"warning: git commit failed; commit manually: {error.stderr.strip()}",
-                  file=sys.stderr)
+        except (OSError, subprocess.CalledProcessError) as error:
+            detail = getattr(error, "stderr", None) or str(error)
+            print(f"warning: git setup incomplete; files were created, finish git manually: "
+                  f"{detail.strip()}", file=sys.stderr)
     return target, committed
 
 

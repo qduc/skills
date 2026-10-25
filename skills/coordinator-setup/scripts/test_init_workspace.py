@@ -37,6 +37,17 @@ class InitWorkspaceTests(unittest.TestCase):
                 init_workspace.create(tmp, "demo", "/src/demo", git=False)
             self.assertEqual((Path(tmp) / "keep.txt").read_text(), "mine")
 
+    def test_missing_git_still_creates_files(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"PATH": "/nonexistent"}):
+            target, committed = init_workspace.create(Path(tmp) / "ws", "demo", "/src/demo")
+            self.assertFalse(committed)
+            self.assertTrue((target / "STATUS.md").is_file())
+
+    def test_refuses_file_target(self):
+        with tempfile.NamedTemporaryFile() as handle:
+            with self.assertRaises(ValueError):
+                init_workspace.create(handle.name, "demo", "/src/demo", git=False)
+
     def test_rejects_relative_source(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ValueError):

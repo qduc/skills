@@ -30,8 +30,8 @@ instructions.
 - One dated file per session in `sessions/`, plus the pointer in
   `sessions/README.md`. Do not create extra "latest", "delta" or "active"
   handoff files; update `STATUS.md` instead.
-- Every task folder has a `README.md` (goal, task ID, status, outcome, evidence,
-  next action), indexed in `tasks/README.md`.
+- Every task folder has a `README.md` (task ID, goal and authority, outcome,
+  evidence), indexed in `tasks/README.md`.
 - Record lasting user decisions in `decisions/README.md`, dated, marking what
   they supersede. Project facts go in `knowledge/` with source references.
 

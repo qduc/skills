@@ -5,7 +5,8 @@ description: Discover and configure the host for the delegate skill, and create 
 
 # Coordinator setup
 
-Configure the host, not the coordinator's instructions. Keep machine facts in
+Configure the host, not the coordinator's instructions (the per-project workspace
+scaffold at the end is the one exception). Keep machine facts in
 one external host profile; never generate or rewrite a host-specific base skill.
 Discovery does not grant authority to use a model, install software, publish,
 or change system settings.
@@ -109,4 +110,3 @@ target. The generated `AGENTS.md` holds the workspace rules: `STATUS.md` is a
 rewritten snapshot, there is one handoff chain, each task folder has a record
 and evidence stays small. Record project decisions there only after the user
 makes them; do not copy another project's decisions, model approvals or notes.
-
