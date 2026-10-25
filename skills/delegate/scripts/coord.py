@@ -8,10 +8,10 @@ those in code once the evidence and typed judgments allow it.
   doctor             is the host set up? (missing profile or workers means: run the setup interview)
   start              submit a goal with acceptance criteria; workers come from the host profile
   host-next / host-result  perform a native host action and record its observed result
-  status             what the task is waiting on, per outcome, with delivery evidence
+  status             what the task is waiting on, per outcome (--evidence adds delivery evidence before done)
   advance            run every deterministic step available now
   run                advance repeatedly; the profile's judge answers judgments unless --no-judge
-  requests / prompt  open judgment requests and the full prompt for one
+  requests / prompt  open judgment requests, and the full prompt for one as plain text
   answer             submit a typed judgment answer (validated before use)
   questions          open questions only the user can answer
   confirm-selection  resolve a legacy task's selection question with the user's reply
@@ -19,7 +19,7 @@ those in code once the evidence and typed judgments allow it.
   real-use           pass (with evidence) or waive (quoting the user) the real-use gate
   halt / resume      stop all workers and hold, or continue
 
-Every command prints one JSON object. Task IDs accept a unique 6+ character prefix.
+Every command but `prompt` prints one compact JSON object. Task IDs accept a unique 6+ character prefix.
 """
 from __future__ import annotations
 
@@ -134,7 +134,10 @@ def main(argv=None):
     command = sub.add_parser('doctor')
     command.add_argument('--workers-file', help='check a task-specific worker configuration instead of the profile')
     command.add_argument('--delivery', choices=['patch', 'artifact'], default='patch')
-    for name in ('status', 'advance', 'requests', 'questions', 'halt', 'resume', 'host-next'):
+    command = sub.add_parser('status')
+    command.add_argument('--task', required=True)
+    command.add_argument('--evidence', action='store_true', help='include delivery evidence before the task is done')
+    for name in ('advance', 'requests', 'questions', 'halt', 'resume', 'host-next'):
         sub.add_parser(name).add_argument('--task', required=True)
 
     command = sub.add_parser('run')
@@ -195,7 +198,7 @@ def main(argv=None):
         else:
             directory = task_dir(args)
             if args.command == 'status':
-                result = drive.summary(directory, drive.load_drive(directory))
+                result = drive.summary(directory, drive.load_drive(directory), args.evidence)
             elif args.command == 'advance':
                 result = drive.advance(directory)
             elif args.command == 'run':
@@ -207,7 +210,8 @@ def main(argv=None):
                 result = [{'id': r['id'], 'kind': r['kind'], 'errors': r['errors']}
                           for r in record['requests'].values() if r['status'] == 'open']
             elif args.command == 'prompt':
-                result = {'request': args.request, 'prompt': drive.request_prompt(directory, args.request)}
+                print(drive.request_prompt(directory, args.request))  # plain text: no JSON escaping of patches
+                return 0
             elif args.command == 'answer':
                 result = drive.answer(directory, args.request, read_json(args.file))
                 result = {'id': result['id'], 'kind': result['kind'], 'status': result['status'],
@@ -234,7 +238,7 @@ def main(argv=None):
     except (tasks.StateError, OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         print(json.dumps({'ok': False, 'error': str(error)}), file=sys.stderr)
         return 1
-    print(json.dumps({'ok': True, 'result': result}, indent=2))
+    print(json.dumps({'ok': True, 'result': result}, separators=(',', ':')))
     return 0
 
 

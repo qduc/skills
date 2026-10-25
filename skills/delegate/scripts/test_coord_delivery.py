@@ -50,12 +50,12 @@ class DeliveryTests(unittest.TestCase):
         self.env.pop('GIT_WORK_TREE', None)
         self.serial = 0
 
-    def cli(self, *args, ok=True):
+    def cli(self, *args, ok=True, raw=False):
         result = subprocess.run([sys.executable, str(CLI), '--root', str(self.root), *map(str, args)],
                                 capture_output=True, text=True, timeout=20, env=self.env)
         if ok:
             self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
-            return json.loads(result.stdout)['result']
+            return result.stdout if raw else json.loads(result.stdout)['result']
         self.assertNotEqual(result.returncode, 0)
         return result.stderr
 
@@ -67,7 +67,7 @@ class DeliveryTests(unittest.TestCase):
 
     def answer(self, status, value, kind):
         request = next(r for r in status['requests'] if r['kind'] == kind)
-        prompt = self.cli('prompt', '--task', self.task, '--request', request['id'])['prompt']
+        prompt = self.cli('prompt', '--task', self.task, '--request', request['id'], raw=True)
         self.assertIn('## Answer', prompt)
         self.assertIn('## This request', prompt)
         return self.cli('answer', '--task', self.task, '--request', request['id'],
@@ -99,7 +99,7 @@ class DeliveryTests(unittest.TestCase):
         action = self.cli('host-next', '--task', self.task)
         self.assertEqual(action['action'], 'spawn', action)
         self.assertIn('label', action)
-        cwd = Path(re.search(r'Working directory: (.*?) \(', action['message']).group(1))
+        cwd = Path(re.search(r'Working directory: (.*?) \(', Path(action['brief']).read_text()).group(1))
         self.cli('host-result', '--task', self.task, '--action', action['id'],
                  '--file', self.data({'handle': action['label']}))
         return action, cwd
@@ -118,7 +118,7 @@ class DeliveryTests(unittest.TestCase):
         status = self.start()
         self.assertEqual(status['waiting_on'], 'host')
         spawn, cwd = self.spawn()
-        self.assertIn('Source material:', spawn['message'])
+        self.assertIn('Source material:', Path(spawn['brief']).read_text())
         (cwd / 'report.md').write_text('Verified finding')
         status = self.accept(self.finish(spawn))
         self.assertTrue(status['done'])
@@ -229,7 +229,7 @@ class DeliveryTests(unittest.TestCase):
         second, second_cwd = self.spawn()
         self.assertNotEqual(first_cwd, second_cwd)
         self.assertEqual((first_cwd / 'report.md').read_text(), 'Verified finding')
-        self.assertIn('Explain the source', second['message'])
+        self.assertIn('Explain the source', Path(second['brief']).read_text())
         (second_cwd / 'report.md').write_text('Verified finding')
         self.assertTrue(self.accept(self.finish(second))['done'])
 
@@ -270,7 +270,7 @@ class DeliveryTests(unittest.TestCase):
         self.assertFalse(status['requests'])
         self.cli('advance', '--task', self.task)
         retry = self.cli('host-next', '--task', self.task)
-        self.assertIn('outside the assigned working directory', retry['message'])
+        self.assertIn('outside the assigned working directory', Path(retry['brief']).read_text())
 
     def test_artifact_name_rejects_parent_paths_and_internal_directories(self):
         for name in ['../escape.md', '/tmp/escape.md', '.coord/report.md', 'inputs/report.md']:
@@ -313,16 +313,16 @@ class DeliveryTests(unittest.TestCase):
     def deliver_with_summary(self, summary):
         spawn, cwd = self.spawn()
         (cwd / 'report.md').write_text('Verified finding')
-        Path(re.search(r'write a short summary to (.*?): ', spawn['message']).group(1)).write_text(summary)
+        Path(re.search(r'write a short summary to (.*?): ', Path(spawn['brief']).read_text()).group(1)).write_text(summary)
         return spawn, self.finish(spawn)
 
     def test_report_cites_source_revision_from_declared_source_repository(self):
         checkout, sha = self.source_checkout()
         self.start(extra=['--source-repo', checkout])
         spawn, status = self.deliver_with_summary(f'Inspected source revision {sha[:8]} of {checkout}.')
-        self.assertIn(f'Source repository: {checkout}', spawn['message'])
+        self.assertIn(f'Source repository: {checkout}', Path(spawn['brief']).read_text())
         request = next(r for r in status['requests'] if r['kind'] == 'inspect')
-        prompt = self.cli('prompt', '--task', self.task, '--request', request['id'])['prompt']
+        prompt = self.cli('prompt', '--task', self.task, '--request', request['id'], raw=True)
         self.assertIn('"unverified_citations": []', prompt)
         self.assertTrue(self.accept(status)['done'])
 
@@ -332,15 +332,15 @@ class DeliveryTests(unittest.TestCase):
         _, status = self.deliver_with_summary('Inspected source revision cafebabe1234.')
         self.assertFalse(any(r['kind'] == 'inspect' for r in status['requests']))
         retry, _ = self.spawn()
-        self.assertIn(f'commit cafebabe1234 does not resolve in', retry['message'])
-        self.assertIn(str(checkout), retry['message'])
+        self.assertIn(f'commit cafebabe1234 does not resolve in', Path(retry['brief']).read_text())
+        self.assertIn(str(checkout), Path(retry['brief']).read_text())
 
     def test_report_revision_without_any_source_repository_reaches_inspection_as_unverified(self):
         _, sha = self.source_checkout()
         self.start()
         _, status = self.deliver_with_summary(f'Inspected source revision {sha} of the external checkout.')
         request = next(r for r in status['requests'] if r['kind'] == 'inspect')
-        prompt = self.cli('prompt', '--task', self.task, '--request', request['id'])['prompt']
+        prompt = self.cli('prompt', '--task', self.task, '--request', request['id'], raw=True)
         self.assertIn(f'commit {sha} was not checked: no Git repository', prompt)
 
     def test_source_repository_must_be_git_and_artifact_delivery(self):
@@ -366,7 +366,7 @@ class DeliveryTests(unittest.TestCase):
         self.spawn()
         status = self.cli('advance', '--task', self.task)
         self.assertEqual(status['requests'][0]['kind'], 'assess')
-        prompt = self.cli('prompt', '--task', self.task, '--request', status['requests'][0]['id'])['prompt']
+        prompt = self.cli('prompt', '--task', self.task, '--request', status['requests'][0]['id'], raw=True)
         self.assertIn('no_progress', prompt)
 
 
