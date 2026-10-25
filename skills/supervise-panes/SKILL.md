@@ -103,7 +103,19 @@ substantive question for investigation or independent review. Direct bookkeeping
 does not override a task's restriction on substantive coordinator work.
 
 Use independent review where consequence, uncertainty, or integration risk is
-material, and wherever the task or project requires it. Give the reviewer the
+material, and wherever the task or project requires it. Scale review breadth,
+depth, and check selection to concrete risk and uncertainty: low-risk changes
+need a focused diff and relevant checks, with independent review only when
+required; moderate risk calls for one independent changed-behavior and nearby
+regression pass; high risk calls for targeted reachable failure, recovery,
+ordering, and data-preservation probes. Deepen only when evidence warrants it,
+and stop when sufficient evidence meets the unchanged criteria. Reuse still-valid
+evidence; incremental fixes need scoped rechecks of affected behavior and
+dependencies, not a wholesale review restart. This adjusts review effort, not
+required gates or approved models, routes, or model-effort settings; do not
+silently change those selections.
+
+Give the reviewer the
 artifact, goal, constraints, and raw evidence before the builder's conclusions;
 keep the rationale available for a second pass. Use `finding-triage` for reviewer
 briefs and findings. Ask for reachable defects against the criteria, not a quota
