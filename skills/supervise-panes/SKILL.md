@@ -125,10 +125,25 @@ batching them behind unrelated stages. Workers cannot accept themselves. Passing
 component tests or completing the last brief is not goal success.
 
 If blocked, report a resumable blocked outcome, not successful completion.
-Preserve reports/inboxes/artifacts before retiring workspaces; remove a worktree
-only after the worker stops or is verified idle, never on a report signal alone.
-Reuse a suitable tree by fast-forwarding from the base branch. Stop or close only
-task-owned resources, and checkpoint the final outcome or precise next action.
+
+When a task finishes, housekeep before starting the next one. Leftover task
+state gets re-read by later sessions as instructions, and it fills the disk.
+
+1. Record the outcome, key evidence (commits, test results) and open follow-ups
+   in the task record and the current-state snapshot. Drop finished-task detail
+   from the snapshot.
+2. Stop or close the task's settled worker panes and watchers. Remove its
+   worktrees and merged branches once workers are stopped or verified idle,
+   never on a report signal alone. Reuse a suitable tree by fast-forwarding it
+   instead of removing it.
+3. Delete the task's scratch: briefs, receipts, checkpoints, watch files, logs,
+   private copies and their dependencies. Keep nothing a future decision does
+   not need.
+4. Mark the task record completed (or blocked, with the next action) and archive
+   it, so no finished work still reads as active.
+
+Touch only task-owned resources. Never discard unrelated or other owners' work or
+unmerged commits.
 
 ## References
 

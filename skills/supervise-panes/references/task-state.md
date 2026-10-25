@@ -177,11 +177,10 @@ the old path. The helper refuses to guess a schema from prose.
 Mark completed only after the acceptance criteria are met. The helper also
 requires work items to be `completed` or `cancelled`, with no unresolved blockers,
 pending decisions, or background work. Then `archive --task <id> --owner <id>
---revision <revision>` records archival, releases ownership, and preserves all
-files in place. It does not delete artifacts, stop processes, or prove tests
-passed. Keep required evidence in durable locations (for example the task's
-`artifacts/` directory) before removing temporary workspaces. Include the task
-ID and record path in the handoff.
+--revision <revision>` records archival and releases ownership. It does not
+delete artifacts, stop processes, or prove tests passed; do that in the
+housekeeping step of the skill's finish section. Include the task ID and record
+path in the handoff.
 
 For consecutive `select`/`checkpoint` operations by the current owner,
 `coord_state.py` also accepts `--revision latest` under the task lock. This avoids
