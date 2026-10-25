@@ -215,10 +215,10 @@ complete the write. <!-- lesson: pre-limit-checkpoint promoted 2026-09-26 -->
 Resolve “continue” by explicit task ID, conversation association, or a unique
 unfinished task matching the project. Without a handoff, use `list --project
 <absolute-project-path>` or `list` to find the record; ask if multiple tasks
-plausibly match. Load the record before the new-task selection gate: a resumed
-task keeps its own confirmed
-pool; an unresolved selection still requires the user. Recent-choice history
-never overrides the task's selection.
+plausibly match. Load the record before selecting routes: a resumed task keeps
+its recorded pool for unchanged roles. Resolve a new role or unavailable route
+under [Choice history](choice-history.md), asking only for genuinely missing
+authority. Recent-choice history never overrides the task's selection.
 
 Use `show --task <id>` to reconstruct the task before executing the saved
 `next_action`: read the objective and its `kind: intent` rationale, acceptance

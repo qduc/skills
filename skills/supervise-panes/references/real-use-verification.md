@@ -1,16 +1,29 @@
 # Real-use verification
 
-When delivering a new or materially changed skill or orchestration capability,
-require a fresh agent using the shipped skill on a representative real repository
-task before declaring it done. This is the default completion gate. The user may
-explicitly waive it; preserve that decision and its limits with the result.
+For reversible local skill and orchestration changes, use proportionate checks
+and activate after required independent review. Observe the next normal use for
+regressions. If the direction is correct but the implementation is wrong, fix the
+implementation and verify it; if the direction is wrong, roll back. When that
+distinction is unclear, investigate before choosing. Contain immediate harm when
+necessary; a temporary safety revert does not itself reject the direction.
+
+A separate pre-activation real-use exercise is required only when explicitly
+requested or when the change has consequential effects that local checks cannot
+establish. Do not require a separate exercise merely because a skill changed.
+Retain evidence and report verification limits; activation does not itself prove
+real-world behavior. Preserve explicit task-specific verification requirements
+and existing runtime contracts.
+
+Use the method below when a separate exercise is useful or required; otherwise
+observe the next normal use rather than inventing an unrelated repository task.
 
 ## Choose and run the task
 
 Use a genuine authorized repository need with an observable useful deliverable:
 a feature, repair, or workflow change with real consumers. Work in a reversible
 local checkout when appropriate. A toy loader invented for the evaluation, a
-tabletop response, or a script that drives helper APIs bypasses the full-skill gate.
+tabletop response, or a script that drives helper APIs does not establish such
+real-use evidence.
 Match the task to the changed capability; an unrelated trivial edit cannot validate
 coordination, dependency handling, or integration behavior.
 
@@ -43,11 +56,13 @@ Separate unsuccessful/interrupted attempts from successful ones. Account for own
 workers and processes before closing.
 
 A pass requires the real task's acceptance criteria, the exercised skill behavior,
-and independent inspection to agree. Fix an observed defect and rerun the affected
-real workflow before accepting it. Passing fixtures and tabletop cases remain
+and independent inspection to agree. Apply the fix-versus-rollback distinction
+above to observed failures and rerun affected required verification before
+acceptance. Passing fixtures and tabletop cases remain
 supporting evidence with their own labels.
 
-If access, tools, or authority prevent this gate, retain it as pending and identify
-the missing prerequisite. Existing test results remain valid, but overall real-use
-verification and completion stay unclaimed. A wording-only change does not require
-an evaluation of this evaluation procedure; verify that edit directly.
+If access, tools, or authority prevent a required exercise, retain it as pending
+and identify the missing prerequisite; do not invent a pass. Existing test results
+remain valid, but the required real-use verification and affected completion stay
+unclaimed. An optional exercise is not a new activation gate. A wording-only
+change needs focused inspection, not an evaluation of this evaluation procedure.

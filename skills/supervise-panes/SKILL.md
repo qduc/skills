@@ -1,249 +1,213 @@
 ---
 name: supervise-panes
-description: Coordinates hand-supervised workers, such as agents in Herdr terminal panes, through a phased procedure with a durable task record, and resumes coordinator task records started before the driven runtime. Use when the user wants to run or supervise agents in Herdr or terminal panes, or to continue an older manual coordinator task. Headless or native-agent delegation is the delegate skill's driven runtime, which the user starts with /delegate.
+description: Own authorized outcomes with hand-supervised workers in Herdr or terminal panes, using judgment about delegation, review, and integration while keeping a durable task record. Use when the user wants to run or supervise pane agents or continue an older manual coordinator task. Headless or native-agent delegation is the delegate skill's driven runtime, which the user starts with /delegate.
 compatibility: Runs the delegate skill's scripts, so the delegate skill must be installed alongside it. Needs Python 3, git, and Unix file locking.
 ---
 
 # Supervise panes
 
-Coordinate workers you supervise by hand: interactive Herdr or terminal-pane
-agents, and task records started before the delegate skill's driven runtime. For
-headless or native-agent delegation, the user runs `/delegate` instead.
+Own the user's outcome, not a procession of worker stages. Use workers where
+parallelism, retained context, or independent judgment helps; do routine
+coordination yourself. The useful result is an authorized, integrated, verified
+outcome that another coordinator can resume—not a collection of accepted reports.
+Optimize time to that verified useful completion, including recovery and review,
+not time to a worker exit or fewer checks.
 
-`<delegate-dir>` below is the installed delegate skill directory; this
-skill runs its scripts. Every reference is linked from [References](#references);
-read each one when its row says so.
+This is the hand-supervised pane workflow and the continuation path for older
+manual task records. New headless or native-agent delegation starts through
+`/delegate`. Existing tasks keep their established lifecycle and return contracts;
+do not restart them to adopt another runtime or manually alter a driven task.
+`<delegate-dir>` means the installed delegate skill directory, whose public
+helpers this skill uses.
 
-## Goal and stop rules
+## Judgment within safety boundaries
 
-**Goal:** the authorized outcome, integrated and verified against every
-goal-level criterion, with a durable task record another coordinator can resume.
-Own the goal, plan, assignments, verification, and integrated result; workers own
-bounded outcomes.
+Distinguish **invariants** from **mechanisms**. Authority, attributable ownership,
+lossless preservation, required review, actual verification, and durable recovery
+are invariants. Worker count, scouting, milestones, extra reports, and observer
+snapshots are mechanisms to choose when they help. The established task's helper
+contracts remain binding; “use judgment” is not permission to bypass a gate.
 
-**Done when:** every goal-level criterion, non-goal, and constraint is verified
-on the combined result (or explicitly blocked), `coord_claimcheck.py` passed for
-each accepted report, any real-use gate passed or was waived by the user, owned
-workers and background processes have exited, and the task record is
-checkpointed with the outcome or exact next action.
+- Stay within user authority, including role and harness/provider/model limits.
+  A configured route, discovered solution, protocol, or heal grants no new scope.
+  Record concrete route identity and its actual authorization source before
+  dispatch; never silently substitute an explicit user choice. Honor billing
+  boundaries: obtain permission for paid usage or an unclear billing route.
+- Give each outcome one accountable owner and isolate modifying workers, or use
+  disjoint write ownership and serialize shared mutations. Keep upstream callers,
+  return-only inboxes, and protected human panes out of the worker pool. A report
+  is not proof a worker is idle; stop or verify idle before editing its branch.
+- Preserve unrelated work. Establish what must survive before inspecting a
+  protected checkout. If exact bytes/index preservation is required, capture the
+  entry oracle and recoverable originals before any Git inspection; inspect a
+  disposable copy with its own/copied index (`GIT_INDEX_FILE`), not the protected
+  index. Observational Git can refresh index bytes even with optional locks off.
+  A late snapshot proves only later consistency; changed index stats are not
+  proof of lost staged content. For overlapping dirty work, rehearse lossless
+  reconciliation in isolation and retain independent preservation review. Never
+  reset, overwrite, stash away, or commit unrelated work for convenience.
+- Preserve uncertain launches and delivery. After an error or timeout, inspect
+  recorded operations, resources, and partial output before retrying. Transport
+  acceptance is not admission; silence is not affirmative non-delivery.
+- Accept evidence, not assertions. Keep required independent source/behavior and
+  merge-preservation review, claimcheck, combined-result verification, and the
+  [risk-based real-use policy](references/real-use-verification.md). Helper success, a review
+  verdict, process exit, or a quiet pane alone proves none of these.
 
-**Evidence:** command output from your own checks, inspected artifacts,
-claimcheck results, and base-branch runs before calling a failure pre-existing.
-Reports, quiet terminals, and process exit are signals, not proof of success.
+On an observed failure, use [bounded recovery](references/healing.md), not a blind
+retry or an in-flow rewrite of the governing rules.
+The memory sidecar remains disabled; write material decisions into task notes.
 
-The helpers enforce several rules, so a refusal is the rule working, not a bug
-to route around:
+## Keep the outcome moving
 
-- `coord_lifecycle.py start-worker` refuses a route outside the task's
-  recorded selection.
-- `coord_lifecycle.py dispatch` lints the brief and refuses contract gaps unless
-  `--lint-override '<reason>'` records an authorized exception.
-- `coord_outcomes.py verify` runs claimcheck on the report; `accept` refuses
-  unresolved citations.
-- Completion and archive refuse while a linked lifecycle worker is unreconciled
-  or a required real-use gate is neither passed (`coord_state.py real-use
-  --status passed --evidence <file>`) nor waived by the user.
+After inspecting a result, compare it with the parent goal and choose the next
+useful action **in the same work cycle**:
 
-Stop rules:
+| What the evidence says | What to do |
+| --- | --- |
+| The next authorized action is known | Do it directly if it is coordination work, or assign it to an accountable worker; reuse the current owner when context helps. |
+| A relevant owner is genuinely running | Let it work and keep a supported wake/check-in attached. A watcher alone is not an execution owner. |
+| A material uncertainty prevents safe progress | Run the smallest discriminating check, or assign a bounded investigation when it needs substantive judgment. Continue unaffected work. |
+| Required authority, access, or intent is missing | Record the concrete blocker and the exact input needed; do not call the task running. |
+| The user paused, or a session handoff is necessary | Checkpoint the unfinished work, live handles, and immediate next action; resume it without repeating settled discovery. |
+| All goal criteria are met | Verify closure and reconcile owned resources as described below. |
 
-- Choose and record a concrete configured harness/model pool before dispatch.
-  Honor explicit user constraints; report the choice without waiting for confirmation.
-- Discovering a solution does not authorize implementation. Host configuration
-  never grants task authority. A heal does not widen task authority or weaken
-  acceptance. Replanning never authorizes weaker success criteria.
-- Seek user direction if the goal itself is in question; otherwise ask only when
-  missing information blocks useful work or makes a wrong assumption consequential.
-- Transport acceptance is not worker admission. After a dispatch or helper error,
-  report the exact failure and recovery step; preserve uncertain attempts and
-  reconcile before retrying.
-- Never forward a review wholesale. Stop a worker or verify it is idle before
-  editing its branch; a report is not proof of idle state.
-- The memory sidecar stays disabled; write decisions into task-state `notes` by hand.
+An accepted scout is useful input, not an endpoint. If implementation or
+integration is now ready, put that work in an owner's hands rather than merely
+announcing readiness. Continue once evidence is sufficient; do not insert another
+“readiness review,” observer snapshot, or routine progress report before ready
+work. Keep required intent/ownership checkpoints and publish updates alongside
+execution, not instead of it.
 
-## 0. Entry and durable state
+## Choose the smallest effective ownership structure
 
-Read [Host profile](../delegate/references/host-profile.md). If it is missing or a required capability
-changed, run the `coordinator-setup` skill before using host helpers. Bundled task
-state needs Unix locking; the process runtime is Linux-only.
+Recover the observable goal, rationale, criteria, non-goals, constraints, and
+authority before assigning work. Treat suggested implementations as hypotheses.
+Inspect enough of the system to avoid dividing work across an unknown shared
+contract; settle material interfaces with an owner and affected consumers.
 
-Read [Task state](references/task-state.md), then create and own a record with
-`<delegate-dir>/scripts/coord_state.py`, or load, reconcile, and claim the existing one. Keep a
-concise snapshot of the goal, rationale, acceptance criteria, authority,
-decisions, owned work, blockers, evidence, and next action; link reports rather
-than copying a narrative.
+Keep discovery, implementation, focused checks, and authorized integration with
+one cohesive owner when that preserves useful context. A read-only scout does
+not acquire write authority: give a new bounded assignment when changing its
+scope. Split work at independently useful seams, not merely different files or
+stages. Add lane owners or milestones only when dependencies or scale warrant
+them. Use a fresh context when independence or exhausted context is the point,
+not automatically at each checkpoint.
 
-On resume, run `coord_state.py resume --task <id>` first. Treat
-`commits_since_update` and `checks` as staleness evidence. Recover the original
-goal and unfinished work, and reconcile saved workers and background resources
-before dispatching replacements. Finishing the saved action is not finishing the task.
+Routine checks—reading an exact report path, checking cwd/Git root, resolving a
+cited file, checking receipt identity, or comparing timestamps—are coordinator
+work. A worker's “file missing” report calls first for narrow path/access/context
+reconciliation, not a reviewer of the report and then a reviewer of that review.
+If the discrepancy reveals a real source or preservation question, route that
+substantive question for investigation or independent review. Direct bookkeeping
+does not override a task's restriction on substantive coordinator work.
 
-New delivery work with runnable acceptance checks follows
-[Outcome contracts](references/outcome-contracts.md). Existing records keep their workflow.
+Use independent review where consequence, uncertainty, or integration risk is
+material, and wherever the task or project requires it. Give the reviewer the
+artifact, goal, constraints, and raw evidence before the builder's conclusions;
+keep the rationale available for a second pass. Use `finding-triage` for reviewer
+briefs and findings. Ask for reachable defects against the criteria, not a quota
+of findings. Packaging-only corrections normally need direct inspection and the
+relevant check, not recursive review. New source changes or unresolved substantive
+findings still need their required review.
 
-Checkpoint before dispatch, on material state change, right after integration
-before dependent work starts, and before ending a session. Capture coordination
-hiccups at the next checkpoint per [Retro](references/retro.md).
+## Use durable contracts without turning them into the plan
 
-*Check:* the record exists and is claimed.
+At entry, read [Task state](references/task-state.md) and the
+[host profile](../delegate/references/host-profile.md). Use `coordinator-setup`
+if required host capabilities are missing or changed; bundled persistence needs
+Unix locking and the process runtime is Linux-only. For a resumed task, run
+`coord_state.py resume --task <id>`, load the full record, reconcile workers and
+incomplete operations, then claim or take over with current owner/revision.
+Saved checks and commits since update are staleness evidence, not live status.
 
-## 1. Establish the goal and decision policy
+Keep a concise snapshot of goal, authority, selection, owned work, decisions,
+blockers, evidence, and next action. Link reports rather than copying a diary.
+Checkpoint intent before dispatch or consequential actions, material changes,
+integration before dependent work, and the next action before ending a session.
+Capture actual coordination incidents at the next checkpoint per
+[Retro](references/retro.md), not a retrospective for every normal transition.
 
-Identify the observable outcome, rationale, success criteria, constraints,
-non-goals, and authority, separating the user's need from any suggested
-implementation. Classify the work:
+Before dispatch, verify configured route availability and record the selected
+pool using [Choice history](references/choice-history.md). Already authorized
+repairs allow coordinator selection of an implementation-appropriate configured
+route without a new approval pause, unless explicit route/role or billing limits
+forbid it. Record the new implementation selection and its reason; do not reuse a
+review-only dispatch or relabel review confirmation as implementation approval.
+Preserve explicit model restrictions and same-task selections for unchanged roles;
+history alone authorizes neither a route nor paid usage. Use
+[Decision policy](references/decision-policy.md) for genuinely missing authority.
 
-- **Research** returns knowledge or recommendations.
-- **Delivery** produces an authorized change or consequential output.
-- **Provisioning** sets up workspaces, panes, or sessions for human use; do it
-  directly with the relevant tools or tool skill, with no further phases.
+New delivery work with runnable checks uses [Outcome contracts](references/outcome-contracts.md).
+Existing records retain their workflow; do not replace one merely to simplify
+bookkeeping. For outcome-plan dispatch use [Runtime contracts](references/runtime-contracts.md)
+only on the task's supported surface. Those references describe binding APIs,
+not compulsory extra workers or reviews.
 
-Before a new coordinated task, read [Choice history](references/choice-history.md), verify
-the available harness/model options, choose a configured pool within explicit
-user constraints, and record the selection and its actual source. Report the
-choice and rationale without waiting for user confirmation. Keep the selection
-for same-task follow-ups unless the work calls for a different configured route;
-respect role restrictions and never silently replace an explicit user choice.
+For assignment and return contracts, read [Communication](references/communication.md)
+and, for pane workers, [External agents](references/external-agents.md),
+[Inbox](references/inbox.md), and [Worker observation](references/worker-observation.md).
+Keep generated descriptors and reports unchanged. Bind returned handles immediately
+and confirm admission through supported receipts or worker activity, not an
+acknowledgement request. Long briefs belong in files. Select any needed engineering
+method through [Execution protocols](references/execution-protocols.md).
 
-Read [Decision policy](references/decision-policy.md) and record the goal and policy in task state.
+Wait through the supported background watcher, not repeated pane polling. Inspect
+notification bodies and live workers on wake, resolve actual blockers, and leave
+active owners alone. If evidence invalidates an assumption or contract, hold its
+transitive dependents—including accepted results needing revalidation—revise
+within authority, and continue independent work. Neither replanning nor healing
+authorizes weaker criteria.
 
-*Check:* goal, criteria, authority, and policy recorded; choice recorded.
+## Accept, integrate, and finish the goal
 
-## 2. Understand, then decompose
+Inspect the actual artifact and checks, map assigned deliverables to changed
+behavior, and resolve blocking findings. Run
+`<delegate-dir>/scripts/coord_claimcheck.py --cwd <assigned-cwd> --report <report>`
+before accepting each report; unresolved cited commits or test paths block
+acceptance. Run the same gate on the base branch before calling a failure
+pre-existing. Exercise the real boundaries the change touches and distinguish
+fixtures, worker reports, independent checks, and unrun verification.
 
-Inspect the relevant system before dividing work. Resolve unknowns that could
-change boundaries, shared interfaces, or the solution, directly or with bounded
-read-only scouts in the selected pool. Record findings and plan implications.
+Incorporate compatible accepted results as soon as safe and authorized; avoid
+batching them behind unrelated stages. For outcome plans, use `verify`, `accept`,
+`integrate`, and `verify-goal` as specified by the contract. Workers and protocol
+reports cannot accept themselves. Checkpoint actual integration before dependent
+work; verify the combined result against live consumers, all goal criteria,
+non-goals, and constraints. If anything remains, continue the ownership loop
+above. Passing component tests or completing the last brief is not goal success.
 
-Give each outcome one accountable owner. Split only where independence pays: at
-independently mergeable seams checked against real consumers, since disjoint
-files alone do not make work independent. Keep a step that depends on another's
-context with that owner; hand it to a separate worker only when a fresh context
-is the point, such as an independent review. Settle shared interfaces and
-behavior before dependent work starts, recording the agreement, owner, and
-consumers.
-
-Delegate when parallel speed, specialization, or independent validation
-outweighs startup and integration cost. Work directly for small tasks,
-unavailable workers, or dominant shared-state risk, and own glue and final
-synthesis. Prefer suitable native workers within the authorized pool. Read
-[Routing](references/routing.md), [External agents](references/external-agents.md),
-[Large work](references/large-work.md), or [Execution protocols](references/execution-protocols.md)
-when their row in [References](#references) applies.
-
-*Check:* owned outcomes, explicit dependencies, settled shared decisions.
-
-## 3. Assign bounded work
-
-Read [Communication](references/communication.md) before the first dispatch and use its
-brief and result contract for builders, scouts, and reviewers. Modifying work
-needs a runnable focused verification command. Use files for long briefs; keep
-completion inboxes and upstream callers out of the worker pool.
-
-Run independent tasks concurrently. Isolate modifying workers where practical,
-with reports and inboxes outside their working copies; otherwise use disjoint
-write ownership and serialize shared operations such as dependency installs and
-Git index changes. Serialize checks that race with mutations; independent
-read-only reviews can share a stable artifact. On task-graph surfaces, use stable
-IDs and explicit dependency edges, leaving independent nodes unchained.
-
-Record assignments, ownership, contracts, and dependencies before dispatch, then
-capture returned identities. Outcome-plan work follows
-[Runtime contracts](references/runtime-contracts.md), binding native handles immediately.
-Verify receipt through supported evidence or later worker activity. Dispatch is
-complete only with an attributable owner, bounded outcome, decision policy,
-supported result channel, and confirmed admission.
-
-*Check:* those five items are recorded for every dispatch.
-
-## 4. Supervise and inspect
-
-Read [Worker observation](references/worker-observation.md) before supervising terminal
-panes or report watchers. Reconcile saved attempt handles before any replacement
-dispatch.
-
-When evidence invalidates an assumption, contract, or assignment:
-
-1. Identify affected work and transitive dependents, including accepted or
-   integrated results that need revalidation.
-2. Hold affected dependents and steer their owners; let independent work continue.
-3. Revise the plan, contracts, and assignments within authority, and record why.
-4. Resume when briefs are revised and dependencies settled; reverify results
-   whose assumptions changed.
-
-Inspect artifacts independently and choose checks from changed behavior and
-integration risk. Exercise the real process, filesystem, network, terminal,
-browser, or provider boundaries a change touches, and label fixture evidence as
-such. Confirm cited tests exist and ran, and run the same gate on the base branch
-before calling a failure pre-existing.
-
-Use `finding-triage` when writing reviewer briefs and before routing findings to
-implementers. Judge progress against fixed criteria, not finding counts, and
-change the method when repeated passes fail the same criterion.
-
-*Check:* evidence inspected; effects on dependents resolved or blocked.
-
-## 5. Accept and integrate
-
-Accept only after required checks pass, evidence is inspected, and blocking
-findings are resolved. Run `<delegate-dir>/scripts/coord_claimcheck.py --cwd <assigned-cwd>
---report <report>` first; unresolved cited commits or test paths block acceptance.
-Outcome-plan work follows Outcome contracts for acceptance and integration;
-workers and protocol reports cannot make those decisions. Protocol output is
-evidence, not acceptance.
-
-Integrate within authority, then checkpoint before dependent work. Verify the
-combined result against live consumers and every goal-level criterion, non-goal,
-and constraint, at milestones too. If the goal is unmet, find the missing work
-and repeat the loop.
-
-Remove a worker's worktree only after it stops and its reports and inboxes are
-harvested; reuse a tree by fast-forwarding from the base branch. New or changed
-skills and orchestration workflows need [Real-use verification](references/real-use-verification.md)
-before closing, unless the user explicitly waives it.
-
-Before closing, confirm owned workers and background processes have exited (stop
-only task-owned resources), then checkpoint the outcome or exact next action.
-
-*Check:* the done condition above holds.
-
-## Heal as you drive
-
-When coordination exposes a skill or helper defect, follow [Healing](references/healing.md):
-capture evidence, apply an authorized narrow heal, verify it, record its
-disposition, and announce it. Behavior changes are experiments, not heals.
+Completion requires verified goal criteria, passed claimchecks, resolved required
+decisions and blockers, any explicitly requested or consequential real-use checks
+satisfied, and owned workers/background processes reconciled and exited.
+If blocked, report a resumable blocked outcome, not successful completion.
+Preserve reports/inboxes/artifacts before retiring workspaces; remove a worktree
+only after the worker stops or is verified idle, never on a report signal alone.
+Reuse a suitable tree by fast-forwarding from the base branch. Stop or close only
+task-owned resources, and checkpoint the final outcome or precise next action.
 
 ## References
 
-| Read | When |
-|---|---|
-| [Host profile](../delegate/references/host-profile.md) | At entry, and before using any host helper or adapter |
-| [Operational status](references/operational-status.md) | Before enabling an optional integration or healing host state |
-| [Task state](references/task-state.md) | At entry; whenever you create, claim, resume, or checkpoint a record |
-| [Outcome contracts](references/outcome-contracts.md) | New delivery work with runnable acceptance checks |
-| [Runtime contracts](references/runtime-contracts.md) | Dispatching or observing outcome-plan attempts |
-| [Choice history](references/choice-history.md) | Before recommending a harness/model choice |
-| [Decision policy](references/decision-policy.md) | Before work begins; when a decision may exceed authority |
-| [Routing](references/routing.md) | Choosing models or harnesses, rotating dispatches, reusing workers, or handling acceptance risk |
-| [External agents](references/external-agents.md) | Presenting or dispatching a distinct harness, persistent terminal, or Herdr lane |
-| [Inbox](references/inbox.md) | Setting up or reading file inboxes and wakeups for external workers |
-| [Large work](references/large-work.md) | Staged dependent outcomes, milestones, or ongoing lane supervision |
-| [Execution protocols](references/execution-protocols.md) | Before selecting an engineering method or playbook |
-| [Communication](references/communication.md) | Before the first dispatch; writing briefs and verification asks |
-| [Worker observation](references/worker-observation.md) | Before supervising panes or report watchers |
-| [Real-use verification](references/real-use-verification.md) | Closing a task that changed a skill or workflow |
-| [Retro](references/retro.md) | Recording a coordination hiccup at a checkpoint |
-| [Healing](references/healing.md) | A skill or helper defect surfaced while coordinating |
+Read the operational reference for the action you are taking, not a ritual tour
+of every reference at every stage.
 
-## Output
+| Reference | Use |
+| --- | --- |
+| [Task state](references/task-state.md), [Host profile](../delegate/references/host-profile.md) | Entry, resume, ownership, persistence, and host capabilities |
+| [Choice history](references/choice-history.md), [Decision policy](references/decision-policy.md) | Route identity, authorization, material assumptions, or human input |
+| [Outcome contracts](references/outcome-contracts.md), [Runtime contracts](references/runtime-contracts.md) | New delivery contracts and supported attempt APIs; not a runtime migration |
+| [Communication](references/communication.md) | Briefs, evidence, review, and result contracts |
+| [External agents](references/external-agents.md), [Inbox](references/inbox.md), [Worker observation](references/worker-observation.md) | Pane dispatch, return-only sinks, delivery recovery, waits, and preservation |
+| [Routing](references/routing.md) | Capability/risk, capacity, and worker reuse decisions |
+| [Large work](references/large-work.md) | Real dependency waves, shared contracts, or lane supervision |
+| [Execution protocols](references/execution-protocols.md) | Select a task-specific engineering method |
+| [Real-use verification](references/real-use-verification.md) | Risk-based activation policy and a separate exercise when useful or required |
+| [Operational status](references/operational-status.md), [Healing](references/healing.md), [Retro](references/retro.md) | Optional integration status, authorized repairs, and evidence-backed lessons |
 
-```text
-Task: <id>  Record: <path>
-Outcome: <done | next action: ...>
-Evidence: <checks run, by whom; claimcheck result>
-Limitations: <none | list>
-Blocker: <none | blocked: <input needed from whom>>
-```
+## Report the result, not the ceremony
 
-Null case: research with no actionable finding reports `Outcome: no material
-findings` with the evidence searched; nothing to coordinate reports
-`Outcome: worked directly, no delegation` with the evidence.
+Include the task ID/record, actual outcome or next owned action, checks and who
+ran them, claimcheck result, limitations, and any precise blocker. Do not describe
+checkpointing as execution. For research with no actionable finding, say so and
+identify the evidence searched. For small authorized work done directly, report
+“worked directly, no delegation” with its evidence; do not invent workers.

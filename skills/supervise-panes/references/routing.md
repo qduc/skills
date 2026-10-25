@@ -6,10 +6,9 @@ persistent worker, or coordinating work with material acceptance risk.
 ## Select by capability and risk
 
 Match task size, ambiguity, tools, and verification needs to demonstrated
-capability. Apply the per-task harness/model selection gate in the main skill;
-recommend options within the user's constraints and route only through their
-selected pool. Use
-stronger judgment or independent review when security, authority, release
+capability. Record a concrete route within the user's authorization as described
+in the main skill; route only through the task's selected pool. Use stronger
+judgment or independent review when security, authority, release
 acceptance, or ambiguous integration risk is material.
 
 Choose model size from the task's shape and record the classification with the
@@ -22,21 +21,19 @@ need design work. <!-- lesson: model-size-by-task-shape promoted 2026-09-27 -->
 
 ## Spread load across pools
 
-Routine dispatches rotate across the implementation pools the local
-[host profile](../../delegate/references/host-profile.md) lists as available; do not stack concurrent
-or sequential workers on one pool while another suitable pool has headroom.
-Let `python3 <delegate-dir>/scripts/coord_route.py pick --pool <name> ... --history
-<task-dir>/route-history.json --inventory <inventory-path> --dry-run` choose a
-candidate without recording it. The helper only rotates across the supplied
-pools; it does not verify quota, availability, or inventory membership, and
-`--inventory` is optional. The caller must check quota and availability before
-dispatch. If the candidate is exhausted or unavailable, exclude it and re-pick.
-Once a candidate passes those checks, run the command again without `--dry-run`
-to record that pick. Treat an exhausted pool as unavailable until its reset.
-Pick one specific
-model only when the task's risk, a vendor boundary such as cross-vendor review,
-or an observed worker profile calls for it, and record which pool each
-assignment used. <!-- lesson: rotate-pools-check-quota promoted 2026-09-29 -->
+Spread independent work across suitable authorized pools when it improves
+capacity or latency. Do not rotate a cohesive follow-up away from its owner
+merely to balance a counter. A host profile lists capabilities, not permission
+to use unselected or paid routes.
+
+`python3 <delegate-dir>/scripts/coord_route.py pick --pool <name> ... --history
+<task-dir>/route-history.json --inventory <inventory-path> --dry-run` can suggest
+a candidate from supplied pools. It does not verify quota, availability,
+authorization, or inventory membership (`--inventory` is optional). Check those
+before dispatch; exclude unavailable pools and re-pick when needed. Record a
+validated pick without `--dry-run`. Keep exhausted pools unavailable until reset.
+A particular model may be warranted by risk, an authorized cross-vendor review,
+or demonstrated worker capability. Record the route actually used.
 
 Inspect the live tool inventory before selecting a surface:
 
@@ -57,10 +54,12 @@ optional telemetry is not itself a missing execution capability.
 
 Check the model actually running, current work, context headroom, and any exposed
 quota/reset information before reuse. Record the evidence source and time,
-missing data as unknown, and enough reserve for handoff. Between unrelated
-assignments and at each milestone, `/clear` the worker or start a fresh one
-instead of steering more work into the same context.
-<!-- lesson: fresh-context-per-assignment promoted 2026-09-26 -->
+missing data as unknown, and enough reserve for handoff. Keep a cohesive
+discovery→implementation→verification follow-up with that owner when context is
+useful and capacity adequate. A milestone alone is not a
+reason to clear it. Before unrelated work, harvest and reconcile the previous
+assignment, then `/clear` or start fresh; use a separate reviewer when independence
+is required. A read-only assignment needs explicit new scope before modification.
 If unknown capacity
 jeopardizes completion, narrow the task, start a suitable fresh worker, or
 resolve the constraint before assignment. Refresh after material model,

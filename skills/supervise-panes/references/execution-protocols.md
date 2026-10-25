@@ -83,7 +83,8 @@ selection; use [Runtime contracts](runtime-contracts.md) for delivery.
 `resolve` prints one JSON line and does not read or write task state.
 `protocol_selected` means the worker reads that skill as the method and local
 verification only. `protocol_fallback` means use the normal bounded-worker
-workflow in SKILL.md sections 3 and 4. Missing protocols are not blockers
+workflow in SKILL.md (ownership, dispatch, and supervision). Missing protocols
+are not blockers
 (`not_installed` or `unknown_protocol`). A catalog path that was supplied but
 does not exist is an error, not a fallback.
 
@@ -98,7 +99,8 @@ python3 <delegate-dir>/scripts/coord_protocol.py admit --protocol <name> --repor
 Or treat the report the same way without the helper. `admit` records the
 report as worker evidence and never accepts it, even when the report claims
 acceptance or exits 0. The coordinator still independently inspects the
-evidence. Acceptance stays section 5: `coord_claimcheck`, inspected evidence,
+evidence. Acceptance stays with the coordinator: `coord_claimcheck`, inspected
+evidence,
 and the coordinator's decision. `finished`, `verified`, `accepted`, and
 `integrated` stay distinct.
 
@@ -107,4 +109,5 @@ Outcome-plan tasks use `coord_outcomes.py verify`, `accept`, `integrate`, and
 Read [Outcome contracts](outcome-contracts.md); protocol claims cannot write
 these protected transitions.
 
-This is not pool routing. Keep using `coord_route.py` to rotate worker pools.
+This is not pool routing. Use `coord_route.py` when pool rotation is useful,
+within the selected authorized routes; it does not choose outcome ownership.

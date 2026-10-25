@@ -1,16 +1,16 @@
 # Optional external-agent branch
 
-Use this branch only when a native worker surface cannot provide a distinct
-harness, persistent terminal context, unsupported capability, durable lane, or
-terminal-level isolation. The coordinator still owns scope, authority,
-dependency ordering, acceptance, and synthesis.
+Use this branch for the selected hand-supervised pane workflow, including
+persistent terminal context, a distinct harness, or terminal-level isolation.
+The coordinator still owns scope, authority, dependency ordering, acceptance,
+and synthesis.
 
 Read [Routing](routing.md) before selecting an external worker. When using
 Herdr, discover and read the installed `herdr` skill through the current skill
 catalog for prompt admission and lifecycle operations. This package does not
 assume a sibling install path. If that skill or a required adapter is absent,
-use a verified native route or work directly; preserve unresolved external
-requirements as blockers.
+work directly where authorized, or report the missing capability. New native
+or headless delegation uses `/delegate`; do not silently migrate this task.
 
 ## Contents
 
@@ -40,19 +40,20 @@ Run the bundled helper's `doctor` before dispatch. It reports whether the core
 Python workflow and built-in file inbox are available and whether the optional
 Herdr adapter is configured. Run `inventory` only when the harness adapter is
 available. A missing binary, incompatible command, or unavailable live agent
-means the capability is unknown or unavailable; report that state and use a
-native surface or direct work when possible.
+means the capability is unknown or unavailable; report that state and work
+directly where authorized. Do not silently change the task's runtime.
 
-Prefer native subagents for bounded work without persistent terminal state.
-Use a configured external adapter for a distinct harness or durable context.
-Create a new terminal surface only when persistence or isolation is material.
+Use the task's established surface and configured adapter. Reuse an owned pane
+for cohesive follow-ups when suitable; create a new surface when isolation,
+independence, or capacity makes it worthwhile. New headless/native work belongs
+to the separate delegate interface, not a manual fallback around a failed gate.
 Record a fresh capacity envelope: session, harness/model, quota owner and
 limit, usage/reset, context usage/limit, handoff reserve, telemetry source and
 time, active work, and declared children. Record missing data as `unknown`.
 
 ## Dispatch and supervise
 
-Resolve `<skill-dir>` to this installed coordinator directory. The helper's
+Resolve `<delegate-dir>` to the installed delegate skill directory. The helper's
 `inventory` reports configured and live capabilities. `run-task` composes sink
 setup, worker provisioning, non-blocking admission, file-inbox harvesting, digest
 verification, reconciliation, and cleanup. Use the parent durable task ID as `--task-id`, including for milestone runs, and a

@@ -15,9 +15,10 @@ across tasks unless the user names a task or project.
 Show the resolved pool briefly and verify availability. An unambiguous explicit
 reuse request is the user's choice for a new task, without another confirmation.
 History alone never chooses automatically. Missing or ambiguous history requires
-a selection. If the command reports malformed/missing records that could affect
-which choice is latest, disclose the uncertainty and report the recovered choice and its uncertainty.
-If the selected pool is unavailable, present alternatives for the user to choose.
+a selection under the role rule below. Disclose malformed/missing records that
+could affect which choice is latest, including uncertainty in recovered choices.
+If the selected pool is unavailable, present verified alternatives for the user
+to choose unless existing authority covers coordinator selection.
 
 ## Record a choice
 
@@ -28,8 +29,12 @@ Write a pool JSON file with concrete harness/model identifiers, for example:
 ```
 
 `harness` and `model` are required; `provider`, `effort`, and `role` are optional.
-Record `role` whenever the pool serves a specific role; a pool selected for one
-role does not authorize dispatch for another.
+Record `role` whenever the pool serves a specific role. Do not reuse a review-only
+dispatch for implementation. A new implementation selection within authorized
+repair scope is a coordinator decision, not a new permission gate. For example,
+if X/high is available and only Y is restricted to review, select/record X/high
+for the authorized fixes; do not implement with Y or invent availability for a
+historical Z. Explicit implementation model restrictions still bind.
 Use the actual selected identifiers, not these example placeholders. Multiple
 routes represent a mixed pool. Record it with:
 
@@ -38,9 +43,10 @@ select --task <id> --owner <owner-id> --revision <observed-revision>
        --pool-file <absolute-json-path> --source <short-selection-source>
 ```
 
-Use `--confirmed` only after the user's selection or explicit reuse request.
-The source identifies that choice, without copying a prompt or secrets. The
-helper stores the timestamp, task/project association, and a unique choice ID.
+Use `--confirmed` only after the user's selection or explicit reuse request,
+not for a coordinator-selected route. The source identifies the actual authority
+and selection, without copying a prompt or secrets. The helper stores the timestamp,
+task/project association, and a unique choice ID.
 Record replacements and explicit reuse on new tasks as new selections; ordinary
 same-task follow-ups need none.
 

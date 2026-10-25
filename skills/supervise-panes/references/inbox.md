@@ -2,7 +2,8 @@
 
 Use a local filesystem inbox for external workers that share this machine.
 There is no messaging service or database. Native workers retain their native
-result channel. Source scripts live in this skill. Durable inboxes live alongside the task record,
+result channel. Source scripts live in the delegate skill's `scripts/` directory.
+Durable inboxes live alongside the task record,
 outside skill packages and worker workspaces. New assignments also receive a
 workspace-local delivery bundle so sandboxed workers can publish.
 

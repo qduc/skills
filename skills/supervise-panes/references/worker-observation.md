@@ -30,7 +30,8 @@ the next run; mark it read only after reading it. Each wake starts with a
 `wake` line giving the current time and how long the watch waited; use it to
 judge elapsed time before acting. <!-- lesson: watch-herdr-status promoted 2026-09-27 --> On every wake, run `date`, sweep every live worker
 and report mtime, and read every notification's output before steering,
-merging, or closing; then reconstruct the run from its transcript and logs.
+merging, or closing. Use the transcript and logs to resolve relevant uncertainty;
+a routine wake does not require reconstructing the entire run.
 Use this wait in place of a fixed sleep or a pane poll. <!-- lesson: one-wait-not-poll promoted 2026-09-26 --> <!-- lesson: wake-sweep promoted 2026-09-26 -->
 A running watcher does not prove worker activity. Leave its script unchanged
 while it runs, re-arm it after it exits, and anchor pane-scraping patterns to
@@ -45,15 +46,19 @@ retire its watcher so stale completion notices cannot re-enter. On every stall o
 unknown event, compare report/output, commit, and worktree activity since the
 last checkpoint; a quiet footer alone does not establish no progress. Record
 `last_progress_at` when evidence changes.
-A stall whose pane shows an upstream provider error (`service_unavailable_error`,
-the TUI's `Use /retry-turn` hint) is a worker parked at its prompt, not a
-finished one: steer `/retry-turn` + Enter at the idle prompt to resume it,
-confirm the turn restarts, and re-dispatch only if the retry fails again.
+For a provider-error stall (`service_unavailable_error`, `Use /retry-turn`),
+confirm the worker is idle at that prompt and reconcile partial effects before
+steering `/retry-turn` + Enter. Confirm resumed activity; if recovery fails, use
+[bounded recovery](healing.md), not automatic re-dispatch of uncertain work.
 <!-- lesson: upstream-error-retry-turn promoted 2026-09-29 -->
-After each checkpoint publish an observer snapshot with
-`python3 <delegate-dir>/scripts/coord_progress.py --state <task-dir>/state.json`;
-it exposes phase, next_action, worker locators/status/progress time with
-dispatch→report and report→merge durations, merges, and done/total.
+When an observer view helps, publish a snapshot with
+`python3 <delegate-dir>/scripts/coord_progress.py --state <task-dir>/state.json`.
+It exposes phase, next_action, worker locators/status/progress time with
+dispatch→report and report→merge durations, merges, and done/total. It is not an
+execution owner: after accepting a result, advance known authorized work in the
+same work cycle, wait on a genuinely active owner, or record a concrete blocker
+(or explicit pause/session handoff). Do not wait for another notification from a
+finished worker to start the next action.
 
 Decide steerability at dispatch. For a dispatch or mid-flight correction,
 confirm receipt from the worker's subsequent activity or a supported delivery
