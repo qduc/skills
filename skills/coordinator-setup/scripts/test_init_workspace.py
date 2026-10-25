@@ -20,7 +20,7 @@ class InitWorkspaceTests(unittest.TestCase):
             self.assertTrue(committed)
             for name in ["AGENTS.md", "README.md", "STATUS.md", ".gitignore",
                          "decisions/README.md", "knowledge/README.md",
-                         "tasks/README.md", "sessions/README.md"]:
+                         "tasks/README.md"]:
                 self.assertTrue((target / name).is_file(), name)
             text = "".join(p.read_text() for p in target.rglob("*.md"))
             self.assertNotIn("{{", text)

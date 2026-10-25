@@ -25,11 +25,9 @@ instructions.
 
 ## Keep the handoff current
 
-- Rewrite `STATUS.md` as a snapshot; do not append to it. History lives in git
-  and in `sessions/`. Commit at each checkpoint (`git add -A && git commit`).
-- One dated file per session in `sessions/`, plus the pointer in
-  `sessions/README.md`. Do not create extra "latest", "delta" or "active"
-  handoff files; update `STATUS.md` instead.
+- Rewrite `STATUS.md` as a snapshot; do not append to it. History lives in git.
+  Commit at each checkpoint (`git add -A && git commit`). Do not create extra
+  "latest", "delta" or "active" handoff files; update `STATUS.md` instead.
 - Every task folder has a `README.md` (task ID, goal and authority, outcome,
   evidence), indexed in `tasks/README.md`.
 - Record lasting user decisions in `decisions/README.md`, dated, marking what
@@ -39,7 +37,7 @@ instructions.
 
 - Write full sentences a human can audit. Session-scoped identifiers (pane IDs,
   watch/job numbers) belong only in the live section of `STATUS.md`.
-- Keep evidence small: hashes, commit SHAs, short logs, report copies and paths.
+- Keep evidence small: commit SHAs, test results and paths.
   Do not copy checkouts, dependency trees or build output here; keep worktrees
   in the source repository and record their paths. Runtime state (task JSON,
   receipts) stays in the runtime's state directory; link the task ID instead.

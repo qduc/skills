@@ -9,6 +9,5 @@ Start with [AGENTS.md](AGENTS.md). This is coordination memory, not the
 | User decisions and authority | [Decisions](decisions/README.md) |
 | Project knowledge and verification status | [Knowledge](knowledge/README.md) |
 | Task records | [Tasks](tasks/README.md) |
-| Session history | [Sessions](sessions/README.md) |
 
 Keep each fact in one place and link to it. Git holds history; no secrets.
