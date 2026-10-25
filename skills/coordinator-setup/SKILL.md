@@ -1,6 +1,6 @@
 ---
 name: coordinator-setup
-description: Discover and configure the host for the delegate skill. Use on first /delegate use, when its host profile is missing, or when changing machines, harnesses, adapters, or installed method catalogs.
+description: Discover and configure the host for the delegate skill, and create persistent per-project coordinator workspaces. Use on first /delegate use, when its host profile is missing, when changing machines, harnesses, adapters, or installed method catalogs, or when starting a coordinator for a new project.
 ---
 
 # Coordinator setup
@@ -91,3 +91,22 @@ Setup is complete when the requested route has supported operations and verified
 prerequisites. Otherwise report setup as blocked or partial with an exact unresolved
 prerequisite; recording a blocker is not successful setup. Retain concise results,
 not speculative commands or an investigation transcript, in the profile.
+
+## Project workspace
+
+A long-running coordinator for one project keeps its memory in a workspace
+folder, separate from the source checkout and from the host profile. Create one
+with:
+
+```sh
+python3 <setup-skill-dir>/scripts/init_workspace.py ~/coord/<project> \
+  --project <project> --source-checkout <absolute-checkout-path>
+```
+
+It copies `assets/workspace-template`, fills in the project name, checkout and
+date, then initializes git and makes the first commit. It refuses a non-empty
+target. The generated `AGENTS.md` holds the workspace rules: `STATUS.md` is a
+rewritten snapshot, there is one handoff chain, each task folder has a record
+and evidence stays small. Record project decisions there only after the user
+makes them; do not copy another project's decisions, model approvals or notes.
+

@@ -1,0 +1,10 @@
+# Large or regenerable material does not belong in coordination memory.
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+*.pyc
+*.log.gz
+checkout/
+worktrees/
