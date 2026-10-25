@@ -44,20 +44,12 @@ covered by recorded authority; otherwise escalate the exact blocker. After
 assessing a report, mark it read and remove that worker from the next watch map;
 retire its watcher so stale completion notices cannot re-enter. On every stall or
 unknown event, compare report/output, commit, and worktree activity since the
-last checkpoint; a quiet footer alone does not establish no progress. Record
-`last_progress_at` when evidence changes.
+last checkpoint; a quiet footer alone does not establish no progress.
 For a provider-error stall (`service_unavailable_error`, `Use /retry-turn`),
 confirm the worker is idle at that prompt and reconcile partial effects before
-steering `/retry-turn` + Enter. Confirm resumed activity; if recovery fails, use
-[bounded recovery](healing.md), not automatic re-dispatch of uncertain work.
-<!-- lesson: upstream-error-retry-turn promoted 2026-09-29 -->
-When an observer view helps, publish a snapshot with
-`python3 <delegate-dir>/scripts/coord_progress.py --state <task-dir>/state.json`.
-It exposes phase, next_action, worker locators/status/progress time with
-dispatch→report and report→merge durations, merges, and done/total. It is not an
-execution owner: after accepting a result, advance known authorized work in the
-same work cycle, wait on a genuinely active owner, or record a concrete blocker
-(or explicit pause/session handoff). Do not wait for another notification from a
+steering `/retry-turn` + Enter. Confirm resumed activity; if recovery fails, do not automatically re-dispatch
+uncertain work.
+Do not wait for another notification from a
 finished worker to start the next action.
 
 Decide steerability at dispatch. For a dispatch or mid-flight correction,

@@ -5,8 +5,7 @@ persistent terminal context, a distinct harness, or terminal-level isolation.
 The coordinator still owns scope, authority, dependency ordering, acceptance,
 and synthesis.
 
-Read [Routing](routing.md) before selecting an external worker. When using
-Herdr, discover and read the installed `herdr` skill through the current skill
+When using Herdr, discover and read the installed `herdr` skill through the current skill
 catalog for prompt admission and lifecycle operations. This package does not
 assume a sibling install path. If that skill or a required adapter is absent,
 work directly where authorized, or report the missing capability. New native
@@ -47,9 +46,6 @@ Use the task's established surface and configured adapter. Reuse an owned pane
 for cohesive follow-ups when suitable; create a new surface when isolation,
 independence, or capacity makes it worthwhile. New headless/native work belongs
 to the separate delegate interface, not a manual fallback around a failed gate.
-Record a fresh capacity envelope: session, harness/model, quota owner and
-limit, usage/reset, context usage/limit, handoff reserve, telemetry source and
-time, active work, and declared children. Record missing data as `unknown`.
 
 ## Dispatch and supervise
 
@@ -80,7 +76,6 @@ synchronous convenience that cleans up resolved failures and preserves uncertain
 launches/submissions for recovery; it is not
 a multi-day supervisor. Both `start-worker` and `run-task` require `--kind` and `--model`.
 Launch a non-interactive CLI worker with stdin from `/dev/null`.
-<!-- lesson: stdin-devnull promoted 2026-09-26 -->
 Pass the selected `--provider` and `--effort` where applicable. The Herdr helper
 supports explicit launch routes for Term2, Pi, Codex, Claude, and agy; it rejects
 unsupported routes before creating a tab. Term2 and Pi require a provider;
@@ -114,11 +109,9 @@ input commands; unexpected responses retain operation, exit code, stdout, and
 stderr in the launch receipt.
 Closing requires a settled worker and a task-owned tab containing only that pane.
 
-Before assigning an implementation writer, confirm authority and lane
-ownership, and record the exact touch set. Long prompts MUST be written to a
+Long prompts MUST be written to a
 readable file first, then send a short instruction with its absolute path,
-avoiding shell escaping and terminal truncation. Name the return-only sink, and
-require a digest-bearing completion report. Dispatch without an inline
+avoiding shell escaping and terminal truncation. Dispatch without an inline
 completion wait. Observe at most one bounded, attributable admission transition,
 then run the file-inbox Bash watcher as a harness-managed background job.
 
@@ -128,25 +121,12 @@ IDs. The helper's dispatch contract provides a `report` command whose generated
 assignment descriptor supplies the protocol fields. A terminal lifecycle transition can prompt inspection, but does not prove
 that the requested result was produced.
 
-Recompute artifact digests within the assigned working directory, inspect the
-artifact, and execute the coordinator-owned verification argv under a hard
-timeout. Reconcile named children against live harness state and require them to
-be settled before acceptance. Reject stale or mismatched reports by their
-recorded assignment and run; checkpoint their disposition before acknowledging
-them. Read and processed states are transport bookkeeping, not acceptance.
-
 ## Preserve context and accept
 
 Reuse a worker context for corrections and re-review of the same task. Before
 an unrelated task, harvest artifacts and reconcile declared children. Protect
 panes where a human may be typing; never focus, key-send, or poll them as a
 substitute for the declared return sink.
-
-Close the branch only after the artifact and digest are independently verified,
-declared children and background processes are reconciled, identity and
-touch-set ownership still match, focused and required boundary checks pass,
-findings are resolved, and the accountable owner records acceptance. Keep
-`finished`, `verified`, `accepted`, `integrated`, and `cleanup` distinct.
 
 ## Manual verification commands
 

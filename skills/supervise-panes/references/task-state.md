@@ -128,85 +128,12 @@ List details: `constraints`, `deliverables`, `acceptance_criteria`,
 Work items need unique `id` and `status`; optional `needs` lists existing IDs
 without cycles. Add ownership and write scope to work-item objects. Worker
 objects can hold harness identity, pane/job IDs, absolute `cwd`/`worktree`, return
-channel, and last observation. Optional per-worker timestamps `dispatched_at`,
-`reported_at`, `accepted_at`, and `merged_at`, plus `merge_commit`, record
-latency explicitly; `coord_progress.py` derives dispatch→report and
-report→merge durations from `reported_at`, omitting both when it is absent. Artifact objects hold absolute `path` and an
+channel, and last observation. Artifact objects hold absolute `path` and an
 optional `sha256`. Verification entries describe checks, results, and evidence.
-Store no credentials. Use [Choice history](choice-history.md) to save selection.
-
-### Store planning context in existing fields
-
-Use the current schema for the goal-driven workflow; these are object
-conventions inside existing lists, not new top-level detail fields:
-
-| Information | Location |
-| --- | --- |
-| Observable goal | `objective`; preserve the rationale and non-goals in `notes` entries with `kind: intent` |
-| Success and milestone checks | `acceptance_criteria` and `verification`, with criterion and milestone IDs where useful |
-| Authority and decision defaults | `authority`, `constraints`, and a `notes` entry with `kind: decision_policy` |
-| Owned outcomes and milestone grouping | `work_items`, with `owner`, `write_scope`, `milestone`, and actual prerequisite IDs in `needs` |
-| Shared agreements and their owners | `notes` entries with `kind: contract`, stable `id`, `owner`, agreement, affected work-item IDs, and check or evidence link |
-| Material assumptions and their dependencies | `notes` entries with `kind: assumption` and the fields in [Decision policy](decision-policy.md#record-material-assumptions) |
-| Decisions still requiring resolution | `pending_decisions`, referencing the assumption or contract ID and blocked work |
-| Replanning and goal changes | `notes` entries with `kind: replan` or `kind: goal_change`, evidence, affected IDs, and authorization when required |
-| Coordination lessons | `notes` entries with `kind: incident`, `key`, `what`, `cost`, `rule`, and `scope`, as in [Retro](retro.md) |
-
-Write decisions and discoveries by hand unless [Operational status](operational-status.md)
-explicitly enables the memory sidecar. When enabled and bound, it captures plain
-decisions and discoveries; structured note kinds above remain hand-written.
-
-For example, an assumption note can be:
-
-```json
-{
-  "kind": "assumption",
-  "id": "A-2",
-  "decision": "Treat the stable account ID as the export join key",
-  "status": "provisional",
-  "evidence": "The schema and sampled export both expose account_id",
-  "alternatives": ["Use the legacy external reference"],
-  "uncertainty": "Historical imports have not yet been sampled",
-  "if_wrong": "Historical export rows could be joined to the wrong account",
-  "reversibility": "effort",
-  "undo": "Revise the mapping and regenerate the unshipped export",
-  "work_items": ["export-mapping", "export-check"],
-  "depends_on": ["A-1"]
-}
-```
-
-Record referenced assumptions and work items in the same task. The helper
-validates `work_items.needs`; the coordinator checks note IDs, assumption
-dependencies, contract consumers, and milestone coverage itself. Material
-unresolved decisions required for the authorized goal belong in
-`pending_decisions` as well as any explanatory note, so the completion gate can
-see them. Keep optional out-of-scope proposals in deferred notes as described in
-the decision policy. Resolve a pending entry by recording
-its disposition in `notes` and removing it from the pending list. Preserve
-prior notes when checkpointing because supplied lists replace existing lists.
-Workers and lane owners report changes; only the main coordinator checkpoints
-this authoritative record.
-Keep it as a current snapshot. Add a note only when a material decision or
-assumption changes what a later session should do; routine observations and
-progress belong in worker reports, lifecycle receipts, and artifacts.
-
-Checkpoint before dispatch or consequential actions, recording intent and work
-item IDs, then record actual outcomes and worker/resource identities. After
-that, update only changed state: material user decisions, blockers, accepted
-results, unfinished work, or the next action. Worker reports and lifecycle
-receipts hold the detailed history; link them when needed. Checkpoint before
-ending a session. An intended action does not prove it ran. Writes use atomic
-replacement and fsync. If JSON persistence fails, restore it before additional
+Store no credentials. Writes use atomic replacement and fsync. If JSON persistence fails, restore it before additional
 delegated or consequential work.
 
 ## Resume and archive
-
-New delivery tasks with runnable acceptance checks use the protected `outcome_plan` described in
-[Outcome contracts](outcome-contracts.md). Generic checkpoints cannot replace
-that plan or its acceptance records. `resume` retains its goal, authority,
-selected pool, contracts, attempts, evidence, and integration state; reconcile
-runtime resources before acting on a saved next action. Completion and archival
-also require its current artifact hashes and successful independent goal gate.
 
 If a session or worker approaches a capacity limit, checkpoint the current
 next action, blockers, and live worker locators while the session can still
@@ -215,15 +142,10 @@ complete the write. <!-- lesson: pre-limit-checkpoint promoted 2026-09-26 -->
 Resolve “continue” by explicit task ID, conversation association, or a unique
 unfinished task matching the project. Without a handoff, use `list --project
 <absolute-project-path>` or `list` to find the record; ask if multiple tasks
-plausibly match. Load the record before selecting routes: a resumed task keeps
-its recorded pool for unchanged roles. Resolve a new role or unavailable route
-under [Choice history](choice-history.md), asking only for genuinely missing
-authority. Recent-choice history never overrides the task's selection.
+plausibly match.
 
 Use `show --task <id>` to reconstruct the task before executing the saved
-`next_action`: read the objective and its `kind: intent` rationale, acceptance
-criteria, authority and constraints, material decisions, completed evidence,
-and unfinished work items. A pasted handoff is a locator and recent observation;
+`next_action`. A pasted handoff is a locator and recent observation;
 the task record defines the continuing assignment. If its goal or rationale is
 missing or conflicts with current evidence, inspect linked source material and
 record the recovered context; ask the user when the remaining ambiguity would

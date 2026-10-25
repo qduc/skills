@@ -6,33 +6,9 @@ cannot carry the required result.
 
 ## Contents
 
-- [Verification coverage](#verification-coverage)
-- [Receipt ladder](#receipt-ladder)
 - [Native assignments and results](#native-assignments-and-results)
 - [Independent review](#independent-review)
 - [External transport](#external-transport)
-
-## Verification coverage
-
-Compare intended coverage with the tests actually discovered: directory and glob
-selectors can select many files, so selector count is not test count. Evidence
-attributed to production behavior must exercise the production definition, not
-only a fixture or stub. Label fixture-based evidence accurately.
-
-## Receipt ladder
-
-Keep these observations distinct:
-
-1. **Addressed** — the assignment names a worker and return channel.
-2. **Transport accepted** — the surface accepted the assignment.
-3. **Admitted** — the worker entered its running state.
-4. **Finished** — the worker reported an outcome.
-5. **Verified** — inspection confirmed the result and required evidence.
-6. **Accepted** — the coordinator approved the verified result for incorporation.
-7. **Integrated** — the result was incorporated into the deliverable.
-
-An earlier rung never proves a later one. Preserve unknown states and identify
-the next bounded action rather than collapsing them into “done.”
 
 ## Native assignments and results
 
@@ -43,10 +19,9 @@ Outcome and single accountable owner
 Parent goal, why it matters, and how this outcome contributes
 Mode: investigate (read-only), build, or review
 Done means: observable acceptance criteria and relevant checks
-Relevant evidence, files, settled decisions, and inherited assumption IDs
+Relevant evidence, files, and settled decisions
 Scope, write ownership, constraints, non-goals, and authority limits
 Dependencies, shared contracts and their owners, coordination hazards
-Decision policy: defaults, material assumptions to report, escalation boundary
 Where and how to return results, surprises, and blockers
 Workers never call `ask_user` and never delegate or spawn sub-delegation unless
 the coordinator explicitly authorizes it in the brief. Record reasonable
@@ -67,7 +42,6 @@ Write the report file last; its existence and mtime are the completion signal
 
 The report file is the completion signal. The worker writes it last, and a
 marker older than the dispatch or the latest steer does not count.
-<!-- lesson: report-written-last promoted 2026-09-26 -->
 
 Delegate the outcome and constraints; prescribe implementation only where
 required by a contract, evidence, or the user's instruction. Ask workers to
@@ -89,17 +63,7 @@ Report a consequential surprise as soon as it is found, rather than waiting
 for completion. Continue independent authorized work while the coordinator
 resolves it; hold work that depends on the disputed decision. Workers send
 escalations to their coordinator, who owns user-facing questions and task-state
-updates. Harness-provided identity and task association suffice when
-attributable. Inline research findings need neither file digests nor a
-verification command; inspect their cited evidence.
-
-The coordinator inspects the result before acceptance and independently runs
-required checks for modifying work. A worker's completion claim is evidence to
-investigate, not authority to expand scope or execute arbitrary commands.
-Before accepting a build report, map every assigned deliverable to changed
-artifacts and post-change evidence. Reject docs-only or plan-only output when
-the assignment requires capability, and revise/reassign within the original
-goal rather than silently weakening acceptance.
+updates.
 
 ## Independent review
 
@@ -120,9 +84,7 @@ integrated goal check. A review verdict alone proves neither.
 
 Separate substantive uncertainty from report packaging. The coordinator can check
 an exact path, cwd, citation, or receipt directly and request a narrow correction.
-Do not commission recursive reviews solely to validate a report's packaging.
-Retain required independent source/behavior and preservation review; a new source
-change or unresolved material risk is not merely packaging. After sufficient
+Do not commission recursive reviews solely to validate a report's packaging. After sufficient
 inspection, continue the next authorized action rather than reviewing readiness
 again.
 
@@ -132,7 +94,4 @@ For persistent or separately transported work, use the completion envelope and
 verification rules in [External agents](external-agents.md). The
 [file inbox](inbox.md) retains unread, read, and processed reports across
 sessions and uses a background Bash watcher to report unread messages through
-the harness's job-completion channel. That
-branch adds run/task/assignment IDs, registered mailbox routing, file digests,
-coordinator-owned check argv, and live child reconciliation. Shared-filesystem
-routing is not authentication against other processes under the same account.
+the harness's job-completion channel.
