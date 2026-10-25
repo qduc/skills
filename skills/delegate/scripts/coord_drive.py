@@ -998,11 +998,12 @@ def settled(task_dir, drive, oid, observation):
     patch_file = Path(verification['artifact']['path'])
     with patch_file.open('rb') as stream:
         preview = stream.read(INLINE_PATCH + 1)
-    patch = preview.decode('utf-8', errors='replace')
-    if len(patch) > INLINE_PATCH:
+    # Truncation is decided in bytes, before decoding, so multibyte text cannot hide a cut.
+    patch = preview[:INLINE_PATCH].decode('utf-8', errors='replace')
+    if len(preview) > INLINE_PATCH:
         stat = '' if artifact_delivery(drive) else git(
             drive['integration'], 'apply', '--stat', str(patch_file), check=False).stdout
-        patch = (stat + '\n' + patch[:INLINE_PATCH] + f'\n[truncated at {INLINE_PATCH} of '
+        patch = (stat + '\n' + patch + f'\n[truncated at {INLINE_PATCH} of '
                  f'{patch_file.stat().st_size} bytes; read patch_file for the rest]')
     implements = next((x for x, c in drive.get('checks_for', {}).items() if c == oid), None)
     extra = {}

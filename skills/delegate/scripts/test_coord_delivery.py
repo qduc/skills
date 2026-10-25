@@ -113,6 +113,26 @@ class DeliveryTests(unittest.TestCase):
     def accept(self, status):
         return self.answer(status, {'verdict': 'accept', 'reason': 'Inspected the deliverable against the source'}, 'inspect')
 
+    def test_inspection_preview_truncates_by_bytes_for_multibyte_text(self):
+        limit = drive.INLINE_PATCH
+        for name, text, cut in (('ascii', 'a' * (limit + 1000) + 'TAIL_SENTINEL', True),
+                                ('multibyte', 'é' * 7000 + 'TAIL_SENTINEL', True),
+                                ('fits', 'é' * (limit // 2 - 10), False)):
+            with self.subTest(name):
+                self.setUp()
+                self.start([item(text=text)])
+                spawn, cwd = self.spawn()
+                (cwd / 'report.md').write_text(text)
+                status = self.finish(spawn)
+                request = next(r for r in status['requests'] if r['kind'] == 'inspect')
+                record = drive.load_drive(Path(self.root) / 'tasks' / status['task'])
+                preview = record['requests'][request['id']]['context']['patch']
+                self.assertEqual('[truncated at' in preview, cut, preview[-200:])
+                self.assertNotIn('TAIL_SENTINEL', preview)
+                self.assertLessEqual(len(preview.split('\n[truncated')[0].encode()), limit + 3)
+                if not cut:
+                    self.assertEqual(preview, text)
+
     def test_native_report_finishes_without_git_or_internal_commands(self):
         self.env['PATH'] = '/no-git-or-other-executables'
         status = self.start()

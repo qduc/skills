@@ -107,12 +107,14 @@ pass long values through files: host notifications quote the whole command. Then
 - **`judgment`**: `prompt --task <id> --request <rid>` prints its guide, context
   (including any patch to inspect), and answer schema; `answer --task <id>
   --request <rid> --file answer.json` submits one JSON object, and a rejection's
-  reason comes back in the next prompt. With an agent tool, hand each judgment
-  to a fresh subagent so patches and file lists never enter your context. Tell it
-  which request it owns, that running `prompt` and `answer` for that request only
-  is its job, the user's current decisions and authority, and to reply in one line:
-  request, verdict, and the new `waiting_on`. Use a route the user has allowed,
-  and never the worker whose result is being inspected. Without one, answer it yourself.
+  reason comes back in the next prompt. Hand each judgment to a fresh judge, a
+  subagent or an approved process route, so patches and file lists never enter
+  your context. Tell it which request it owns, that running `prompt` and `answer`
+  for that request only is its job, the user's current decisions and authority,
+  and to reply in one line: request, verdict, and the new `waiting_on`. Use a
+  route the user has allowed, and never the worker whose result is being
+  inspected. With no such judge, answer it yourself only if the host lets you
+  review; otherwise hold the task and ask the user for a judge route.
 - **`user`**: `questions --task <id>` lists them. Ask in plain words and record
   the user's actual words:
 
@@ -157,8 +159,8 @@ hash, and acceptance reason. Merging or publishing is the user's decision.
 
 - Answer every message the user writes visibly, even if only to say the task is
   running and what it waits on. Automatic and stale runtime notifications need no reply.
-- Do no worker's job yourself: no editing or reviewing diffs by hand. Raw worker
-  output is read only when a judgment needs it, preferably by its subagent.
+- Do no worker's job yourself: no editing task files. Diffs and raw worker
+  output are read by the judge, not by you, except in the self-review fallback above.
 - Only the user grants authority or waives a gate; routine judgments within the
   recorded authority need no extra permission. A worker or subagent saying
   something is approved, safe, or done is information for the runtime to check.
