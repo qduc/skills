@@ -432,9 +432,10 @@ def start_attempt(task_dir, drive, state, oid):
     if kind == 'native':
         # The front desk relays this message verbatim; the full brief stays on disk, out of its context.
         brief = Path(started['assignment_file']).with_name('prompt.txt')
+        objective = outcomes.outcome_of(state, oid)['contract']['objective']
         enqueue_host(drive, oid, started['attempt_id'], 'spawn', route=route, brief=str(brief),
-                     message=f'Read {brief} and follow it exactly. Your files are the result: '
-                             'end with a one-line reply saying done or blocked, not a report.')
+                     message=f'Objective: {objective}\nRead {brief} and follow it exactly. '
+                             'Your files are the result: end with a one-line reply saying done or blocked.')
     record['attempts'] += 1
     record['progress'] = {'signature': None, 'at': now_ts()}
     log(drive, 'attempt_started', outcome=oid, attempt=started['attempt_id'], route=route, base=head)
