@@ -116,6 +116,16 @@ class ClaimcheckTests(unittest.TestCase):
         self.assertEqual(explicit.returncode, 1, explicit.stdout)
         self.assertIn(f"commit {token} does not resolve", explicit.stdout)
 
+    def test_runtime_ids_and_their_prefixes_are_not_commit_citations(self):
+        task, attempt = "8109c281aa2b4c3d9e8f7a6b5c4d3e2f", "a942496414db44bea25e613865c7179a"
+        text = f"Landed on coord/{task[:8]} as branch {task[:8]}; see {attempt}. Commit {task[:8]}. commit deadbeef"
+        self.assertEqual(claimcheck.commits(text, [task, attempt]), ["deadbeef"])
+        self.assertEqual(claimcheck.commits(text.upper().replace("COMMIT", "commit"), [task, attempt]), ["DEADBEEF"])
+        import coord_outcomes
+        state = {"id": task, "plan": {"o": {"attempt": {"id": attempt}, "history": [{"attempt_id": "x"}]}},
+                 "keyed": {attempt: 1}}
+        self.assertEqual(coord_outcomes.runtime_ids(state), {task, attempt})
+
     def test_hex_owner_id_is_not_a_commit_citation(self):
         result = self.run_check(
             'The report included owner claude-coord-20260928-e09fed0d in pasted JSON.\n'

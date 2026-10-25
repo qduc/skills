@@ -54,6 +54,7 @@ CHECKS_FIRST_MODES = ('auto', True, False)
 OUTCOME_ID = re.compile(r'[a-z0-9][a-z0-9-]{0,31}')
 CHECKS_SUFFIX = '-checks'
 TAIL = 4000
+INLINE_PATCH = 12000  # judgments are often answered in the front desk's own context
 
 
 class DriveError(tasks.StateError):
@@ -356,24 +357,27 @@ def worker_instructions(feedback, frozen=(), drive=None):
             f"Why it matters: {contract['rationale']}",
             f"Scope: {contract['scope']}",
             f"Authority: {contract['authority']}",
-            f'Working directory: {cwd} (an isolated git worktree; change files only here).',
+            f'Working directory: {cwd} (an isolated git worktree; change files only here, unless Authority names more).',
             'These checks will be run independently after you finish, from the working directory:',
             checks,
             'Rules:',
             '- Make the change in place. You do not need to commit; the runtime packages your changes as a patch.',
             f'- Do not modify anything under {PACKAGE_DIR}/ except your summary file.',
-            '- Do not ask the user questions, spawn other agents, or start background jobs.',
+            '- Do not ask the user questions. Do not spawn agents or start background jobs unless Scope or '
+            'Authority above explicitly asks you to; then they are your job.',
             f'- When finished, write a short summary to {summary}: what you changed and which tests you ran, '
             'citing real file paths. Cited tests and commits are checked against the repository.',
             f'- If you cannot proceed without a decision outside your authority, write {{"decision": "<exact '
             f'missing decision>"}} to {Path(path).parent / "blocker.json"} and stop.',
             f'The full assignment is at {path} (read-only).',
+            'Your final reply is not read: end with one line, done or blocked.',
         ]
         if frozen:
             lines += ['These tests were written and reviewed before you started; make them pass without '
                       'modifying them (write a blocker if one is wrong):', *(f'- {name}' for name in frozen)]
         if drive and artifact_delivery(drive):
-            lines[5] = f'Working directory: {cwd} (an isolated artifact workspace; write only here).'
+            lines[5] = (f'Working directory: {cwd} (an isolated artifact workspace; write only here, '
+                        'unless Authority names more).')
             lines[9] = (f"- Deliver the file {contract['artifact']} inside your working directory. "
                         'The runtime publishes it after independent checks and inspection.')
             lines += [f"Source material: {drive['repo']} (read-only; do not edit the source directory).",
@@ -428,8 +432,12 @@ def start_attempt(task_dir, drive, state, oid):
     started = mutate(task_dir, drive, lambda s, p: runtime.start(s, p, oid, kind, route, 'bounded_worker',
                                                                   [], command, instructions=instructions))
     if kind == 'native':
-        enqueue_host(drive, oid, started['attempt_id'], 'spawn', route=route,
-                     message=started['request']['message'])
+        # The front desk relays this message verbatim; the full brief stays on disk, out of its context.
+        brief = Path(started['assignment_file']).with_name('prompt.txt')
+        objective = outcomes.outcome_of(state, oid)['contract']['objective']
+        enqueue_host(drive, oid, started['attempt_id'], 'spawn', route=route, brief=str(brief),
+                     message=f'Objective: {objective}\nRead {brief} and follow it exactly. '
+                             'Your files are the result: end with a one-line reply saying done or blocked.')
     record['attempts'] += 1
     record['progress'] = {'signature': None, 'at': now_ts()}
     log(drive, 'attempt_started', outcome=oid, attempt=started['attempt_id'], route=route, base=head)
@@ -632,7 +640,7 @@ def plan_context(task_dir, drive, state, mode, evidence=None, guidance=None):
     files = [] if artifact_delivery(drive) else git(integration, 'ls-files', check=False).stdout.splitlines()
     context = {'mode': mode, 'goal': details['objective'], 'acceptance_criteria': details['acceptance_criteria'],
                'constraints': details['constraints'], 'authority': details['authority'],
-               'repository': integration, 'files': files[:400] + (['...'] if len(files) > 400 else []),
+               'repository': integration, 'files': files[:100] + ([f'... {len(files) - 100} more; run git ls-files'] if len(files) > 100 else []),
                'delivery': drive.get('delivery', 'patch'), 'source': drive['repo'],
                'rules': ['Outcome checks run from that outcome\'s isolated worktree root.',
                          'Goal checks run from the repository root after every outcome is integrated.',
@@ -987,22 +995,29 @@ def settled(task_dir, drive, oid, observation):
             return
         retry(task_dir, drive, tasks.load(task_dir), oid, '\n'.join(lines))
         return
-    with Path(verification['artifact']['path']).open('rb') as stream:
-        preview = stream.read(60001)
-    patch = preview.decode('utf-8', errors='replace')
+    patch_file = Path(verification['artifact']['path'])
+    with patch_file.open('rb') as stream:
+        preview = stream.read(INLINE_PATCH + 1)
+    # Truncation is decided in bytes, before decoding, so multibyte text cannot hide a cut.
+    patch = preview[:INLINE_PATCH].decode('utf-8', errors='replace')
+    if len(preview) > INLINE_PATCH:
+        stat = '' if artifact_delivery(drive) else git(
+            drive['integration'], 'apply', '--stat', str(patch_file), check=False).stdout
+        patch = (stat + '\n' + patch + f'\n[truncated at {INLINE_PATCH} of '
+                 f'{patch_file.stat().st_size} bytes; read patch_file for the rest]')
     implements = next((x for x, c in drive.get('checks_for', {}).items() if c == oid), None)
     extra = {}
     if implements:  # a checks phase: review the tests against what the outcome and the task must achieve
         extra = {'implements': outcomes.outcome_of(state, implements)['contract'],
                  'acceptance_criteria': state['details']['acceptance_criteria'],
-                 'red_evidence': verification['checks'][0]['stdout']}
+                 'red_evidence': tail(verification['checks'][0]['stdout'], 1500)}
     open_request(drive, 'review_checks' if implements else 'inspect', inspect_key, dict(extra, **{
         'outcome': oid, 'contract': item['contract'], 'attempt': record['attempts'],
         'delivery': drive.get('delivery', 'patch'), 'source': drive['repo'],
         'artifact': verification['artifact'],
         'unverified_citations': verification['claimcheck'].get('unverified', []),
         'summary': json.loads(Path(result['report']).read_text()).get('summary'),
-        'patch': patch if len(patch) <= 60000 else patch[:60000] + '\n[patch truncated; read the artifact file]',
+        'patch': patch,
         'patch_file': verification['artifact']['path'],
         'checks': [{'id': c['id'], 'argv': c['argv'], 'exit_code': c['exit_code'],
                     'stdout_tail': tail(c['stdout'], 1500)} for c in verification['checks']],
@@ -1284,7 +1299,9 @@ def doctor(workers=None, delivery='patch'):
 
 # --------------------------------------------------------------------------- front-desk operations
 
-def summary(task_dir, drive):
+def summary(task_dir, drive, evidence=False):
+    """What the task waits on. Delivery evidence is included once done, or on request: the front desk
+    reads this after every command, so per-call output stays small."""
     state = tasks.load(task_dir)
     rows = []
     for oid, item in (state.get('outcome_plan') or {}).get('outcomes', {}).items():
@@ -1314,16 +1331,19 @@ def summary(task_dir, drive):
         return [{k: v for k, v in c.items() if k not in {'stdout', 'stderr'}} |
                 {'stdout_tail': tail(c.get('stdout', ''), 1500), 'stderr_tail': tail(c.get('stderr', ''), 1500)}
                 for c in checks]
-    evidence = {'goal_checks': check_evidence((plan.get('goal_verification') or {}).get('checks', [])),
-                'outcomes': [{'id': oid, 'artifact': item['integration']['artifact'],
-                              'decision': item['acceptance']['decision'],
-                              'checks': check_evidence(item['acceptance']['checks'])}
-                             for oid, item in plan.get('outcomes', {}).items() if item.get('integration')]}
-    return {'task': state['id'], 'title': state['title'], 'status': state['status'], 'done': done,
-            'waiting_on': waiting, 'branch': drive['branch'], 'integration': drive['integration'],
-            'delivery': drive.get('delivery', 'patch'), 'host_actions': host_actions, 'evidence': evidence,
-            'halted': bool(drive.get('halted')), 'outcomes': rows, 'requests': requests, 'questions': questions,
-            'recent': drive['log'][-8:]}
+    result = {'task': state['id'], 'title': state['title'], 'status': state['status'], 'done': done,
+              'waiting_on': waiting, 'branch': drive['branch'], 'integration': drive['integration'],
+              'delivery': drive.get('delivery', 'patch'), 'host_actions': host_actions,
+              'halted': bool(drive.get('halted')), 'outcomes': rows, 'requests': requests, 'questions': questions,
+              'recent': [' '.join(filter(None, (e.get('event'), e.get('outcome')))) for e in drive['log'][-5:]]}
+    if done or evidence:
+        result['evidence'] = {
+            'goal_checks': check_evidence((plan.get('goal_verification') or {}).get('checks', [])),
+            'outcomes': [{'id': oid, 'artifact': item['integration']['artifact'],
+                          'decision': item['acceptance']['decision'],
+                          'checks': check_evidence(item['acceptance']['checks'])}
+                         for oid, item in plan.get('outcomes', {}).items() if item.get('integration')]}
+    return result
 
 
 def confirm_selection(task_dir, question_id, user_message, pool=None):

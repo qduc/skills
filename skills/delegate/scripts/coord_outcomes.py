@@ -12,6 +12,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 import subprocess
 import sys
 import uuid
@@ -21,6 +22,7 @@ import coord_process
 
 MAX_ARTIFACT_BYTES = 268_435_456
 ACTIVE_LOCK_FD = None
+RUNTIME_ID = re.compile(r'[0-9a-f]{32}')
 
 
 def text(value):
@@ -283,12 +285,21 @@ def report(assignment_file, artifact, summary=None):
     return {'report': str(path), 'disposition': 'worker_evidence'}
 
 
-def claimcheck(report_path, cwd, sources=()):
+def runtime_ids(value):
+    """Every 32-hex identifier the task record holds: task, assignment, and attempt IDs, past and present."""
+    if isinstance(value, dict):
+        return {i for v in value.values() for i in runtime_ids(v)} | {k for k in value if RUNTIME_ID.fullmatch(k)}
+    if isinstance(value, list):
+        return {i for v in value for i in runtime_ids(v)}
+    return {value} if isinstance(value, str) and RUNTIME_ID.fullmatch(value) else set()
+
+
+def claimcheck(report_path, cwd, sources=(), known_ids=()):
     """Unresolved and uncheckable commit or test citations in a report; recorded as verification evidence."""
     # Imported lazily: the reporter snapshot copied into attempts omits this module.
     import coord_claimcheck
     found, unverified = coord_claimcheck.check(Path(cwd).resolve(), Path(report_path).read_text(),
-                                               [Path(source).resolve() for source in sources])
+                                               [Path(source).resolve() for source in sources], known_ids)
     return {'blockers': found, 'unverified': unverified}
 
 
@@ -314,7 +325,8 @@ def verify_result(state, oid, report_path, timeout, sources=()):
     item.pop('integration', None)
     item['verification'] = {'assignment_id': item['assignment_id'], 'attempt_id': attempt['id'],
                             'artifact': actual, 'report': report_ref, 'checks': evidence,
-                            'claimcheck': claimcheck(report_path, item['contract']['cwd'], sources),
+                            'claimcheck': claimcheck(report_path, item['contract']['cwd'], sources,
+                                                     runtime_ids(state)),
                             'dependencies': candidate['dependencies'], 'at': tasks.now()}
     plan_of(state).pop('goal_verification', None)
     return item['verification']
