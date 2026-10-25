@@ -29,7 +29,7 @@ term2 --show-reasoning "design an architecture plan"
 # Suppress non-error diagnostics on stderr
 term2 --quiet "generate json payload"
 
-# Run with minimal context; the session is not persisted as a normal conversation
+# Run with minimal context (headless conversations are still persisted)
 term2 --lite "summarize this repository"
 ```
 
@@ -45,12 +45,28 @@ term2 -p codex -m gpt-5.6-luna
 ```
 
 ### 3. Session Resumption
+Without a follow-up prompt, resume opens the interactive TUI. To continue a saved
+conversation headlessly, put its ID first and the follow-up prompt after it:
+
 ```bash
-term2 --resume              # Resume the last conversation in current project
-term2 --resume <session-id> # Resume specific session ID
-term2 --resume <id> --fork  # Fork conversation into a fresh session
-term2 --resume ls           # List recent conversations
+term2 --resume                         # Interactive: last conversation in current project
+term2 --resume <session-id>            # Interactive: specific conversation
+term2 --resume <id> --fork             # Interactive: fork into a fresh session
+term2 --resume ls                      # List recent conversations
+term2 --resume <id> "Continue the task" # Headless: append a follow-up to the same session
+term2 --resume <id> --fork --json "Try another approach" # Headless fork, NDJSON output
 ```
+
+Headless resume restores saved user/assistant history and session identity, then
+appends the new turn to the same conversation. `--fork` uses a new ID and leaves
+the source conversation unchanged. Saved reasoning effort and fork/rollover
+metadata are retained; explicit CLI overrides still apply. Tool execution still
+requires `--auto-approve` for each headless invocation. Run from the conversation's
+project directory; a missing conversation fails rather than starting a new one.
+`--resume ls` does not accept a follow-up prompt.
+
+If an older installed CLI rejects the extra prompt with “--resume accepts at most
+one conversation id,” update to a build containing headless resume support.
 
 ---
 
@@ -138,15 +154,15 @@ CLI flags (`-p`, `-m`, `-r`, `-l`) override persisted settings for that invocati
 ## Gotchas
 
 - **Bare invocations start TUI**: Omitting a prompt string enters the interactive TUI. For background/scripted use, always pass the prompt as an argument.
-- **A positional prompt is non-interactive and CANNOT be steered**: `term2 ... "<prompt>"` takes the non-interactive path (`source/cli.tsx:378`, `:831-841` → `non-interactive.ts`). It never mounts Ink and never reads stdin, so **no mechanism can send it a mid-flight correction** — not `herdr pane send-text`, not `herdr agent prompt`. Changing its instructions requires killing it and relaunching with an updated brief.
+- **A positional prompt is non-interactive and CANNOT be steered**: `term2 ... "<prompt>"` takes the non-interactive path (`source/cli.tsx` → `source/non-interactive.ts`). It never mounts Ink and never reads stdin, so **no mechanism can send it a mid-flight correction** — not `herdr pane send-text`, not `herdr agent prompt`. To change its instructions, let it finish or stop it, then launch a follow-up with `term2 --resume <id> "Updated brief"`; this is a new turn, not a mid-flight correction.
 
   Typing into such a pane is actively harmful: the **tty line discipline echoes** the text, so it shows up in `herdr pane read` and looks delivered, while the process never receives it. The bytes then sit in the tty input buffer and **the shell runs them when the process exits** (observed: `zsh: command not found: CORRECTION`). Quotes in the message open a `>` continuation prompt.
 
-  **Verify, do not assume:** grep the run's tee'd stdout for a distinctive phrase from your message. Present in `herdr pane read` but absent from the tee log = terminal echo only. Non-interactive runs also write **no** conversation transcript under `~/.local/share/term2-nodejs/conversations/`, so there is nothing there to check against.
+  **Verify, do not assume:** grep the run's tee'd stdout for a distinctive phrase from your message. Present in `herdr pane read` but absent from the tee log = terminal echo only. Headless runs persist conversation logs (including `--lite` runs); use `term2 --resume ls` from the same project directory to find their IDs. A transcript or a later resumed turn does not prove a mid-flight message was delivered.
 
   **Default to interactive when running under a terminal multiplexer.** Launch the TUI (`term2 -m <model> -p <provider> -r high`). Use `herdr agent prompt` when supported; lifecycle tracking does not imply prompt integration. For `agent_not_ready`, follow the [Herdr verified-idle initial-input fallback](../herdr/SKILL.md#initial-input-fallback-for-an-unintegrated-tui), including pending-draft recovery and worker acknowledgement. Reserve positional prompts for contexts with no tty, such as a shell tool or pipeline.
 - **Tool execution requires `--auto-approve`**: In non-interactive mode, tool calls are refused by default unless `--auto-approve` is passed.
-- **Lite mode is session-only**: `--lite` starts with minimal context and does not use the normal persisted conversation context.
+- **Lite mode is a profile choice, not disposable storage**: `--lite` selects minimal context; it does not disable headless conversation persistence or erase history restored by `--resume`.
 - **SSH requires a directory for full sessions**: Pass `--remote-dir` with `--ssh` unless using a lite session; use `--ssh-port` for non-default SSH ports.
 - **Model discovery is provider-aware**: Use `--list-models` (optionally with a search term) instead of guessing model IDs.
 - **Login flags exit after authentication**: `--grok-login` and `--codex-login` are setup commands, not conversation modes.
