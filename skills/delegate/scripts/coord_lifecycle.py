@@ -306,22 +306,63 @@ def require_brief_contract(brief: Path, args: argparse.Namespace) -> list[dict[s
     return []
 
 
+# Pin the entire launch identity, including the operation/receipt being retired.
+START_IDENTITY_FIELDS = ("name", "kind", "model", "provider", "effort", "cwd",
+                         "workspace_id", "label", "operation_id", "receipt_file")
+
+
+def require_prelaunch_clear(worker: dict[str, Any]) -> None:
+    """Only an unconsumed intent with no resource/delivery evidence can be attested.
+
+    Absence is a necessary conflict check, never proof that a launch did not run.
+    The trusted owner must separately attest the exact operation with evidence.
+    """
+    if worker.get("status") != "start_intended" or worker.get("prelaunch_retry_of"):
+        raise LifecycleError("only an original start_intended operation can be confirmed prelaunch")
+    if any(worker.get(field) for field in (
+            "pane_id", "tab_id", "owned_tab", "children", "dispatch_status", "dispatch_id",
+            "assignment_id", "inbox", "delivery_inbox", "delivery_retired")):
+        raise LifecycleError("prelaunch confirmation conflicts with recorded resources or dispatch")
+    receipt = worker.get("receipt_file")
+    if not worker.get("operation_id") or not receipt or os.path.lexists(receipt):
+        raise LifecycleError("prelaunch confirmation requires an absent receipt for the exact recorded operation")
+
+
+def prelaunch_evidence_digest(path: str) -> str:
+    """Hash the owner's evidence without interpreting its prose as proof."""
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def start_worker(args: argparse.Namespace) -> dict[str, Any]:
     state_path = Path(args.state).resolve()
     state = load_state(state_path)
-    if args.name in state["workers"]:
-        raise LifecycleError(f"worker already recorded: {args.name}")
-    require_confirmed_route(state, args.kind, args.model, getattr(args, "provider", None), getattr(args, "effort", None))
+    previous = state["workers"].get(args.name)
+    identity = dict(name=args.name, kind=args.kind, model=args.model,
+                    provider=getattr(args, "provider", None), effort=getattr(args, "effort", None),
+                    cwd=str(Path(args.cwd).resolve()), workspace_id=args.workspace,
+                    label=getattr(args, "label", None))
+    if previous is not None:
+        attestation = previous.get("prelaunch_attestation")
+        if not attestation:
+            raise LifecycleError(f"worker already recorded: {args.name}")
+        require_prelaunch_clear(previous)
+        if (attestation["identity"] != {key: previous.get(key) for key in START_IDENTITY_FIELDS}
+                or any(previous.get(key) != value for key, value in identity.items())):
+            raise LifecycleError("retry launch identity differs from the confirmed prelaunch intent")
+        task = coord_state.load(Path(state["task_dir"]))
+        if attestation["owner"] != args.owner or attestation["revision"] != task["revision"]:
+            raise LifecycleError("prelaunch attestation owner/revision changed; confirm again before retry")
+        if prelaunch_evidence_digest(attestation["evidence_file"]) != attestation["evidence_sha256"]:
+            raise LifecycleError("prelaunch evidence changed since confirmation")
+    require_confirmed_route(state, args.kind, args.model, identity["provider"], identity["effort"])
     operation_id = uuid.uuid4().hex
     receipt_path = state_path.parent / "operations" / state["run_id"] / (operation_id + ".json")
-    intent = dict(name=args.name, kind=args.kind, model=args.model,
-                  provider=getattr(args, "provider", None), effort=getattr(args, "effort", None),
-                  cwd=str(Path(args.cwd).resolve()), workspace_id=args.workspace,
-                  operation_id=operation_id, receipt_file=str(receipt_path),
-                  status="start_intended", children=[])
-    state["workers"][args.name] = intent
-    record(state, "worker_start_intended", worker=args.name, operation_id=operation_id)
-    save_state(state_path, state)
+    # Resolve/build everything locally before intent. No external execution may
+    # precede the durable intent below, even for an explicitly authorized retry.
     command = adapter_command("herdr", "start", "--name", args.name, "--kind", args.kind,
                               "--model", args.model, "--workspace", args.workspace, "--cwd", args.cwd,
                               "--receipt-file", str(receipt_path), "--operation-id", operation_id)
@@ -329,6 +370,15 @@ def start_worker(args: argparse.Namespace) -> dict[str, Any]:
         value = getattr(args, field, None)
         if value:
             command += ["--" + field, value]
+    intent = dict(**identity, operation_id=operation_id, receipt_file=str(receipt_path),
+                  status="start_intended", children=[])
+    if previous is not None:
+        intent["prelaunch_retry_of"] = previous["operation_id"]
+        record(state, "worker_prelaunch_retried", worker=args.name,
+               operation_id=operation_id, previous=previous)
+    state["workers"][args.name] = intent
+    record(state, "worker_start_intended", worker=args.name, operation_id=operation_id)
+    save_state(state_path, state)
     try:
         response = run(command, allow_failure=True, timeout_seconds=150)
         receipt = decode_json(response, "Herdr worker start")
@@ -349,12 +399,41 @@ def start_worker(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def recover_worker(args):
-    """Reconcile an interrupted launch from its receipt; never repeat a mutation."""
+    """Recover resources, or record a trusted prelaunch attestation; never launch.
+
+    Confirmation asserts the owner inspected positive evidence that this exact
+    operation never executed externally. A missing receipt/pane is not evidence.
+    It permits one separate same-identity start, under the same owner/revision.
+    """
     path = Path(args.state).resolve()
     state = load_state(path)
     worker = state["workers"].get(args.worker)
     if not worker:
         raise LifecycleError("unknown worker")
+    confirmation = getattr(args, "confirm_prelaunch", None)
+    evidence_file = getattr(args, "evidence_file", None)
+    evidence_sha256 = getattr(args, "evidence_sha256", None)
+    if any(value is not None for value in (confirmation, evidence_file, evidence_sha256)):
+        if not all((confirmation, evidence_file, evidence_sha256)):
+            raise LifecycleError("prelaunch confirmation requires exact operation, evidence file and SHA256")
+        if confirmation != worker.get("operation_id") or worker.get("name") != args.worker:
+            raise LifecycleError("prelaunch confirmation does not match the recorded worker/operation")
+        require_prelaunch_clear(worker)
+        evidence = Path(evidence_file).expanduser().resolve()
+        if not evidence.is_file() or not evidence.stat().st_size:
+            raise LifecycleError("prelaunch confirmation requires a nonempty evidence file")
+        digest = prelaunch_evidence_digest(str(evidence))
+        if digest != evidence_sha256:
+            raise LifecycleError("prelaunch evidence SHA256 does not match")
+        task = coord_state.load(Path(state["task_dir"]))
+        attestation = dict(identity={key: worker.get(key) for key in START_IDENTITY_FIELDS},
+                           owner=args.owner, revision=task["revision"], at=now(),
+                           evidence_file=str(evidence), evidence_sha256=digest)
+        worker["prelaunch_attestation"] = attestation
+        record(state, "worker_prelaunch_confirmed", worker=args.worker, attestation=attestation)
+        # Keep start_intended: confirmation alone must never enable dispatch.
+        save_state(path, state)
+        return worker
     receipt_path = worker.get("receipt_file")
     if receipt_path and Path(receipt_path).is_file():
         receipt = json.loads(Path(receipt_path).read_text())
@@ -1062,6 +1141,10 @@ def parser() -> argparse.ArgumentParser:
     command = sub.add_parser("recover-worker", help="recover recorded resources without relaunch or resubmission")
     command.add_argument("--state", required=True)
     command.add_argument("--worker", required=True)
+    command.add_argument("--confirm-prelaunch", metavar="OPERATION_ID",
+                         help="trusted-owner attestation: positive evidence proves this exact operation never executed externally; absence alone is insufficient")
+    command.add_argument("--evidence-file", help="durable file containing the inspected positive prelaunch evidence")
+    command.add_argument("--evidence-sha256", help="exact SHA256 of that evidence file")
     command.set_defaults(handler=recover_worker)
     command = sub.add_parser("resolve-dispatch", help="record delivery evidence before permitting a retry")
     command.add_argument("--state", required=True)
