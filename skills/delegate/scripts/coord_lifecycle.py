@@ -291,19 +291,19 @@ def require_confirmed_route(state: dict[str, Any], kind: str, model: str,
 
 
 def require_brief_contract(brief: Path, args: argparse.Namespace) -> list[dict[str, Any]]:
-    """Lint the brief before dispatch; return the findings an explicit override accepted."""
+    """Reject structurally empty briefs, never equivalent assignment wording.
+
+    Retain the legacy signature for callers. Authorization and override flags
+    cannot establish semantic adequacy or bypass mechanically invalid input.
+    """
     import coord_brief_lint  # lazy: worker bundles copy this module without the linter
-    findings = [finding for finding in coord_brief_lint.findings_for(
+    findings = coord_brief_lint.findings_for(
         brief.read_text(errors="replace"), getattr(args, "brief_kind", None) or "build",
         getattr(args, "allow_ask_user", False), getattr(args, "allow_delegation", False))
-        # dispatch appends the return channel itself (completion_contract), so it cannot be missing
-        if finding["check"] != "return_path"]
-    override = getattr(args, "lint_override", None)
-    if findings and not (override and override.strip()):
+    if findings:
         problems = "; ".join(f"{f['check']}: {f['message']}" for f in findings)
-        raise LifecycleError(f"brief fails the communication contract ({problems}); "
-                             "fix the brief, or pass --lint-override '<reason>' when the gap is authorized")
-    return findings
+        raise LifecycleError(f"invalid brief ({problems})")
+    return []
 
 
 def start_worker(args: argparse.Namespace) -> dict[str, Any]:
@@ -546,10 +546,7 @@ def dispatch(args: argparse.Namespace) -> dict[str, Any]:
         raise LifecycleError(f"brief does not exist: {brief}")
     if not state.get("task_id") or not state.get("verify_command"):
         raise LifecycleError("dispatch requires task ID and coordinator verification argv in prepared state")
-    accepted_findings = require_brief_contract(brief, args)
-    if accepted_findings:
-        record(state, "brief_lint_overridden", worker=args.worker, reason=args.lint_override,
-               findings=[finding["check"] for finding in accepted_findings])
+    require_brief_contract(brief, args)
     existing_assignment = "inbox" in worker
     register_mailbox(state, args.worker)
     if not existing_assignment or worker.get("delivery_inbox"):
@@ -936,11 +933,11 @@ BRIEF_LINT_KEYS = ("brief_kind", "allow_ask_user", "allow_delegation", "lint_ove
 
 def add_brief_lint_arguments(command: argparse.ArgumentParser) -> None:
     command.add_argument("--brief-kind", choices=["build", "research", "review"], default="build",
-                         help="communication-contract profile the brief is linted against")
-    command.add_argument("--allow-ask-user", action="store_true", help="the brief is authorized to let the worker ask the user")
-    command.add_argument("--allow-delegation", action="store_true", help="the brief is authorized to let the worker delegate")
+                         help="legacy brief kind; no wording-specific checks")
+    command.add_argument("--allow-ask-user", action="store_true", help="legacy option; no prose checks or permission enforcement")
+    command.add_argument("--allow-delegation", action="store_true", help="legacy option; no prose checks or permission enforcement")
     command.add_argument("--lint-override", metavar="REASON",
-                         help="dispatch despite lint findings; the reason is recorded in lifecycle events")
+                         help="legacy option; no prose checks to override; invalid inputs still fail")
 
 
 def parser() -> argparse.ArgumentParser:

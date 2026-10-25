@@ -24,6 +24,17 @@ research outside Git, with native host agents or non-interactive process workers
 Interactive Herdr or terminal-pane workers, and task records started before this
 runtime, belong to the `supervise-panes` skill.
 
+The legacy file-dispatch helpers also live in this package. Their brief check
+(`scripts/coord_brief_lint.py lint --brief <path>`) rejects missing/non-file or
+blank input, not assignment wording. The assigning human/agent owns adequate
+outcomes, scope, authority, completion criteria, and checks; no template heading,
+keyword, return-path spelling, or Markdown command span proves those semantics.
+Lifecycle dispatch supplies the return-only report channel itself. Historical
+`--kind`/`--brief-kind`, `--allow-ask-user`, `--allow-delegation`, and
+`--lint-override` options remain accepted for compatibility, but do not enforce
+permissions or bypass invalid inputs. Ownership, confirmed routes, verification
+argv, artifact verification, and uncertain-admission guards still apply.
+
 ## Driven runtime
 
 `scripts/coord.py` is the whole interface. Each command prints one compact JSON

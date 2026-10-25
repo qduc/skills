@@ -25,107 +25,76 @@ class BriefLintTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             brief = Path(directory) / 'brief.md'
             brief.write_text(text)
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                code = coord_brief_lint.main(['lint', '--brief', str(brief), *args])
-            findings = [obj for obj in (json.loads(line) for line in output.getvalue().splitlines())
-                        if 'check' in obj]
-            return code, findings
+            return self.lint_path(brief, *args)
 
-    def checks(self, findings):
-        return {f['check'] for f in findings}
+    def lint_path(self, path, *args):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            code = coord_brief_lint.main(['lint', '--brief', str(path), *args])
+        return code, [json.loads(line) for line in output.getvalue().splitlines()]
 
     def test_complete_brief_passes(self):
-        code, findings = self.lint(GOOD_BRIEF, '--kind', 'build')
+        code, output = self.lint(GOOD_BRIEF, '--kind', 'build')
         self.assertEqual(code, 0)
-        self.assertEqual(self.checks(findings), set())
+        self.assertTrue(output[0]['ok'])
+        self.assertEqual(output[0]['kind'], 'build')
 
-    def test_missing_ask_user_clause_is_rejected(self):
-        text = GOOD_BRIEF.replace('never call `ask_user` and ', '')
-        code, findings = self.lint(text)
-        self.assertEqual(code, 1)
-        self.assertIn('ask_user_clause', self.checks(findings))
+    def test_equivalent_prose_does_not_need_template_tokens(self):
+        variants = {
+            'done_label': GOOD_BRIEF.replace('Done means:', 'Done:'),
+            'prose_acceptance': GOOD_BRIEF.replace('Done means:', 'Finish once'),
+            'return_location': GOOD_BRIEF.replace(
+                'Write the report to /tmp/wedge-report.md when finished.',
+                'Leave your findings alongside the assignment.'),
+            'authority': GOOD_BRIEF.replace(
+                'Workers never call `ask_user` and never delegate or spawn sub-delegation.',
+                'Work alone and autonomously; questions go in the final findings.'),
+            'unformatted_command': GOOD_BRIEF.replace('`python3 -m unittest tests.test_lock`',
+                                                    'python3 -m unittest tests.test_lock'),
+        }
+        for name, text in variants.items():
+            with self.subTest(name=name):
+                code, output = self.lint(text)
+                self.assertEqual(code, 0, output)
+                self.assertTrue(output[0]['ok'])
 
-    def test_missing_delegation_clause_is_rejected(self):
-        text = GOOD_BRIEF.replace('never delegate or spawn sub-delegation', 'focus on your own work')
-        code, findings = self.lint(text)
-        self.assertEqual(code, 1)
-        self.assertIn('delegation_clause', self.checks(findings))
+    def test_nonempty_prose_is_not_judged_for_adequacy(self):
+        # A successful mechanical check is not an endorsement of this assignment.
+        for kind in ('build', 'research', 'review'):
+            with self.subTest(kind=kind):
+                code, output = self.lint('bounded work', '--kind', kind)
+                self.assertEqual(code, 0, output)
+                self.assertTrue(output[0]['ok'])
 
-    def test_explicit_authorization_suppresses_clause_checks(self):
-        text = GOOD_BRIEF.replace('Workers never call `ask_user` and never delegate or spawn sub-delegation.\n', '')
-        code, findings = self.lint(text, '--allow-ask-user', '--allow-delegation')
-        self.assertEqual(code, 0)
+    def test_legacy_authorization_flags_remain_accepted(self):
+        code, output = self.lint('bounded work', '--allow-ask-user', '--allow-delegation')
+        self.assertEqual(code, 0, output)
 
-    def test_missing_done_criteria_is_rejected(self):
-        text = GOOD_BRIEF.replace('Done means: NAMED-TEST passes', 'Finish the lock work')
-        code, findings = self.lint(text)
-        self.assertEqual(code, 1)
-        self.assertIn('done_criteria', self.checks(findings))
-
-    def test_missing_return_path_is_rejected(self):
-        text = GOOD_BRIEF.replace('Write the report to /tmp/wedge-report.md when finished.', 'Report back when finished.')
-        code, findings = self.lint(text)
-        self.assertEqual(code, 1)
-        self.assertIn('return_path', self.checks(findings))
-
-    def test_build_brief_without_verification_command_is_rejected(self):
-        text = GOOD_BRIEF.replace('Verify with `python3 -m unittest tests.test_lock`.\n', '')
-        code, findings = self.lint(text, '--kind', 'build')
-        self.assertEqual(code, 1)
-        self.assertIn('verification_command', self.checks(findings))
-
-    def test_research_brief_needs_no_verification_command(self):
-        text = GOOD_BRIEF.replace('Mode: build', 'Mode: investigate').replace(
-            'Verify with `python3 -m unittest tests.test_lock`.\n', '')
-        code, findings = self.lint(text, '--kind', 'research')
-        self.assertEqual(code, 0)
-
-    def test_native_brief_with_equivalent_wording_passes(self):
-        text = ("Acceptance criteria: tests pass; do not spawn subagents; "
-                "return findings in the native result channel.\n")
-        code, findings = self.lint(text, '--kind', 'research', '--allow-ask-user')
-        self.assertEqual(code, 0)
-        self.assertEqual(self.checks(findings), set())
-
-    def test_negation_case_insensitivity(self):
-        text = GOOD_BRIEF.replace(
-            'Workers never call `ask_user` and never delegate or spawn sub-delegation.',
-            'Do not call ask_user. No delegation to other agents.'
-        )
-        code, findings = self.lint(text, '--kind', 'build')
-        self.assertEqual(code, 0)
-        self.assertEqual(self.checks(findings), set())
-
-    def test_common_rules_wording_passes(self):
-        text = """Outcome: heal brief lint
-Mode: build
-Gate: `python3 -m unittest discover -s skills/delegate/scripts`, run from your worktree. It must pass.
-Do not spawn subagents or ask the user questions.
-Write the report to /tmp/heal-brieflint-report.md when finished.
-`python3 -m unittest discover -s skills/delegate/scripts`
-"""
-        code, findings = self.lint(text, '--kind', 'build')
-        self.assertEqual(code, 1)
-        self.assertIn('done_criteria', self.checks(findings))
-        self.assertNotIn('ask_user_clause', self.checks(findings))
-        self.assertNotIn('delegation_clause', self.checks(findings))
-
-    def test_gate_alone_does_not_satisfy_done_criteria(self):
-        text = ("Outcome: fix lock wedge\n"
-                "Gate: `python3 -m unittest tests.test_lock` must pass\n"
-                "Do not call ask_user. Do not delegate. Return results to /tmp/lock-report.md.\n")
-        code, findings = self.lint(text, '--kind', 'build')
-        self.assertEqual(code, 1)
-        self.assertIn('done_criteria', self.checks(findings))
+    def test_empty_brief_is_rejected_even_with_legacy_flags(self):
+        for text in ('', ' \n\t'):
+            with self.subTest(text=text):
+                code, output = self.lint(text, '--allow-ask-user', '--allow-delegation')
+                self.assertEqual(code, 1)
+                self.assertEqual(output, [{'check': 'empty_brief', 'severity': 'error',
+                                           'message': 'brief must contain non-whitespace text'}])
 
     def test_missing_brief_file_errors(self):
-        with contextlib.redirect_stdout(io.StringIO()):
-            code = coord_brief_lint.main(['lint', '--brief', '/nonexistent/brief.md'])
+        with tempfile.TemporaryDirectory() as directory:
+            code, output = self.lint_path(Path(directory) / 'missing.md')
         self.assertEqual(code, 1)
+        self.assertEqual(output[0]['error'], 'missing_brief')
+
+    def test_directory_is_not_a_brief(self):
+        with tempfile.TemporaryDirectory() as directory:
+            code, output = self.lint_path(directory)
+        self.assertEqual(code, 1)
+        self.assertEqual(output[0]['error'], 'missing_brief')
+
+    def test_invalid_kind_is_rejected_at_cli_boundary(self):
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:
+            self.lint(GOOD_BRIEF, '--kind', 'unknown')
+        self.assertEqual(raised.exception.code, 2)
 
 
 if __name__ == '__main__':
     unittest.main()
-
-

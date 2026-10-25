@@ -1,4 +1,4 @@
-"""Gates that used to be prose: selection, brief contract, real-use, and lifecycle settlement."""
+"""Structural gates: selection, brief input, real-use, and lifecycle settlement."""
 import argparse
 import json
 import os
@@ -95,31 +95,86 @@ class GateTests(unittest.TestCase):
         self.assertFalse(lifecycle.route_matches({'harness': 'pi', 'model': 'm', 'provider': 'p'}, 'pi', 'm', 'q', None))
         self.assertFalse(lifecycle.route_matches({'harness': 'pi', 'model': 'm', 'effort': 'high'}, 'pi', 'm', None, 'low'))
 
-    # Brief contract: lint inside dispatch, not as a separate remembered step.
-    def test_dispatch_refuses_brief_missing_contract_clauses(self):
-        brief = self.ready_worker('bounded work')
-        with patch.object(lifecycle, 'run') as run:
-            with self.assertRaisesRegex(lifecycle.LifecycleError, 'communication contract'):
-                self.call('dispatch', '--worker', 'w', '--brief', str(brief))
+    # Dispatch validates structural inputs, not the wording of an assignment.
+    def assert_dispatch_rejected_without_effects(self, brief, error, *extra):
+        with patch.object(lifecycle, 'run', side_effect=AssertionError('adapter must not run')) as run:
+            with self.assertRaisesRegex(lifecycle.LifecycleError, error):
+                self.call('dispatch', '--worker', 'w', '--brief', str(brief), *extra)
             run.assert_not_called()
         worker = lifecycle.load_state(self.state_path)['workers']['w']
         self.assertNotIn('dispatch_status', worker)
-        self.assertNotIn('inbox', worker)  # nothing was registered for a refused dispatch
+        self.assertNotIn('inbox', worker)
+
+    def test_dispatch_accepts_equivalent_brief_wording(self):
+        # No magic completion/return/authority labels or Markdown command spans.
+        brief_text = ("Owner: lock-fixer. Work in src/lock.py only.\n"
+                      "Done: the lock releases on close and issue #12 cannot recur.\n"
+                      "Work alone and autonomously; record questions in your findings.\n"
+                      "Check using python3 -m unittest tests.test_lock.\n")
+        brief = self.ready_worker(brief_text)
+        admitted = subprocess.CompletedProcess([], 0, json.dumps({'status': 'admitted'}), '')
+        with patch.object(lifecycle, 'run', return_value=admitted) as run:
+            self.assertTrue(self.call('dispatch', '--worker', 'w', '--brief', str(brief),
+                                      '--brief-kind', 'review')['admitted'])
+            run.assert_called_once()
+        worker = lifecycle.load_state(self.state_path)['workers']['w']
+        self.assertEqual(worker['dispatch_status'], 'admitted')
+        self.assertTrue(Path(worker['brief']).read_text().startswith(brief_text))
+        assignment = json.loads((Path(worker['delivery_inbox']) / 'assignment.json').read_text())
+        self.assertEqual(assignment['verify_command'], ['true'])
+        self.assertEqual(assignment['worker'], 'w')
+        prompt = (Path(worker['inbox']) / 'dispatch.txt').read_text()
+        self.assertIn('report --assignment-file', prompt)
+        self.assertIn('never assign work to it', prompt)
 
     def test_return_path_is_supplied_by_dispatch_itself(self):
-        brief = self.ready_worker(GOOD_BRIEF)  # names no report path; dispatch appends the channel
+        brief = self.ready_worker(GOOD_BRIEF)  # dispatch appends the channel
         admitted = subprocess.CompletedProcess([], 0, json.dumps({'status': 'admitted'}), '')
         with patch.object(lifecycle, 'run', return_value=admitted):
             self.assertTrue(self.call('dispatch', '--worker', 'w', '--brief', str(brief))['admitted'])
 
-    def test_lint_override_is_recorded(self):
+    def test_dispatch_refuses_missing_brief(self):
+        brief = self.ready_worker(GOOD_BRIEF)
+        brief.unlink()
+        self.assert_dispatch_rejected_without_effects(brief, 'brief does not exist')
+
+    def test_dispatch_refuses_directory_as_brief(self):
+        self.ready_worker(GOOD_BRIEF)
+        self.assert_dispatch_rejected_without_effects(self.root, 'brief does not exist')
+
+    def test_dispatch_refuses_empty_brief(self):
+        brief = self.ready_worker(' \n\t')
+        self.assert_dispatch_rejected_without_effects(brief, 'empty_brief')
+
+    def test_legacy_flags_cannot_bypass_invalid_brief(self):
+        brief = self.ready_worker('')
+        self.assert_dispatch_rejected_without_effects(
+            brief, 'empty_brief', '--lint-override', 'old caller',
+            '--allow-ask-user', '--allow-delegation')
+
+    def test_legacy_flags_remain_accepted_without_wording_gate(self):
         brief = self.ready_worker('bounded work')
         admitted = subprocess.CompletedProcess([], 0, json.dumps({'status': 'admitted'}), '')
         with patch.object(lifecycle, 'run', return_value=admitted):
-            self.call('dispatch', '--worker', 'w', '--brief', str(brief), '--lint-override', 'user approved a quick spike')
-        events = [e for e in lifecycle.load_state(self.state_path)['events'] if e['event'] == 'brief_lint_overridden']
-        self.assertEqual(len(events), 1)
-        self.assertEqual(events[0]['reason'], 'user approved a quick spike')
+            result = self.call('dispatch', '--worker', 'w', '--brief', str(brief),
+                               '--lint-override', 'old caller', '--allow-ask-user', '--allow-delegation')
+        self.assertTrue(result['admitted'])
+        self.assertFalse(any(e['event'] == 'brief_lint_overridden'
+                             for e in lifecycle.load_state(self.state_path)['events']))
+
+    def test_dispatch_refuses_missing_verification_argv(self):
+        brief = self.ready_worker(GOOD_BRIEF)
+        state = lifecycle.load_state(self.state_path)
+        state['verify_command'] = []
+        lifecycle.save_state(self.state_path, state)
+        self.assert_dispatch_rejected_without_effects(brief, 'coordinator verification argv')
+
+    def test_dispatch_refuses_uncertain_launch(self):
+        brief = self.ready_worker(GOOD_BRIEF)
+        state = lifecycle.load_state(self.state_path)
+        state['workers']['w']['status'] = 'start_unknown'
+        lifecycle.save_state(self.state_path, state)
+        self.assert_dispatch_rejected_without_effects(brief, 'recover the launch')
 
     # Completion: every path, not only outcome plans.
     def test_unsettled_lifecycle_worker_blocks_completion(self):
