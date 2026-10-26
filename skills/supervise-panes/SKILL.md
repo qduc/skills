@@ -31,9 +31,9 @@ helpers this skill uses.
   is not proof a worker is idle; stop or verify idle before editing its branch.
 - Preserve unrelated work. Never reset, overwrite, stash away, or commit
   unrelated work for convenience.
-- Preserve uncertain launches and delivery. After an error or timeout, inspect
-  recorded operations, resources, and partial output before retrying. Transport
-  acceptance is not admission; silence is not affirmative non-delivery.
+- After an error or timeout, look at what actually happened (processes, files,
+  partial output) before retrying. A sent message isn't proof the worker got it,
+  and silence isn't proof it didn't.
 - Accept evidence, not assertions: helper success, a review verdict, process
   exit, or a quiet pane alone proves nothing.
 
@@ -155,6 +155,14 @@ of every reference at every stage.
 | [Task state](references/task-state.md) | Entry, resume, ownership, and persistence |
 | [Communication](references/communication.md) | Briefs, review, and result contracts |
 | [External agents](references/external-agents.md), [Inbox](references/inbox.md), [Worker observation](references/worker-observation.md) | Pane dispatch, return-only sinks, delivery recovery, and waits |
+
+## Write plainly
+
+Briefs, notes and updates are read by someone who wasn't there: a fresh worker,
+the user, or a later session. Use plain words and full sentences. Call things
+what they are ("the Discord prompt fix"), not by internal handles; include an ID,
+path or commit only when the reader needs it to act. Say what happened and
+what's next, and skip process narration.
 
 ## Report the result, not the ceremony
 

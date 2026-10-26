@@ -12,36 +12,22 @@ cannot carry the required result.
 
 ## Native assignments and results
 
-Use this brief, omitting fields that genuinely do not apply:
+A brief says only what this task needs:
 
-```text
-Outcome and single accountable owner
-Parent goal, why it matters, and how this outcome contributes
-Mode: investigate (read-only), build, or review
-Done means: observable acceptance criteria and relevant checks
-Relevant evidence, files, and settled decisions
-Scope, write ownership, constraints, non-goals, and authority limits
-Dependencies, shared contracts and their owners, coordination hazards
-Where and how to return results, surprises, and blockers
-Workers never call `ask_user` and never delegate or spawn sub-delegation unless
-the coordinator explicitly authorizes it in the brief. Record reasonable
-assumptions in the report; for a blocker, stop only dependent work and return
-the exact decision needed to the coordinator. The coordinator owns review
-routing.
-For build assignments, state the concrete artifact surface and behavior that
-must change (named files/APIs/tests or an observable public-boundary outcome);
-documentation, plans, or a passing baseline alone do not satisfy delivery.
-At an unverified seam, have the owner establish its existence and shape before
-building on it. When bounded build authority already covers both, the same owner
-can verify the seam and continue; a separate scout/report is not inherently safer.
-If the seam is missing or contradicts the contract, hold dependent work and report
-the evidence and smallest next decision. Do not re-dispatch the unchanged brief.
-Read-only scouts still need a new authorized assignment before implementation.
-Write the report file last; its existence and mtime are the completion signal
-```
+- the goal, and why it matters
+- where to work (worktree or branch), and whether the work is read-only
+- what done looks like, and the checks that show it
+- anything non-obvious: relevant files, settled decisions, known traps
+- where to write the report
 
-The report file is the completion signal. The worker writes it last, and a
-marker older than the dispatch or the latest steer does not count.
+Don't restate standing rules. Workers already get the global and project
+AGENTS.md (billing, pushing, preserving others' work, test policy), and an
+unattended worker already knows it can't ask the user. Repeating those in every
+brief buries the task. Add a limit only when it is specific to this task, such
+as "read-only" or "don't touch the live bridge".
+
+The worker writes the report file last; its existence is the completion signal.
+A report older than the dispatch or the latest steer doesn't count.
 
 Delegate the outcome and constraints; prescribe implementation only where
 required by a contract, evidence, or the user's instruction. Ask workers to
