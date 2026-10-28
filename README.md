@@ -4,6 +4,12 @@ These are agent skills: procedures an agent can follow for a particular kind of 
 
 There is no installer. A skill is a directory under `skills/<name>/` with a `SKILL.md` file. Read that file. The `name` and `description` in the frontmatter say when the skill applies. The rest of the file is the procedure. A skill may also keep notes, scripts, or other files next to `SKILL.md`. Use those only when the procedure tells you to.
 
+## Optional personal profiles
+
+[Personal coordinator profiles and new-host setup](profiles/README.md) are explicit
+opt-ins, separate from the reusable skills. They do not configure a host or log in
+to providers just by being present.
+
 ## Setup
 
 The skills in this repository do not need to be installed. Optional outside engineering skills can be downloaded with Git. Run this from the repository root (or invoke the script by its full path from another directory):

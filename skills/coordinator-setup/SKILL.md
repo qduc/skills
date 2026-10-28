@@ -110,3 +110,11 @@ target. The generated `AGENTS.md` holds the workspace rules: `STATUS.md` is a
 rewritten snapshot, there is one handoff chain, each task folder has a record
 and evidence stays small. Record project decisions there only after the user
 makes them; do not copy another project's decisions, model approvals or notes.
+
+## Optional personal preferences
+
+For a user who explicitly requests an included personal profile, see
+[personal profiles and new-host setup](../../profiles/README.md). Apply the chosen
+profile only after generating the workspace, as documented there. Discovery and
+the default template do not install personal permissions or model preferences;
+keep host facts/credentials separate. Other users keep the generic scaffold.
