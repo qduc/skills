@@ -112,6 +112,7 @@ or worker activity, not an acknowledgement request. Long briefs belong in files.
 Wait through the supported background watcher, not repeated pane polling. Inspect
 notification bodies and live workers on wake, resolve actual blockers, and leave
 active owners alone.
+For several pane workers over hours, run one [control-plane loop](references/control-plane-loop.md).
 
 ## Accept, integrate, and finish the goal
 
@@ -155,6 +156,7 @@ of every reference at every stage.
 | [Task state](references/task-state.md) | Entry, resume, ownership, and persistence |
 | [Communication](references/communication.md) | Briefs, review, and result contracts |
 | [External agents](references/external-agents.md), [Inbox](references/inbox.md), [Worker observation](references/worker-observation.md) | Pane dispatch, return-only sinks, delivery recovery, and waits |
+| [Control-plane loop](references/control-plane-loop.md) | One long-running loop for several pane workers: forwarding, dispatch, nudges, CI, shipping |
 
 ## Write plainly
 

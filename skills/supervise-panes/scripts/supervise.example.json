@@ -1,0 +1,28 @@
+{
+  "dir": ".",
+  "inbox": "inbox.md",
+  "lanes_file": "lanes.json",
+  "queue": "queue",
+  "coordinator": "coord",
+  "integrator": "w1:p9",
+  "integrator_authors": ["integrator", "p9"],
+  "watch_only": {"integrator": "w1:p9"},
+  "repo": "/path/to/repo",
+  "remote": "origin",
+  "branch": "main",
+  "ship": {
+    "ref": "refs/heads/candidate",
+    "command": "my-ship {tip}",
+    "shipped_command": "my-ship --current",
+    "lock": "ship.lock",
+    "quiet": 300,
+    "max_wait": 1200,
+    "min_gap": 1200
+  },
+  "measure": {"command": "my-measure {sha}"},
+  "interval": 60,
+  "idle_after": 600,
+  "nudge_every": 1800,
+  "escalate_nudges": 2,
+  "context_limit_k": 400
+}

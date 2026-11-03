@@ -251,6 +251,12 @@ no named agent session; it always fails `agent_not_ready`. That is structural, n
 a busy worker — do not retry it. Use `scripts/start_term2.py` to launch and
 `start_term2.py steer` to correct (above), or the manual pane path below.
 
+A term2 pane missing from `herdr agent list` usually means the user hook
+`~/.term2/hooks/herdr-status.ts` is absent under that process's HOME, which happens
+when a lane runs with a private HOME. term2 reports its state only through that
+hook, and the hook needs `HERDR_ENV=1` and `HERDR_PANE_ID` in the environment. Copy
+the hook into the lane's HOME and restart the lane.
+
 Reserve a batch/positional-prompt launch for contexts with no tty at all — running
 the agent straight from a shell tool or a pipeline. The convenience of one-shot
 dispatch costs you every mid-flight correction for the rest of the task.
