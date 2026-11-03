@@ -146,6 +146,21 @@ state gets re-read by later sessions as instructions, and it fills the disk.
 Touch only task-owned resources. Never discard unrelated or other owners' work or
 unmerged commits.
 
+## Lessons from running a large team
+
+These come from a two-week, eight-lane rewrite. The incidents are in [team lessons](references/team-lessons.md).
+
+- **Judge the product, not the pipeline.** Green suites, closed jobs and busy lanes say nothing about what the user sees. Regularly have the shipped build used as a user would, by someone without context, against the reference behaviour. Agents doing their own jobs on the build count as stability soak only.
+- **Behaviour questions aren't yours to settle by preference.** When a tester, builder or reviewer prefers different behaviour, the spec (or, for a port, the old system) decides. If neither does, ask the owner asynchronously and act on the spec-matching default meanwhile. Never rule "two preferences, not a defect".
+- **Verify continuously.** Deferring checks to a late milestone was the costliest decision. Keep cheap guards on every commit and the main acceptance check on every candidate.
+- **Acceptance comes only from an execution-capable verifier running the exact commit.** Give verifiers shell and write access before dispatch, and label read-only review as such.
+- **One owner per file, seam and shared resource, and one integrator writing the candidate.** Post the overlap before editing a shared hot file.
+- **Gate heavy and timing-sensitive runs on measured load and disk,** and serialize scored runs. Contended results are noise and can't be attributed.
+- **Check another lane's claim against source before building on it or repeating it.** This applies to your own claims too: correct them publicly.
+- **Put the strongest available model on dispatch.** In a blind exam, Opus 8.6 vs 5.8–7.4 for the others; a weak coordinator leaves lanes idle. Builders can be cheaper, and a model that tests badly as a coordinator can still be an excellent debugger.
+- **Keep the queue stocked** with work tied to named failures, and give a released lane its next job in the same turn.
+- **Removing beats adding.** Process fixes that deleted mechanism held up. Fixes that added schedulers, timing windows or extra gates often backfired. Give every new gate a removal path.
+
 ## References
 
 Read the operational reference for the action you are taking, not a ritual tour
@@ -157,6 +172,7 @@ of every reference at every stage.
 | [Communication](references/communication.md) | Briefs, review, and result contracts |
 | [External agents](references/external-agents.md), [Inbox](references/inbox.md), [Worker observation](references/worker-observation.md) | Pane dispatch, return-only sinks, delivery recovery, and waits |
 | [Control-plane loop](references/control-plane-loop.md) | One long-running loop for several pane workers: forwarding, dispatch, nudges, CI, shipping |
+| [Team lessons](references/team-lessons.md) | Evidence behind "Lessons from running a large team" |
 
 ## Write plainly
 
