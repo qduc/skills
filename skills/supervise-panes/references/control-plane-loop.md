@@ -4,6 +4,11 @@ Use one control-plane loop when you supervise several pane workers for hours.
 For one or two short assignments, the watcher in
 [Worker observation](worker-observation.md) is enough.
 
+The loop keeps lanes busy; it can't tell you whether the team is working. Check
+`supervise.log` daily: if NUDGE lines outnumber landed commits, or the open
+queue keeps growing, fold the work into one agent (see "First: does this need a
+team?" in the skill).
+
 The loop is [scripts/supervise.py](../scripts/supervise.py). Dispatch is
 [scripts/assign.py](../scripts/assign.py). Both read one JSON config; copy
 [scripts/supervise.example.json](../scripts/supervise.example.json) into the task

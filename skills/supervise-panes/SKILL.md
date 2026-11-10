@@ -1,6 +1,6 @@
 ---
 name: supervise-panes
-description: Own authorized outcomes with hand-supervised workers in Herdr or terminal panes, using judgment about delegation, review, and integration while keeping a durable task record. Use when the user wants to run or supervise pane agents or continue an older manual coordinator task. Headless or native-agent delegation is the delegate skill's driven runtime, which the user starts with /delegate.
+description: Own authorized outcomes with hand-supervised workers in Herdr or terminal panes, using judgment about delegation, review, and integration while keeping a durable task record. Use when the user wants to run or supervise pane agents or continue an older manual coordinator task. Not the default for one cohesive piece of work, where one agent with a goal file and its own subagents is faster. Headless or native-agent delegation is the delegate skill's driven runtime, which the user starts with /delegate.
 compatibility: Runs the delegate skill's scripts, so the delegate skill must be installed alongside it. Needs Python 3, git, and Unix file locking.
 ---
 
@@ -19,6 +19,24 @@ manual task records. New headless or native-agent delegation starts through
 do not restart them to adopt another runtime or manually alter a driven task.
 `<delegate-dir>` means the installed delegate skill directory, whose public
 helpers this skill uses.
+
+## First: does this need a team?
+
+For one cohesive piece of work, the default is one strong agent with a goal file
+([template](../coordinator-setup/assets/goal-template.md)) that spawns its own
+subagents, one per area, each on its own branch and worktree. In the one
+measured comparison ([incident](../../incidents/2026-11-04-team-of-lanes-vs-one-agent.md))
+that shape out-produced an eight-lane team with almost no coordination traffic
+and no owner input.
+
+Supervise panes only when at least one of these holds:
+
+- the deliverables are separate and share no files;
+- the workers must run on another subscription or harness, so they live in panes;
+- you want an independent review from a model that hasn't seen the builder's reasoning;
+- the work outlasts one context and needs a record another agent can resume.
+
+If none holds, write the goal file and hand it to one agent instead.
 
 ## Boundaries
 
@@ -148,17 +166,20 @@ unmerged commits.
 
 ## Lessons from running a large team
 
-These come from a two-week, eight-lane rewrite. The incidents are in [team lessons](references/team-lessons.md).
+These come from a two-week, eight-lane rewrite, revised after its last five days. The incidents are in [team lessons](references/team-lessons.md).
 
 - **Judge the product, not the pipeline.** Green suites, closed jobs and busy lanes say nothing about what the user sees. Regularly have the shipped build used as a user would, by someone without context, against the reference behaviour. Agents doing their own jobs on the build count as stability soak only.
-- **Behaviour questions aren't yours to settle by preference.** When a tester, builder or reviewer prefers different behaviour, the spec (or, for a port, the old system) decides. If neither does, ask the owner asynchronously and act on the spec-matching default meanwhile. Never rule "two preferences, not a defect".
+- **Behaviour questions aren't yours to settle by preference.** When a tester, builder or reviewer prefers different behaviour, the spec (or, for a port, the old system) decides. Grade it: behaviour, requests, effects and speed are exact; transient frames and glyphs don't block. Tell the owner, unprompted, what you are copying that looks like a bug. If neither does, ask the owner asynchronously and act on the spec-matching default meanwhile. Never rule "two preferences, not a defect".
 - **Verify continuously.** Deferring checks to a late milestone was the costliest decision. Keep cheap guards on every commit and the main acceptance check on every candidate.
 - **Acceptance comes only from an execution-capable verifier running the exact commit.** Give verifiers shell and write access before dispatch, and label read-only review as such.
-- **One owner per file, seam and shared resource, and one integrator writing the candidate.** Post the overlap before editing a shared hot file.
+- **One owner per file, seam and shared resource, and one integrator writing the candidate.** Post the overlap before editing a shared hot file. Between peer lanes this rule also left lanes idle waiting on each other; it worked best with the owners as subagents under one head.
 - **Gate heavy and timing-sensitive runs on measured load and disk,** and serialize scored runs. Contended results are noise and can't be attributed.
 - **Check another lane's claim against source before building on it or repeating it.** This applies to your own claims too: correct them publicly.
-- **Put the strongest available model on dispatch.** In a blind exam, Opus 8.6 vs 5.8–7.4 for the others; a weak coordinator leaves lanes idle. Builders can be cheaper, and a model that tests badly as a coordinator can still be an excellent debugger.
-- **Keep the queue stocked** with work tied to named failures, and give a released lane its next job in the same turn.
+- **Put the strongest available model where the goal is held and the work is done.** A strong dispatcher over cheaper builders is the shape that lost to one strong agent with subagents. If you do run a dispatcher, it still needs the strongest model: in a blind exam, Opus scored 8.6 vs 5.8–7.4 for the others, and a weak coordinator leaves lanes idle.
+- **Watch for the signal to collapse the team.** If the open backlog grows over a day, or nudges outnumber landed commits, stop adding process and fold the work into one agent.
+- **Workers never run on the build being changed.** Its bugs took lanes down five times in one day.
+- **The test command names the binary under test.** An environment default let every lane test the old CLI for a week after the trap was written down.
+- **Check what a number counted before acting on it.** "56/56", "35–50 idle hours" and "37% coordination" were all softer than they sounded.
 - **Removing beats adding.** Process fixes that deleted mechanism held up. Fixes that added schedulers, timing windows or extra gates often backfired. Give every new gate a removal path.
 
 ## References

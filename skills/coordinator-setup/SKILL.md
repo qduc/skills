@@ -95,6 +95,11 @@ not speculative commands or an investigation transcript, in the profile.
 
 ## Project workspace
 
+Most work doesn't need one. For one cohesive piece of work, copy
+[assets/goal-template.md](assets/goal-template.md) into the task's folder, fill
+it in and hand it to one strong agent. Create a workspace only for a standing
+coordinator that runs a project across many tasks and sessions.
+
 A long-running coordinator for one project keeps its memory in a workspace
 folder, separate from the source checkout and from the host profile. Create one
 with:
