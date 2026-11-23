@@ -1,6 +1,6 @@
 ---
 name: research
-description: Source, compare, and synthesize evidence into a traceable answer to a bounded question. Use for online research, literature or document comparisons, fact checking across sources, and evidence-based recommendations. Prefer investigation for gathering evidence from a concrete system and debugging for testing causal explanations of failures. Do not turn a simple lookup into a large research project.
+description: Source, compare, and synthesize evidence into a traceable answer to a bounded question. Use for online research, literature or document comparisons, fact checking across sources, and evidence-based recommendations. Prefer the engineering skill's investigation workflow for evidence from a concrete system and its debugging workflow for testing causal explanations. Do not turn a simple lookup into a large research project.
 ---
 
 # Research
@@ -23,8 +23,9 @@ Contribute PLAN through question and search design; ACT/OBSERVE through retrieva
 and extraction; VERIFY through source-to-claim checks; ADAPT through resolving
 gaps or contradictions. Return evidence to the caller, which owns task completion.
 Use this method alone or compose it for a real capability gap. Do not automatically
-load sibling skills. Use investigation when the gap requires evidence from the
-system itself, and debugging when it requires testing causal explanations.
+load sibling skills. Use the engineering skill's [investigation workflow](../engineering/references/investigation/workflow.md)
+when the gap requires evidence from the system itself, and its [debugging workflow](../engineering/references/debugging/workflow.md)
+when it requires testing causal explanations.
 
 ## Source
 

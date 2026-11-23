@@ -89,7 +89,7 @@ Run this at the point of need, when a loop phase needs methodology it does not h
 2. Search the available skill catalog; read the best match and its relevant resources.
 3. Check applicability, prerequisites, constraints, and whether it addresses the actual gap.
 4. Compose suitable skills when needed. Reuse loaded skills while their assumptions hold.
-5. If no suitable method exists, invoke an available **skill-creator** meta-skill
+5. If no suitable method exists, invoke the **skill-development** skill’s skill-creator workflow
    with the missing capability, context, constraints, and acceptance evidence.
 6. Create the smallest useful method, validate it, apply it, and evaluate its result.
 

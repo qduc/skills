@@ -3,6 +3,10 @@
 Treat these names as discovery hints, not required dependencies or a bundle to
 preload. Resolve each against the host's current catalog. Read only a skill whose
 methodology is needed now; the catalog may contain a better specialized match.
+The names below identify workflows: investigation, debugging, implementation,
+bug-retro, testing, and profiling live in `engineering`; adversarial-review,
+finding-triage, and code-review live in `review`; browser-qa lives in `browser`.
+Load the parent skill and then its relevant workflow.
 
 | Primitive | Load for this immediate gap | Useful result |
 | --- | --- | --- |

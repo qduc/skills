@@ -289,6 +289,22 @@ class OutcomeTests(unittest.TestCase):
         skill.write_text('changed after dispatch')
         self.assertIn('Inspect configuration',Path(payload['method']['skill']).read_text())
 
+    def test_consolidated_investigation_snapshots_both_files(self):
+        parent = self.root / 'catalog/engineering/SKILL.md'
+        parent.parent.mkdir(parents=True)
+        parent.write_text('---\nname: engineering\n---\nParent instructions.\n')
+        workflow = parent.parent / 'references/investigation/workflow.md'
+        workflow.parent.mkdir(parents=True)
+        workflow.write_text('Investigation instructions.\n')
+        assignment = self.native(method='investigation', catalogs=[self.root / 'catalog'])
+        method = json.loads(assignment.read_text())['method']
+        parent.write_text('changed')
+        workflow.write_text('changed')
+        self.assertIn('Parent instructions.', Path(method['skill']).read_text())
+        self.assertIn('Investigation instructions.', Path(method['workflow_file']).read_text())
+        self.assertEqual(method['workflow_origin'], str(workflow.parent))
+        self.assertIn('method.workflow_file', (assignment.parent / 'prompt.txt').read_text())
+
     def test_native_host_observation_requires_matching_handle(self):
         self.native()
         with self.assertRaisesRegex(tasks.StateError,'bound native handle'):

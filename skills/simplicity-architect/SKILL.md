@@ -1,13 +1,13 @@
 ---
 name: simplicity-architect
-description: Decide how to structure a change before building it, choosing the design that removes edge cases and keeps callers knowing least. Use when the user asks how to design, structure, or architect something, weighs approaches for a feature, data model, API, or refactor, or when implementation reports design friction too large to reshape in place; also when answering reviewer concerns about a design without piling on defensive machinery. Use deep-module-review to judge an existing module, proportionality-review to ask only whether something is overbuilt.
+description: Decide how to structure a change before building it, choosing the design that removes edge cases and keeps callers knowing least. Use when the user asks how to design, structure, or architect something, weighs approaches for a feature, data model, API, or refactor, or when implementation reports design friction too large to reshape in place; also when answering reviewer concerns about a design without piling on defensive machinery. Use the review skill's deep-module-review workflow to judge an existing module, or proportionality-review to ask only whether something is overbuilt.
 ---
 
 # Simplicity Architect
 
 **Goal:** the simplest viable design for the stated problem, with its invariants, the owner of each rule, and a disposition for every raised concern.
 
-Design for simplicity and local reasoning. Own the complexity budget: every added state, transition, or coordination mechanism must earn its cost. Interface-depth judgments follow [deep-module-review](../deep-module-review/SKILL.md); do not restate them here.
+Design for simplicity and local reasoning. Own the complexity budget: every added state, transition, or coordination mechanism must earn its cost. Interface-depth judgments follow the review skill's [deep-module-review workflow](../review/references/deep-module-review/workflow.md); do not restate them here.
 
 ## Principles
 
@@ -26,7 +26,7 @@ Design for simplicity and local reasoning. Own the complexity budget: every adde
    - What new states does the solution introduce?
    - Can a developer understand this component without loading half the system into their head?
 4. **Assign owners.** List each invariant with the one component that enforces it. Check: no invariant has zero or two owners.
-5. **Resolve concerns.** When responding to a reviewer (often [invariant-reviewer](../invariant-reviewer/SKILL.md)), resolve each concern by changing the design, proving the invariant with evidence, or explicitly accepting the risk or rejecting the concern with reasons. Judge added complexity against the reachable failure and its impact. Check: every concern has exactly one of those four dispositions.
+5. **Resolve concerns.** When responding to a reviewer (often the review skill's [invariant-reviewer workflow](../review/references/invariant-reviewer/workflow.md)), resolve each concern by changing the design, proving the invariant with evidence, or explicitly accepting the risk or rejecting the concern with reasons. Judge added complexity against the reachable failure and its impact. Check: every concern has exactly one of those four dispositions.
 
 ## Stop rules
 

@@ -229,6 +229,19 @@ def cmd_resolve(args):
         )))
         return 0
     matches = compatible_skills(args.protocol, catalogs)
+    workflow_file = None
+    if not matches and args.protocol == "investigation":
+        for raw in catalogs:
+            root = Path(raw).resolve()
+            parent = root / "engineering" / "SKILL.md"
+            workflow = parent.parent / "references" / "investigation" / "workflow.md"
+            if (parent.is_file() and workflow.is_file()
+                    and parent.resolve().is_relative_to(root)
+                    and workflow.resolve().is_relative_to(root)
+                    and skill_name(parse_frontmatter(parent.read_text(encoding="utf-8"))) == "engineering"):
+                matches.append((2, 0, 0, "", str(parent.resolve()), "engineering"))
+                workflow_file = str(workflow.resolve())
+                break
     if not matches and playbook in PLAYBOOKS:
         for raw in catalogs:
             root = Path(raw).resolve()
@@ -247,14 +260,17 @@ def cmd_resolve(args):
         )))
         return 0
     _rank, _index, _length, _relative, skill, name = matches[0]
-    print(json.dumps(resolve_payload(
+    payload = resolve_payload(
         args.protocol,
         event="protocol_selected",
         reason=None,
         skill=skill,
         skill_name_value=name,
         workflow="execution_protocol",
-    )))
+    )
+    if workflow_file:
+        payload["workflow_file"] = workflow_file
+    print(json.dumps(payload))
     return 0
 
 

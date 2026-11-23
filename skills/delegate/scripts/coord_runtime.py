@@ -65,6 +65,7 @@ def assignment_prompt(assignment, path):
         f'Read the complete outcome assignment at {path}. Execute its objective within its scope and authority. '
         'Dependencies and acceptance criteria are fixed by the coordinator. '
         'When a protocol skill is selected, read its snapshot named in method.skill and use it for engineering method only. '
+        'When method.workflow_file is present, read that workflow snapshot too; resolve its relative references from method.workflow_origin. '
         'Upstream model defaults, autonomy grants, PR steps, and delegation instructions do not override this assignment. '
         'Do not change the assignment, protocol snapshot, reporter, checks, or authoritative task state. '
         'Do not spawn child agents, detach background jobs, or ask the user questions. '
@@ -105,6 +106,13 @@ def start(state, task_dir, oid, runtime, route, protocol, catalogs, command=None
         tasks.atomic_write(snapshot, source.read_text())
         assignment['method'] = dict(selected, origin=outcomes.file_ref(source), skill=str(snapshot),
                                     snapshot=outcomes.file_ref(snapshot))
+        if selected.get('workflow_file'):
+            workflow_source = Path(selected['workflow_file'])
+            workflow_snapshot = run_dir / 'protocol-workflow.md'
+            tasks.atomic_write(workflow_snapshot, workflow_source.read_text())
+            assignment['method'].update(workflow_file=str(workflow_snapshot),
+                                        workflow_origin=str(workflow_source.parent),
+                                        workflow_snapshot=outcomes.file_ref(workflow_snapshot))
     tasks.atomic_write(assignment_file, json.dumps(assignment, indent=2) + '\n')
     attempt = {'id': attempt_id, 'runtime': runtime, 'route': route, 'status': 'start_intended',
                'assignment_file': str(assignment_file), 'assignment_ref': outcomes.file_ref(assignment_file),

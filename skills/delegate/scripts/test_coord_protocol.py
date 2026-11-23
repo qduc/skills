@@ -187,6 +187,38 @@ class ProtocolTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertEqual(event["skill"], str(chosen.resolve()))
 
+    def test_consolidated_investigation_and_legacy_priority(self):
+        with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
+            for directory in (first, second):
+                self.write_skill(directory, "engineering/SKILL.md", "name: engineering")
+                workflow = Path(directory) / "engineering/references/investigation/workflow.md"
+                workflow.parent.mkdir(parents=True)
+                workflow.write_text("Investigation steps.\n")
+            os.environ["COORDINATOR_PROTOCOL_CATALOG"] = second
+            code, event = self.run_cli(["resolve", "--protocol", "investigation", "--catalog", first])
+            self.assertEqual(code, 0)
+            self.assertEqual(event["skill"], str(Path(first) / "engineering/SKILL.md"))
+            self.assertEqual(event["skill_name"], "engineering")
+            self.assertEqual(event["workflow_file"], str(Path(first) / "engineering/references/investigation/workflow.md"))
+
+            legacy = self.write_skill(second, "investigation/SKILL.md", "name: investigation")
+            _, event = self.run_cli(["resolve", "--protocol", "investigation", "--catalog", first])
+            self.assertEqual(event["skill"], str(legacy))
+            self.assertNotIn("workflow_file", event)
+
+    def test_incomplete_or_unrelated_parent_does_not_match(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.write_skill(directory, "engineering/SKILL.md", "name: unrelated")
+            workflow = Path(directory) / "engineering/references/investigation/workflow.md"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text("Investigation steps.\n")
+            _, event = self.run_cli(["resolve", "--protocol", "investigation", "--catalog", directory])
+            self.assertEqual(event["reason"], "not_installed")
+            self.write_skill(directory, "engineering/SKILL.md", "name: engineering")
+            workflow.unlink()
+            _, event = self.run_cli(["resolve", "--protocol", "investigation", "--catalog", directory])
+            self.assertEqual(event["reason"], "not_installed")
+
     def test_missing_playbook_and_unallowlisted_paths_fall_back(self):
         with tempfile.TemporaryDirectory() as directory:
             for name, reason in [("feature", "not_installed"),
