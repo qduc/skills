@@ -52,7 +52,6 @@ python3 -m unittest discover -s scripts -p 'test*.py'
 - **[agentic-loop](skills/agentic-loop/SKILL.md)** — Pursues delegated outcomes through planning, action, observation, verification, and adaptation, loading methodology only when needed.
 - **coordinator-setup** — Discovers host capabilities and configures optional coordinator adapters in an external host profile without rewriting the base skill.
 - **delegate** — User-invoked (`/delegate`). Splits substantial work across headless or native workers through a code-driven runtime that owns the flow and gates, and delivers Git changes or report/file artifacts. The agent answers typed judgments and performs requested native host calls.
-- **[chief-of-staff](skills/chief-of-staff/SKILL.md)** — Owns work that outlives one session or splits into independent pieces: briefs fresh-context workers, verifies their results, and keeps a project wiki and run ledger. Pairs with duc-mode for code changes.
 - **[duc-mode](skills/duc-mode/SKILL.md)** — Duc's working style for any code change, directly or as a worker: evidence, real-app verification, decisions, and when to ask.
 - **herdr** — Inspects and coordinates Herdr workspaces, tabs, panes, terminals, and agents from the command line without disrupting work already running.
 - **model-benchmark** — Measures coding models and agent harnesses on real engineering tasks from the term2 repository, including solve rates and blind grading of candidate diffs.

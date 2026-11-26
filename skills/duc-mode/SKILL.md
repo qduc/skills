@@ -11,12 +11,12 @@ The user decides what "correct" means. You build and you prove it. The user's at
 - **Small** (typo, rename, one-line fix, anything you can describe in one sentence): just do it and show the check. No plan, no subagents.
 - **Normal** (a feature, a bug, a few files): follow the sections below.
 - **High-stakes** (one-way doors, or two fixes have already failed): also get a second opinion (see Verify).
-- **Outgrows one agent** (it won't finish this session, or it splits into independent pieces): switch to chief-of-staff to coordinate, and keep these rules for the code itself.
+- **Outgrows one session**: use [agentic-loop](../agentic-loop/SKILL.md) to carry the outcome across sessions. If the user invokes `/delegate`, use that workflow to coordinate workers. Keep these rules for the code itself.
 
 ## What "done" means
 Done means a person can use the change and it solves their problem. Passing tests is the minimum, not the finish line.
 - Before building, describe the change as 1–3 usage scenarios: who does what, and what they see. Confirm only the unclear parts with the user.
-- Before saying it's done, run those scenarios against the real app using the project's `verify-<app>` skill, not just unit tests.
+- Before saying it's done, run those scenarios against the real app. Follow the project's existing verification commands or guide, such as a `verify-<app>` skill or `VERIFY.md`.
 - Never hand the user a check you could run yourself.
 
 ## Keep it small
@@ -41,9 +41,7 @@ Done means a person can use the change and it solves their problem. Passing test
 - Label every claim **verified** (with evidence), **inferred**, or **guess**.
 - When a check fails unexpectedly, suspect the check first (setup, wrong target, stale build), then the code.
 - For high-stakes work, run one review subagent in a fresh context. Give it only the diff and the scenarios, and ask for gaps in correctness or requirements, not style.
-- If the project has no `verify-<app>` skill and you need to drive the app, create one once in the project's skill directory (for example `.claude/skills/verify-<app>/`). It should cover how to launch, how to check readiness, how to drive one feature like a user would, and how to clean up. Run it end to end before relying on it.
-- If an older `VERIFY.md` exists, build the skill from it, then replace the file's contents with a pointer to the skill.
-- If the project's wiki records that a verify skill can't be built here, don't retry. Use the project's test commands and say why.
+- If the project has no repeatable way to drive the app and needs one, add a small check or guide using its existing conventions. Cover launch, readiness, one real user flow, and cleanup. Run it end to end before relying on it.
 
 ## When to ask the user
 - Ask before anything hard to undo: DB migrations, deleting data, public API changes, auth, payments, new dependencies, force-push, deploys. A project's `DECISIONS.md` or CLAUDE.md can extend this list.
@@ -53,7 +51,7 @@ Done means a person can use the change and it solves their problem. Passing test
 
 ## Remember decisions
 - When the user decides something or corrects you, append it to `DECISIONS.md` as one short rule: `- rule — reason (date)`. Create the file if it's missing.
-- `DECISIONS.md` lists only the rules in force. When a rule changes, replace its line instead of adding a second one. If the project has a wiki, the dated history goes there under `decisions/`, and the rule's line links to that page.
+- `DECISIONS.md` lists only the rules in force. When a rule changes, replace its entry. Link to the dated entry when the project keeps a decision history.
 - Read `DECISIONS.md` before asking anything. Never ask what it already answers.
 - After the same correction comes up twice, propose a lint, hook, or script to enforce it instead of adding more text.
 
