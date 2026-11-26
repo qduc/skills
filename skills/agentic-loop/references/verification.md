@@ -30,6 +30,10 @@ checking means using an observable basis distinct from the success claim; it
 does not always require another agent. Do not coordinate workers from this skill;
 resolve that methodology separately if needed and authorized.
 
+When accepting a delegated handoff, check the worker's material assumptions
+and unverified paths against the current contract and evidence. Resolve any
+conflict or gap that affects acceptance before accepting the result.
+
 Record exclusions: what was not exercised, unavailable environments, limited
 samples, and unresolved contradictory results. Do not hide an essential gap in a
 footnote under an overall success claim. Distinguish verified partial results
